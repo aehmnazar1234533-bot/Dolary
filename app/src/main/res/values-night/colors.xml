@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="app_bg">#09111E</color>
+    <color name="status_bar_light">#101A29</color>
+</resources>
