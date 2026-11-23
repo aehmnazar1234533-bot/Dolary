@@ -19,6 +19,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import androidx.core.app.NotificationManagerCompat
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -112,6 +113,17 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
         val newMap = parseRates(newJson)
         if (oldMap.isEmpty() || newMap.isEmpty()) return
 
+        // Do not record a notification as delivered when Android has blocked it.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) return
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = manager.getNotificationChannel(MainActivity.NOTIFICATION_CHANNEL_ID)
+            if (channel != null && channel.importance == NotificationManager.IMPORTANCE_NONE) return
+        }
+
         val favoritesRaw = prefs.getString(MainActivity.KEY_FAVORITES, "[]") ?: "[]"
         val favorites = parseStringArray(favoritesRaw)
         val selected = prefs.getString(MainActivity.KEY_SELECTED_PROVINCE, "بغداد") ?: "بغداد"
@@ -154,11 +166,6 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
             "تغير السعر في ${changed.size} محافظات · ${first.first}: ${formatRate(first.third)} د.ع"
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-        ) return
-
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             manager.createNotificationChannel(
                 NotificationChannel(
@@ -231,7 +238,7 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
 
     private fun formatRate(value: Int): String = String.format(Locale.US, "%,d", value)
 
-    private fun currentTime(): String = java.text.SimpleDateFormat("HH:mm", Locale.getDefault()).format(java.util.Date())
+    private fun currentTime(): String = java.text.SimpleDateFormat("yyyy/MM/dd  HH:mm", Locale.getDefault()).format(java.util.Date())
 
     private fun Double.roundToIntSafe(): Int = kotlin.math.round(this).toInt()
 }
