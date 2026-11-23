@@ -107,8 +107,8 @@ class MainActivity : AppCompatActivity() {
         webView.settings.allowContentAccess = false
         // The page is bundled locally and does not need WebView network access.
         webView.settings.blockNetworkLoads = true
-        webView.settings.allowFileAccessFromFileURLs = false
-        webView.settings.allowUniversalAccessFromFileURLs = false
+        // File-URL cross-origin access remains disabled by WebView defaults.
+        // The bundled asset is loaded directly; JavaScript cannot access other files.
         webView.settings.javaScriptCanOpenWindowsAutomatically = false
         webView.settings.setSupportMultipleWindows(false)
         webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
@@ -209,7 +209,7 @@ class MainActivity : AppCompatActivity() {
         val adWidthPixels = adContainer.width.takeIf { it > 0 } ?: displayMetrics.widthPixels
         val density = displayMetrics.density
         val adWidth = (adWidthPixels / density).toInt().coerceAtLeast(320)
-        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth)
+        return AdSize.getLargeAnchoredAdaptiveBannerAdSize(this, adWidth)
     }
 
     private fun isSystemDark(): Boolean =
