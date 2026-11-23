@@ -291,7 +291,13 @@ class MainActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
             ) return false
-            return NotificationManagerCompat.from(this@MainActivity).areNotificationsEnabled()
+            if (!NotificationManagerCompat.from(this@MainActivity).areNotificationsEnabled()) return false
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                    .getNotificationChannel(NOTIFICATION_CHANNEL_ID)
+                if (channel != null && channel.importance == NotificationManager.IMPORTANCE_NONE) return false
+            }
+            return true
         }
 
         @JavascriptInterface
