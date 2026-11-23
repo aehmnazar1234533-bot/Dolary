@@ -345,6 +345,21 @@ class MainActivity : AppCompatActivity() {
         fun isSystemDark(): Boolean = this@MainActivity.isSystemDark()
     }
 
+    @Deprecated("Use the notification permission result to refresh the settings hint.")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 7001 && ::webView.isInitialized && !isFinishing && !isDestroyed) {
+            webView.evaluateJavascript(
+                "window.refreshNotificationPermissionStatus && window.refreshNotificationPermissionStatus();",
+                null
+            )
+        }
+    }
+
     private fun requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
