@@ -343,6 +343,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         @JavascriptInterface
+        fun openDeveloperWhatsApp() {
+            runOnUiThread {
+                try {
+                    val message = Uri.encode("مرحباً، لدي اقتراح أو طلب تطوير بخصوص تطبيق دولاري.")
+                    val whatsappUri = Uri.parse("https://wa.me/9647866606413?text=$message")
+                    startActivity(Intent(Intent.ACTION_VIEW, whatsappUri))
+                } catch (_: Exception) {
+                }
+            }
+        }
+
+        @JavascriptInterface
         fun showPrivacyOptions() {
             runOnUiThread { adMobConsentManager.showPrivacyOptionsForm() }
         }
