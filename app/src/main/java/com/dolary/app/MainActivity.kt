@@ -10,6 +10,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
+import android.provider.Settings
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -28,6 +29,7 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -285,6 +287,33 @@ class MainActivity : AppCompatActivity() {
         }
 
         @JavascriptInterface
+        fun areNotificationsAllowed(): Boolean {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ) return false
+            if (!NotificationManagerCompat.from(this@MainActivity).areNotificationsEnabled()) return false
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                    .getNotificationChannel(NOTIFICATION_CHANNEL_ID)
+                if (channel != null && channel.importance == NotificationManager.IMPORTANCE_NONE) return false
+            }
+            return true
+        }
+
+        @JavascriptInterface
+        fun openNotificationSettings() {
+            runOnUiThread {
+                try {
+                    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                    }
+                    startActivity(intent)
+                } catch (_: Exception) {
+                }
+            }
+        }
+
+        @JavascriptInterface
         fun requestNotificationPermission() {
             runOnUiThread { requestNotificationPermissionIfNeeded() }
         }
@@ -322,6 +351,21 @@ class MainActivity : AppCompatActivity() {
         fun isSystemDark(): Boolean = this@MainActivity.isSystemDark()
     }
 
+    @Deprecated("Use the notification permission result to refresh the settings hint.")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 7001 && ::webView.isInitialized && !isFinishing && !isDestroyed) {
+            webView.evaluateJavascript(
+                "window.refreshNotificationPermissionStatus && window.refreshNotificationPermissionStatus();",
+                null
+            )
+        }
+    }
+
     private fun requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
@@ -339,15 +383,19 @@ class MainActivity : AppCompatActivity() {
         webView.evaluateJavascript("window.setNativeNotificationHistory(${JSONObject.quote(history)});", null)
     }
 
+    // A newer manual/automatic request always wins; slow older responses cannot overwrite it.
+    private var latestRatesRequestId = 0
+
     private fun fetchRates() {
+        val requestId = ++latestRatesRequestId
         progressBar.visibility = View.VISIBLE
-        Thread {
+        Thread({
             var connection: HttpURLConnection? = null
             try {
                 connection = (URL(RATES_URL).openConnection() as HttpURLConnection).apply {
                     requestMethod = "GET"
-                    connectTimeout = 8000
-                    readTimeout = 8000
+                    connectTimeout = 10000
+                    readTimeout = 12000
                     useCaches = false
                     setRequestProperty("Accept", "application/json")
                     setRequestProperty("Cache-Control", "no-cache")
@@ -362,14 +410,14 @@ class MainActivity : AppCompatActivity() {
                 ).use { it.readText() }
 
                 val json = JSONObject(response)
-                if (!json.has("cities") || json.optJSONArray("cities") == null) {
-                    throw Exception("صيغة البيانات غير صحيحة")
+                if (!hasUsableRates(json)) {
+                    throw Exception("لم تصل أسعار صالحة من المصدر")
                 }
 
-                // Keep the previous snapshot for the web UI so it can calculate visible changes.
-                prefs.edit().putString(KEY_LAST_JSON, response).apply()
-
                 mainHandler.post {
+                    if (requestId != latestRatesRequestId || isFinishing || isDestroyed) return@post
+                    // Save only a validated response and only if it is still the newest request.
+                    prefs.edit().putString(KEY_LAST_JSON, response).apply()
                     progressBar.visibility = View.GONE
                     webView.evaluateJavascript(
                         "window.setLiveRates(${JSONObject.quote(response)}, false, false);",
@@ -378,6 +426,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 mainHandler.post {
+                    if (requestId != latestRatesRequestId || isFinishing || isDestroyed) return@post
                     progressBar.visibility = View.GONE
                     webView.evaluateJavascript(
                         "window.setLiveRatesError(${JSONObject.quote(e.message ?: "Network error")});",
@@ -387,7 +436,26 @@ class MainActivity : AppCompatActivity() {
             } finally {
                 connection?.disconnect()
             }
-        }.start()
+        }, "DolaryRates-$requestId").start()
+    }
+
+    private fun hasUsableRates(json: JSONObject): Boolean {
+        val cities = json.optJSONArray("cities") ?: return false
+        for (i in 0 until cities.length()) {
+            val city = cities.optJSONObject(i) ?: continue
+            val sides = city.optJSONArray("sides")
+            if (sides != null) {
+                for (j in 0 until sides.length()) {
+                    val side = sides.optJSONObject(j) ?: continue
+                    if (!side.isNull("side")) continue
+                    val value = side.optDouble("usd_iqd_per_100", Double.NaN)
+                    if (value.isFinite() && value > 0.0 && value <= Int.MAX_VALUE) return true
+                }
+            }
+            val primary = city.optDouble("usd_iqd_per_100", Double.NaN)
+            if (primary.isFinite() && primary > 0.0 && primary <= Int.MAX_VALUE) return true
+        }
+        return false
     }
 
     private fun scheduleBackgroundUpdates() {
@@ -415,7 +483,13 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         adView?.resume()
-        if (::webView.isInitialized) scheduleBackgroundUpdates()
+        if (::webView.isInitialized) {
+            scheduleBackgroundUpdates()
+            webView.evaluateJavascript(
+                "window.refreshNotificationPermissionStatus && window.refreshNotificationPermissionStatus();",
+                null
+            )
+        }
     }
 
     override fun onPause() {

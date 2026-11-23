@@ -116,6 +116,7 @@ main{padding:14px 16px}
 .notify-icon svg{width:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .notify-copy{flex:1}.notify-copy strong,.setting-row strong,.setting-block strong{display:block;font-size:13.5px;font-weight:800}
 .notify-copy span,.setting-row span,.setting-block>span{display:block;font-size:10.5px;color:var(--muted);margin-top:5px}
+.notification-settings-btn{display:none;min-height:44px;margin-top:8px;padding:8px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--primary);font:inherit;font-size:11px;font-weight:800;cursor:pointer}
 .subsection-title{font-size:12.5px;font-weight:900;margin:22px 2px 10px;color:var(--muted)}
 .notification-feed{display:flex;flex-direction:column;gap:8px}
 .notification-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:13px;display:flex;gap:11px;box-shadow:var(--shadow-sm)}
@@ -320,7 +321,8 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           </div>
           <div class="notify-copy">
             <strong>إشعارات تغير السعر</strong>
-            <span>تنبيه عند ارتفاع أو انخفاض السعر</span>
+            <span id="notificationPermissionHint">تنبيه عند ارتفاع أو انخفاض السعر</span>
+            <button type="button" class="notification-settings-btn" id="notificationSettingsBtn">فتح إعدادات الإشعارات</button>
           </div>
           <label class="switch">
             <input type="checkbox" id="notifyToggle" checked />
@@ -459,7 +461,7 @@ const allProvinces = [
 // Only provinces that actually have a dollar price are shown; the rest are hidden once data arrives.
 let provinces = allProvinces.slice();
 
-let favorites = JSON.parse(localStorage.getItem("favoritesDollarIraq") || "[]");
+let favorites = (() => { try { const value = JSON.parse(localStorage.getItem("favoritesDollarIraq") || "[]"); return Array.isArray(value) ? [...new Set(value.filter(x => typeof x === "string"))] : []; } catch (e) { return []; } })();
 let sortDescending = true;
 let selectedProvince = localStorage.getItem("selectedDollarProvince") || "بغداد";
 let lastNetworkError = null;
@@ -623,7 +625,11 @@ function renderFavorites() {
 }
 
 function saveNotificationHistory(items){
-  const old = JSON.parse(localStorage.getItem("dolaryNotificationHistory") || "[]");
+  let old = [];
+  try {
+    const value = JSON.parse(localStorage.getItem("dolaryNotificationHistory") || "[]");
+    if (Array.isArray(value)) old = value;
+  } catch (e) {}
   const next = [...items, ...old].slice(0,20);
   localStorage.setItem("dolaryNotificationHistory", JSON.stringify(next));
 }
@@ -725,10 +731,37 @@ document.getElementById("refreshBtn").addEventListener("click", () => {
   } else showToast("الاتصال غير متاح");
 });
 
+function refreshNotificationPermissionStatus(){
+  const hint = document.getElementById("notificationPermissionHint");
+  const settingsBtn = document.getElementById("notificationSettingsBtn");
+  const toggle = document.getElementById("notifyToggle");
+  if (!hint || !settingsBtn || !toggle) return;
+  let allowed = true;
+  try {
+    if (window.AndroidBridge && AndroidBridge.areNotificationsAllowed) {
+      allowed = !!AndroidBridge.areNotificationsAllowed();
+    }
+  } catch (e) { allowed = false; }
+  if (!toggle.checked) {
+    hint.textContent = "الإشعارات متوقفة من داخل التطبيق.";
+    settingsBtn.style.display = "none";
+  } else if (!allowed) {
+    hint.textContent = "إذن الإشعارات غير مفعّل من إعدادات الهاتف؛ لن تصلك التنبيهات.";
+    settingsBtn.style.display = "inline-flex";
+  } else {
+    hint.textContent = "الإشعارات مفعّلة. قد يؤخرها توفير البطارية.";
+    settingsBtn.style.display = "none";
+  }
+}
+window.refreshNotificationPermissionStatus = refreshNotificationPermissionStatus;
+document.getElementById("notificationSettingsBtn").addEventListener("click", () => {
+  if (window.AndroidBridge && AndroidBridge.openNotificationSettings) AndroidBridge.openNotificationSettings();
+});
 document.getElementById("notifyToggle").addEventListener("change", e => {
   const enabled = e.target.checked;
   localStorage.setItem("notifyEnabledDollarIraq", enabled ? "1":"0");
   if (window.AndroidBridge && AndroidBridge.setNotificationsEnabled) AndroidBridge.setNotificationsEnabled(enabled);
+  refreshNotificationPermissionStatus();
   showToast(enabled ? "تم تفعيل إشعارات تغير السعر" : "تم إيقاف الإشعارات");
 });
 
@@ -867,7 +900,10 @@ function pickDisplayRate(city){
 }
 
 function previousSnapshot(){
-  return JSON.parse(localStorage.getItem("dolaryRatesSnapshot") || "{}");
+  try {
+    const value = JSON.parse(localStorage.getItem("dolaryRatesSnapshot") || "{}");
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  } catch (e) { return {}; }
 }
 
 function setSnapshot(){
@@ -888,16 +924,18 @@ window.setLiveRates = function(jsonText, fromCache=false, silent=false) {
     allProvinces.forEach(p => {
       const c = bySlug[p.slug];
       if (!c) {
-        if (p.rate == null) p.stale = false;
+        // A missing city in the latest source response does not make its previous price current.
+        p.stale = p.rate != null;
         return;
       }
       const current = pickDisplayRate(c);
-      p.updatedAt = c.updated_at || null;
+      if (c.updated_at) p.updatedAt = c.updated_at;
       if (current == null) {
         p.stale = p.rate != null;
         return;
       }
-      p.stale = false;
+      // Cached data is useful offline, but must not be presented as a live quote.
+      p.stale = !!fromCache;
       p.change = old[p.name] != null ? current - Number(old[p.name]) : null;
       if (!fromCache && p.change != null && p.change !== 0) {
         changedForFeed.push({name:p.name, rate:current, change:p.change, time:fmtTime(c.updated_at)});
@@ -928,6 +966,8 @@ window.setLiveRates = function(jsonText, fromCache=false, silent=false) {
 
 window.setLiveRatesError = function(message) {
   lastNetworkError = message || "تعذر التحديث";
+  // Keep cached values visible, but never label them as fresh after a failed refresh.
+  allProvinces.forEach(p => { if (p.rate != null) p.stale = true; });
   document.getElementById("refreshBtn").classList.remove("spinning");
   loadState = allProvinces.some(p => p.rate != null) ? "ready" : "error";
   const cachedExists = allProvinces.some(p => p.rate != null);
@@ -957,6 +997,7 @@ if (window.AndroidBridge) {
   AndroidBridge.setSelectedProvince(selectedProvince);
   AndroidBridge.setFavorites(JSON.stringify(favorites));
 }
+refreshNotificationPermissionStatus();
 </script>
 </body>
 </html>

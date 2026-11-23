@@ -81,13 +81,18 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
             val response = BufferedReader(
                 InputStreamReader(connection.inputStream, StandardCharsets.UTF_8)
             ).use { it.readText() }
-            JSONObject(response).getJSONArray("cities") // validate shape
+            val parsed = JSONObject(response)
+            if (parsed.optJSONArray("cities") == null) return Result.retry()
+            val currentRates = parseRates(response)
+            // Never replace a known-good cache with an empty, malformed, or unusable response.
+            if (currentRates.isEmpty()) return Result.retry()
 
             val previous = prefs.getString(MainActivity.KEY_LAST_JSON, null)
+            val previousRates = previous?.let { parseRates(it) } ?: emptyMap()
             prefs.edit().putString(MainActivity.KEY_LAST_JSON, response).apply()
 
-            if (prefs.getBoolean(MainActivity.KEY_NOTIFICATIONS, true) && previous != null) {
-                notifyIfChanged(context, previous, response, prefs)
+            if (prefs.getBoolean(MainActivity.KEY_NOTIFICATIONS, true) && previousRates.isNotEmpty()) {
+                notifyIfChanged(context, previous!!, response, prefs)
             }
             Result.success()
         } catch (e: Exception) {
@@ -120,7 +125,11 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
         }
         if (changed.isEmpty()) return
 
-        val history = JSONArray(prefs.getString(MainActivity.KEY_NOTIFICATION_HISTORY, "[]") ?: "[]")
+        val history = try {
+            JSONArray(prefs.getString(MainActivity.KEY_NOTIFICATION_HISTORY, "[]") ?: "[]")
+        } catch (_: Exception) {
+            JSONArray()
+        }
         for (item in changed) {
             val delta = item.third - item.second
             history.put(JSONObject().apply {
@@ -203,12 +212,12 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
                 val s = sides.optJSONObject(i) ?: continue
                 if (s.isNull("side")) {
                     val value = s.optDouble("usd_iqd_per_100", Double.NaN)
-                    if (!value.isNaN()) return value.roundToIntSafe()
+                    if (value.isFinite() && value > 0.0 && value <= Int.MAX_VALUE) return value.roundToIntSafe()
                 }
             }
         }
         val primary = city.optDouble("usd_iqd_per_100", Double.NaN)
-        return if (primary.isNaN()) null else primary.roundToIntSafe()
+        return if (primary.isFinite() && primary > 0.0 && primary <= Int.MAX_VALUE) primary.roundToIntSafe() else null
     }
 
     private fun parseStringArray(raw: String): List<String> {
