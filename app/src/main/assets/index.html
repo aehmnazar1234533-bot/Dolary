@@ -459,7 +459,7 @@ const allProvinces = [
 // Only provinces that actually have a dollar price are shown; the rest are hidden once data arrives.
 let provinces = allProvinces.slice();
 
-let favorites = JSON.parse(localStorage.getItem("favoritesDollarIraq") || "[]");
+let favorites = (() => { try { const value = JSON.parse(localStorage.getItem("favoritesDollarIraq") || "[]"); return Array.isArray(value) ? [...new Set(value.filter(x => typeof x === "string"))] : []; } catch (e) { return []; } })();
 let sortDescending = true;
 let selectedProvince = localStorage.getItem("selectedDollarProvince") || "بغداد";
 let lastNetworkError = null;
@@ -623,7 +623,11 @@ function renderFavorites() {
 }
 
 function saveNotificationHistory(items){
-  const old = JSON.parse(localStorage.getItem("dolaryNotificationHistory") || "[]");
+  let old = [];
+  try {
+    const value = JSON.parse(localStorage.getItem("dolaryNotificationHistory") || "[]");
+    if (Array.isArray(value)) old = value;
+  } catch (e) {}
   const next = [...items, ...old].slice(0,20);
   localStorage.setItem("dolaryNotificationHistory", JSON.stringify(next));
 }
@@ -867,7 +871,10 @@ function pickDisplayRate(city){
 }
 
 function previousSnapshot(){
-  return JSON.parse(localStorage.getItem("dolaryRatesSnapshot") || "{}");
+  try {
+    const value = JSON.parse(localStorage.getItem("dolaryRatesSnapshot") || "{}");
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  } catch (e) { return {}; }
 }
 
 function setSnapshot(){
@@ -888,11 +895,12 @@ window.setLiveRates = function(jsonText, fromCache=false, silent=false) {
     allProvinces.forEach(p => {
       const c = bySlug[p.slug];
       if (!c) {
-        if (p.rate == null) p.stale = false;
+        // A missing city in the latest source response does not make its previous price current.
+        p.stale = p.rate != null;
         return;
       }
       const current = pickDisplayRate(c);
-      p.updatedAt = c.updated_at || null;
+      if (c.updated_at) p.updatedAt = c.updated_at;
       if (current == null) {
         p.stale = p.rate != null;
         return;
@@ -928,6 +936,8 @@ window.setLiveRates = function(jsonText, fromCache=false, silent=false) {
 
 window.setLiveRatesError = function(message) {
   lastNetworkError = message || "تعذر التحديث";
+  // Keep cached values visible, but never label them as fresh after a failed refresh.
+  allProvinces.forEach(p => { if (p.rate != null) p.stale = true; });
   document.getElementById("refreshBtn").classList.remove("spinning");
   loadState = allProvinces.some(p => p.rate != null) ? "ready" : "error";
   const cachedExists = allProvinces.some(p => p.rate != null);
