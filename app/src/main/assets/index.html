@@ -735,7 +735,8 @@ function refreshNotificationPermissionStatus(){
   const hint = document.getElementById("notificationPermissionHint");
   const settingsBtn = document.getElementById("notificationSettingsBtn");
   const toggle = document.getElementById("notifyToggle");
-  if (!hint || !settingsBtn || !toggle) return;
+  const autoUpdate = document.getElementById("autoUpdateToggle");
+  if (!hint || !settingsBtn || !toggle || !autoUpdate) return;
   let allowed = true;
   try {
     if (window.AndroidBridge && AndroidBridge.areNotificationsAllowed) {
@@ -743,13 +744,16 @@ function refreshNotificationPermissionStatus(){
     }
   } catch (e) { allowed = false; }
   if (!toggle.checked) {
-    hint.textContent = "الإشعارات متوقفة من داخل التطبيق.";
+    hint.textContent = "إشعارات تغيّر السعر متوقفة من داخل التطبيق.";
     settingsBtn.style.display = "none";
   } else if (!allowed) {
-    hint.textContent = "إذن الإشعارات غير مفعّل من إعدادات الهاتف؛ لن تصلك التنبيهات.";
+    hint.textContent = "إذن الإشعارات أو قناة التطبيق متوقفة من الهاتف؛ لن تصلك التنبيهات.";
     settingsBtn.style.display = "inline-flex";
+  } else if (!autoUpdate.checked) {
+    hint.textContent = "التنبيهات مفعّلة، لكن التحديث التلقائي متوقف؛ فعّله حتى نراقب تغيّر الأسعار بالخلفية.";
+    settingsBtn.style.display = "none";
   } else {
-    hint.textContent = "الإشعارات مفعّلة. قد يؤخرها توفير البطارية.";
+    hint.textContent = "التنبيهات ومراقبة الأسعار مفعّلتان. قد يؤخر النظام وصولها بسبب البطارية أو قيود الخلفية.";
     settingsBtn.style.display = "none";
   }
 }
@@ -769,6 +773,7 @@ document.getElementById("autoUpdateToggle").addEventListener("change", e => {
   const enabled = e.target.checked;
   localStorage.setItem("autoUpdateDollarIraq", enabled ? "1":"0");
   if (window.AndroidBridge && AndroidBridge.setAutoUpdateEnabled) AndroidBridge.setAutoUpdateEnabled(enabled);
+  refreshNotificationPermissionStatus();
   showToast(enabled ? "تم تفعيل التحديث التلقائي" : "تم إيقاف التحديث التلقائي");
 });
 
