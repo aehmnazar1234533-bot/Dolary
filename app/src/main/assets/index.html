@@ -905,7 +905,8 @@ window.setLiveRates = function(jsonText, fromCache=false, silent=false) {
         p.stale = p.rate != null;
         return;
       }
-      p.stale = false;
+      // Cached data is useful offline, but must not be presented as a live quote.
+      p.stale = !!fromCache;
       p.change = old[p.name] != null ? current - Number(old[p.name]) : null;
       if (!fromCache && p.change != null && p.change !== 0) {
         changedForFeed.push({name:p.name, rate:current, change:p.change, time:fmtTime(c.updated_at)});
