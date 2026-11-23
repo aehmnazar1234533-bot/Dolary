@@ -397,10 +397,32 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           <span class="version">v1.5</span>
         </div>
 
-        <div class="about-card">
-          <div>
-            <strong>المطوّر</strong>
-            <span>تطوير: ايهم نزار الساعدي</span>
+        <div class="about-card" style="display:block">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <img class="app-mark-img" src="dolary_logo.png" alt="شعار دولاري" />
+            <div>
+              <strong>حول تطبيق دولاري</strong>
+              <span>معلومات التطبيق وحقوق الملكية والتواصل</span>
+            </div>
+          </div>
+          <p style="font-size:12px;line-height:1.9;color:var(--muted);margin:0 0 14px">
+            دولاري يساعدك على متابعة أسعار صرف الدولار مقابل الدينار العراقي في المحافظات، ومتابعة المحافظات المفضلة ورصد تغيّرات الأسعار عبر التنبيهات والتحديث التلقائي.
+          </p>
+          <div style="border-top:1px solid var(--border);padding-top:12px">
+            <strong>حقوق الملكية</strong>
+            <p style="font-size:11px;line-height:1.9;color:var(--muted);margin:6px 0 0">
+              © 2026 أيهم نزار الساعدي. جميع الحقوق محفوظة. تعود حقوق العناصر والمحتويات الأصلية في تطبيق دولاري إلى المطوّر، ولا يجوز نسخها أو إعادة نشرها أو استغلالها تجارياً دون إذن كتابي، بالقدر الذي يسمح به القانون. لا تشمل هذه الحقوق علامات أو مكتبات أو خدمات وبيانات الجهات الخارجية.
+            </p>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
+            <strong>اقتراح أو طلب تطوير؟</strong>
+            <p style="font-size:11px;line-height:1.8;color:var(--muted);margin:6px 0 10px">
+              يسعدنا سماع رأيك ومقترحاتك أو استقبال طلبات إضافة ميزات جديدة.
+            </p>
+            <button type="button" onclick="window.AndroidBridge && AndroidBridge.openDeveloperWhatsApp && AndroidBridge.openDeveloperWhatsApp()" style="width:100%;min-height:46px;border:0;border-radius:14px;background:#168b62;color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer">
+              تواصل ويانه عبر واتساب
+            </button>
+            <span style="display:block;text-align:center;margin-top:8px;color:var(--muted);font-size:11px;direction:ltr">+964 786 660 6413</span>
           </div>
         </div>
       </section>
