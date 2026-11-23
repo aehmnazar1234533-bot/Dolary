@@ -20,6 +20,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.google.android.gms.ads.AdRequest
@@ -104,6 +105,14 @@ class MainActivity : AppCompatActivity() {
         webView.settings.domStorageEnabled = true
         webView.settings.allowFileAccess = false
         webView.settings.allowContentAccess = false
+        // The page is bundled locally and does not need WebView network access.
+        webView.settings.blockNetworkLoads = true
+        webView.settings.allowFileAccessFromFileURLs = false
+        webView.settings.allowUniversalAccessFromFileURLs = false
+        webView.settings.javaScriptCanOpenWindowsAutomatically = false
+        webView.settings.setSupportMultipleWindows(false)
+        webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+        webView.settings.safeBrowsingEnabled = true
         webView.settings.loadsImagesAutomatically = true
         webView.settings.builtInZoomControls = false
         webView.settings.displayZoomControls = false
@@ -113,8 +122,13 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 // The UI is fully local: never navigate away from the bundled page.
-                val url = request?.url?.toString() ?: return true
-                return !url.startsWith("file:///android_asset/")
+                val uri = request?.url ?: return true
+                // Only the exact bundled HTML document is allowed to navigate inside this WebView.
+                // All external URLs and other local files are blocked.
+                val isBundledPage = uri.scheme == "file" &&
+                    uri.host.isNullOrEmpty() &&
+                    uri.path == "/android_asset/index.html"
+                return !isBundledPage
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
