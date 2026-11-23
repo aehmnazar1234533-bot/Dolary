@@ -470,7 +470,12 @@ const fmtTime = iso => {
   try { return new Date(iso).toLocaleTimeString("ar-IQ", {hour:"2-digit", minute:"2-digit"}); }
   catch(e) { return iso; }
 };
-const provinceInitial = name => [...name][0] || "د";
+const provinceInitial = name => [...String(name ?? "")][0] || "د";
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
 const showToast = text => {
   const t = document.getElementById("toast");
   t.textContent = text;
@@ -566,19 +571,22 @@ function rateRow(p, i = 0) {
   const stale = p.rate != null && p.stale ? `<span class="stale-badge">آخر قراءة</span>` : "";
   const statusText = p.rate == null ? "غير متوفر من المصدر" : (p.stale ? `آخر قراءة: ${fmtTime(p.updatedAt)}` : `آخر تحديث: ${fmtTime(p.updatedAt)}`);
   const changeText = p.change == null ? "" : `${arrow} ${money(Math.abs(p.change))}`;
+  const safeName = escapeHtml(p.name);
+  const safeStatusText = escapeHtml(statusText);
+  const safeInitial = escapeHtml(provinceInitial(p.name));
   return `
     <div class="rate-row ${animateRows ? "enter" : ""}" style="--i:${Math.min(i,12)}">
-      <div class="city-icon">${provinceInitial(p.name)}</div>
-      <div class="city-main" data-open="${p.name}">
-        <div class="city-name">${p.name} ${stale}</div>
-        <div class="city-update">${statusText}</div>
+      <div class="city-icon">${safeInitial}</div>
+      <div class="city-main" data-open="${safeName}">
+        <div class="city-name">${safeName} ${stale}</div>
+        <div class="city-update">${safeStatusText}</div>
       </div>
       <div class="city-rate">
         <div class="rate-value">${money(p.rate)}</div>
         <div class="rate-unit">د.ع / 100 دولار</div>
         <div class="change ${dir}">${changeText}</div>
       </div>
-      <button class="star-btn ${fav ? "active":""} ${popFav === p.name && fav ? "pop":""}" data-fav="${p.name}" aria-label="مفضلة">
+      <button class="star-btn ${fav ? "active":""} ${popFav === p.name && fav ? "pop":""}" data-fav="${safeName}" aria-label="مفضلة">
         <svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg>
       </button>
     </div>`;
@@ -622,19 +630,28 @@ function saveNotificationHistory(items){
 
 function renderNotifications() {
   const feed = document.getElementById("notificationFeed");
-  const history = JSON.parse(localStorage.getItem("dolaryNotificationHistory") || "[]");
-  if (!history.length) {
+  let history;
+  try { history = JSON.parse(localStorage.getItem("dolaryNotificationHistory") || "[]"); }
+  catch (e) { history = []; }
+  if (!Array.isArray(history) || !history.length) {
     feed.innerHTML = `<div class="empty-state">ماكو تغييرات مسجلة لحد الآن.</div>`;
     return;
   }
-  feed.innerHTML = history.map(x => `
+  feed.innerHTML = history.filter(x => x && typeof x === "object").map(x => {
+    const change = Number(x.change);
+    const rate = Number(x.rate);
+    const validChange = Number.isFinite(change) ? change : 0;
+    const safeName = escapeHtml(x.name || "غير معروف");
+    const safeTime = escapeHtml(x.time || "الآن");
+    return `
     <div class="notification-card">
-      <span class="notification-badge ${x.change >= 0 ? "up":"down"}"></span>
+      <span class="notification-badge ${validChange >= 0 ? "up":"down"}"></span>
       <div>
-        <strong>${x.change >= 0 ? "ارتفاع سعر الدولار" : "انخفاض سعر الدولار"} — ${x.name}</strong>
-        <p>100 دولار = ${money(x.rate)} د.ع · التغير ${x.change >= 0 ? "+" : "-"}${money(Math.abs(x.change))} د.ع · ${x.time || "الآن"}</p>
+        <strong>${validChange >= 0 ? "ارتفاع سعر الدولار" : "انخفاض سعر الدولار"} — ${safeName}</strong>
+        <p>100 دولار = ${Number.isFinite(rate) ? money(rate) : "غير متوفر"} د.ع · التغير ${validChange >= 0 ? "+" : "-"}${money(Math.abs(validChange))} د.ع · ${safeTime}</p>
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 
 function openProvince(name) {
@@ -642,12 +659,14 @@ function openProvince(name) {
   if (!p) return;
   const modal = document.getElementById("provinceModal");
   const sourceText = p.rate == null ? "لا توجد قراءة حالية من المصدر" : (p.stale ? "آخر قراءة متاحة من المصدر" : "قراءة حالية من المصدر");
+  const safeName = escapeHtml(p.name);
+  const safeUpdatedAt = escapeHtml(fmtTime(p.updatedAt));
   document.getElementById("modalContent").innerHTML = `
-    <div class="modal-title">${p.name}</div>
+    <div class="modal-title">${safeName}</div>
     <div style="font-size:10px;color:var(--muted);margin-top:4px">${sourceText}</div>
     <div class="modal-rate">${money(p.rate)} <small>د.ع / 100 دولار</small></div>
     <div class="mini-grid">
-      <div class="mini-box"><span>آخر تحديث</span><strong>${fmtTime(p.updatedAt)}</strong></div>
+      <div class="mini-box"><span>آخر تحديث</span><strong>${safeUpdatedAt}</strong></div>
       <div class="mini-box"><span>التغير</span><strong>${p.change == null ? "غير متوفر" : `${p.change >= 0 ? "+" : "-"}${money(Math.abs(p.change))} د.ع`}</strong></div>
       <div class="mini-box"><span>المصدر</span><strong>XEIQD</strong></div>
       <div class="mini-box"><span>الوحدة</span><strong>100 دولار</strong></div>
@@ -796,7 +815,7 @@ document.getElementById("provinceSelectBtn").addEventListener("click", () => {
     <div class="modal-title">اختيار المحافظة</div>
     <div style="font-size:10px;color:var(--muted);margin-top:5px">اختار المحافظة اللي تريد سعرها يطلع بالبنر الرئيسي.</div>
     <div class="option-grid">
-      ${provinces.map(p => `<button class="province-option ${p.name === selectedProvince ? "active":""}" data-select-province="${p.name}"><strong>${p.name}</strong><span>${money(p.rate)} د.ع / 100 دولار</span></button>`).join("")}
+      ${provinces.map(p => { const safeName = escapeHtml(p.name); return `<button class="province-option ${p.name === selectedProvince ? "active":""}" data-select-province="${safeName}"><strong>${safeName}</strong><span>${money(p.rate)} د.ع / 100 دولار</span></button>`; }).join("")}
     </div>`;
   openModal();
   document.querySelectorAll("[data-select-province]").forEach(btn => btn.addEventListener("click", () => {
