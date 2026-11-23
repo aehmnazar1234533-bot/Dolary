@@ -10,6 +10,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
+import android.provider.Settings
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -28,6 +29,7 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -285,6 +287,27 @@ class MainActivity : AppCompatActivity() {
         }
 
         @JavascriptInterface
+        fun areNotificationsAllowed(): Boolean {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ) return false
+            return NotificationManagerCompat.from(this@MainActivity).areNotificationsEnabled()
+        }
+
+        @JavascriptInterface
+        fun openNotificationSettings() {
+            runOnUiThread {
+                try {
+                    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                    }
+                    startActivity(intent)
+                } catch (_: Exception) {
+                }
+            }
+        }
+
+        @JavascriptInterface
         fun requestNotificationPermission() {
             runOnUiThread { requestNotificationPermissionIfNeeded() }
         }
@@ -439,7 +462,13 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         adView?.resume()
-        if (::webView.isInitialized) scheduleBackgroundUpdates()
+        if (::webView.isInitialized) {
+            scheduleBackgroundUpdates()
+            webView.evaluateJavascript(
+                "window.refreshNotificationPermissionStatus && window.refreshNotificationPermissionStatus();",
+                null
+            )
+        }
     }
 
     override fun onPause() {
