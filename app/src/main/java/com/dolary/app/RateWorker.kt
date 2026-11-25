@@ -124,6 +124,9 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
             if (channel != null && channel.importance == NotificationManager.IMPORTANCE_NONE) return
         }
 
+        // Quiet hours suppress alerts only; the background price refresh still runs.
+        if (isWithinQuietHours(prefs, System.currentTimeMillis())) return
+
         val favoritesRaw = prefs.getString(MainActivity.KEY_FAVORITES, "[]") ?: "[]"
         val favorites = parseStringArray(favoritesRaw)
         val selected = prefs.getString(MainActivity.KEY_SELECTED_PROVINCE, "بغداد") ?: "بغداد"
@@ -226,6 +229,20 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
             .build()
 
         manager.notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
+    }
+
+    private fun isWithinQuietHours(prefs: SharedPreferences, nowMillis: Long): Boolean {
+        if (!prefs.getBoolean("quiet_hours_enabled", false)) return false
+        val start = prefs.getString("quiet_hours_start", "22:00") ?: "22:00"
+        val end = prefs.getString("quiet_hours_end", "08:00") ?: "08:00"
+        return try {
+            val a = start.split(":").map { it.toInt() }; val b = end.split(":").map { it.toInt() }
+            if (a.size != 2 || b.size != 2) return false
+            val c = java.util.Calendar.getInstance().apply { timeInMillis = nowMillis }
+            val current = c.get(java.util.Calendar.HOUR_OF_DAY) * 60 + c.get(java.util.Calendar.MINUTE)
+            val from = a[0] * 60 + a[1]; val to = b[0] * 60 + b[1]
+            if (from < to) current >= from && current < to else current >= from || current < to
+        } catch (_: Exception) { false }
     }
 
     private fun parseRates(json: String): Map<String, Int> {
