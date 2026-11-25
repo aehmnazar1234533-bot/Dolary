@@ -1,11 +1,12 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v3';
+const CACHE_NAME = 'dolary-pwa-v4';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     try { await cache.add(new Request(APP_SHELL, { cache: 'reload' })); } catch (_) {}
+    await Promise.all(['./daily-card-template.svg','./dolary-icon.webp','./apple-touch-icon.png','./manifest.webmanifest'].map(path => cache.add(new Request(path, { cache: 'reload' })).catch(() => {})));
     await self.skipWaiting();
   })());
 });
