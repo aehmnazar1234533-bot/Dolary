@@ -57,7 +57,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 .province-rate small{display:block;color:#8ef0c5;font-size:10px;margin-top:5px}
 .province-empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:22px}
 .card-top .live{position:relative}
-.card-top .live:before{content:"";width:7px;height:7px;border-radius:50%;background:#29d595;box-shadow:0 0 0 3px rgba(41,213,149,.12)}
+.card-top .live:before{content:none}
 @keyframes floatCoin{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-12px) rotate(3deg)}}
 @keyframes driftGlow{0%,100%{transform:translate(0,0)}50%{transform:translate(26px,-18px)}}
 @keyframes tick{0%{transform:scale(1)}35%{transform:scale(1.06)}100%{transform:scale(1)}}
@@ -113,8 +113,9 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 .rate-card{overflow:hidden}
 .rate-value{display:block;width:100%;text-align:center;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.25}
 .rate-label{text-align:center;line-height:1.8;margin-top:20px}
-.rate-foot{flex-wrap:wrap;align-items:center;line-height:1.7}
-.rate-foot>span{min-width:0;overflow-wrap:anywhere}
+.rate-foot{display:flex;flex-direction:column;align-items:stretch;gap:7px;line-height:1.7;min-width:0}
+.rate-foot>span{display:block;width:100%;min-width:0;text-align:right;overflow-wrap:anywhere;white-space:normal}
+.rate-foot #updated{font-size:11px;color:#9eabc2}
 .card-top{gap:10px;flex-wrap:wrap}
 .card-top>span{min-width:0}
 .website-province-trigger{min-height:48px}
@@ -124,8 +125,8 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 @media(max-width:420px){
  .rate-card{padding:18px}
  .rate-value{font-size:clamp(32px,10vw,44px);letter-spacing:-.5px}
- .rate-foot{gap:8px}
- .rate-foot>span{flex:1 1 100%}
+ .rate-foot{gap:7px}
+ .rate-foot>span{flex:0 0 auto}
  .currency{display:block;text-align:center;line-height:1.8}
 }
 </style>
