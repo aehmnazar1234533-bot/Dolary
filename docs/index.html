@@ -508,13 +508,8 @@ function paintDolaryDailyCard(canvas,info){
  const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#123a74");bg.addColorStop(.52,"#0b2348");bg.addColorStop(1,"#0a1c3a");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
  const glow=ctx.createRadialGradient(870,160,20,870,160,690);glow.addColorStop(0,"rgba(65,150,255,.34)");glow.addColorStop(1,"rgba(65,150,255,0)");ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
  const lowerGlow=ctx.createRadialGradient(90,1190,10,90,1190,430);lowerGlow.addColorStop(0,"rgba(80,150,255,.17)");lowerGlow.addColorStop(1,"rgba(80,150,255,0)");ctx.fillStyle=lowerGlow;ctx.fillRect(0,0,w,h);
-  ctx.save();
-  ctx.globalAlpha = 0.30;
-  ctx.translate(105, 430);
-  ctx.scale(2.8, 3.25);
-  drawDolaryProvinceLandmark(ctx, info.slug || "", 0, 0, 310, 155);
-  ctx.restore();
-  ctx.save();ctx.globalAlpha=1;ctx.font="900 720px Arial, sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="rgba(255,255,255,.065)";ctx.shadowColor="rgba(80,150,255,.52)";ctx.shadowBlur=42;ctx.fillText("$",260,790);ctx.shadowBlur=2;ctx.fillStyle="rgba(150,195,255,.035)";ctx.fillText("$",265,790);ctx.restore();
+  // Province landmark artwork removed; keep the classic card background clean.
+ctx.save();ctx.globalAlpha=1;ctx.font="900 720px Arial, sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="rgba(255,255,255,.065)";ctx.shadowColor="rgba(80,150,255,.52)";ctx.shadowBlur=42;ctx.fillText("$",260,790);ctx.shadowBlur=2;ctx.fillStyle="rgba(150,195,255,.035)";ctx.fillText("$",265,790);ctx.restore();
  ctx.save();ctx.strokeStyle="rgba(151,195,255,.09)";ctx.lineWidth=2;for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(70,1120,220+i*75,0,Math.PI*2);ctx.stroke();}ctx.restore();
  rounded(35,35,w-70,h-70,44);ctx.strokeStyle="rgba(178,211,255,.22)";ctx.lineWidth=2;ctx.stroke();
  rounded(825,92,150,150,38);ctx.save();ctx.clip();if(dailyCardLogo.complete&&dailyCardLogo.naturalWidth){ctx.drawImage(dailyCardLogo,825,92,150,150);}else{const mark=ctx.createLinearGradient(825,92,975,242);mark.addColorStop(0,"#66c4ff");mark.addColorStop(1,"#2768ff");ctx.fillStyle=mark;ctx.fillRect(825,92,150,150);}ctx.restore();
