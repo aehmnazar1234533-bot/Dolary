@@ -53,7 +53,7 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
                 .build()
             // UPDATE: picks up a new interval, but leaves the existing schedule alone when nothing changed.
             WorkManager.getInstance(context.applicationContext)
-                .enqueueUniquePeriodicWork(WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request)
+                .enqueueUniquePeriodicWork(WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, request)
         }
 
         fun cancel(context: Context) {
@@ -266,15 +266,19 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
 
     private fun pickDisplayRate(city: JSONObject): Int? {
         val sides = city.optJSONArray("sides")
+        var neutral: Int? = null
         if (sides != null) {
             for (i in 0 until sides.length()) {
                 val s = sides.optJSONObject(i) ?: continue
+                val value = s.optDouble("usd_iqd_per_100", Double.NaN)
+                if (!value.isFinite() || value <= 0.0 || value > Int.MAX_VALUE) continue
                 if (s.isNull("side")) {
-                    val value = s.optDouble("usd_iqd_per_100", Double.NaN)
-                    if (value.isFinite() && value > 0.0 && value <= Int.MAX_VALUE) return value.roundToIntSafe()
+                    neutral = value.roundToIntSafe()
+                    break
                 }
             }
         }
+        if (neutral != null) return neutral
         val primary = city.optDouble("usd_iqd_per_100", Double.NaN)
         return if (primary.isFinite() && primary > 0.0 && primary <= Int.MAX_VALUE) primary.roundToIntSafe() else null
     }
