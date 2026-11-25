@@ -153,6 +153,7 @@ class MainActivity : AppCompatActivity() {
                 progressBar.visibility = View.GONE
                 mainPageLoaded = true
                 loadAdsWhenReady()
+                webView.evaluateJavascript("(function(){try{if(window.posthog&&window.posthog.register){window.posthog.register({platform:'android_app',app_name:'dolary'});}}catch(e){}})();", null)
                 webView.evaluateJavascript("(function(){try{var m=document.getElementById('provinceModal');if(m){m.classList.add('hidden');m.classList.remove('closing');m.style.pointerEvents='none';}}catch(e){}})();", null)
                 pushCachedDataToWebView()
                 fetchRates()
