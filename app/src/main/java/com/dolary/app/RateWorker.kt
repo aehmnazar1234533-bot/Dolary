@@ -127,7 +127,12 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
         val favoritesRaw = prefs.getString(MainActivity.KEY_FAVORITES, "[]") ?: "[]"
         val favorites = parseStringArray(favoritesRaw)
         val selected = prefs.getString(MainActivity.KEY_SELECTED_PROVINCE, "بغداد") ?: "بغداد"
-        val targets = if (favorites.isNotEmpty()) favorites else listOf(selected)
+        val targetEnabled = prefs.getBoolean("target_alert_enabled", false)
+        val targetProvince = prefs.getString("target_alert_province", "") ?: ""
+        val targetRate = prefs.getInt("target_alert_rate", 0)
+        val targetDirection = prefs.getString("target_alert_direction", "above") ?: "above"
+        val targets = (if (favorites.isNotEmpty()) favorites else listOf(selected)) +
+            if (targetEnabled && targetProvince.isNotBlank()) listOf(targetProvince) else emptyList()
 
         // Notify only for meaningful movements and avoid repeatedly alerting the same province.
         // Rates are expressed per USD 100, so a 25 IQD movement is a small but useful threshold.
@@ -144,7 +149,10 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
             if (oldRate == null || newRate == null) return@mapNotNull null
             val delta = newRate - oldRate
             val lastAlert = lastAlertTimes.optLong(name, 0L)
-            if (kotlin.math.abs(delta) < 25 || now - lastAlert < cooldownMs) null
+            val crossedTarget = targetEnabled && name == targetProvince && targetRate > 0 &&
+                if (targetDirection == "below") oldRate > targetRate && newRate <= targetRate
+                else oldRate < targetRate && newRate >= targetRate
+            if ((!crossedTarget && kotlin.math.abs(delta) < 25) || now - lastAlert < cooldownMs) null
             else Triple(name, oldRate, newRate)
         }
         if (changed.isEmpty()) return
