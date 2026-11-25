@@ -426,24 +426,51 @@ class MainActivity : AppCompatActivity() {
 
         @JavascriptInterface
         fun shareDailyCard(base64Image: String, caption: String) {
-            if (base64Image.isBlank() || base64Image.length > 5_000_000) return
+            if (base64Image.isBlank()) {
+                runOnUiThread { Toast.makeText(this@MainActivity, "صورة البطاقة فارغة، حاول مرة ثانية", Toast.LENGTH_SHORT).show() }
+                return
+            }
+            // Allow a larger image payload; the previous 5 MB Base64 limit silently rejected valid cards.
+            if (base64Image.length > 16_000_000) {
+                runOnUiThread { Toast.makeText(this@MainActivity, "حجم صورة البطاقة كبير، أعد المحاولة", Toast.LENGTH_SHORT).show() }
+                return
+            }
             Thread({
+                var imageFile: File? = null
                 try {
                     val bytes = Base64.decode(base64Image, Base64.DEFAULT)
-                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                        ?: throw IllegalArgumentException("Invalid daily card image")
-                    val shareDirectory = File(cacheDir, "shared").apply { mkdirs() }
-                    val imageFile = File(shareDirectory, "dolary-daily-card-${System.currentTimeMillis()}.jpg")
-                    shareDirectory.listFiles()?.filter {
-                        it.name.startsWith("dolary-daily-card-") && System.currentTimeMillis() - it.lastModified() > 2L * 24 * 60 * 60 * 1000
-                    }?.forEach { it.delete() }
-                    FileOutputStream(imageFile).use { output ->
-                        if (!bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 94, output)) {
-                            throw IllegalStateException("Unable to write daily card")
-                        }
+                    if (bytes.isEmpty() || bytes.size > 12 * 1024 * 1024) {
+                        throw IllegalArgumentException("Daily card image size is invalid")
                     }
-                    bitmap.recycle()
-                    val imageUri = FileProvider.getUriForFile(this@MainActivity, "$packageName.fileprovider", imageFile)
+
+                    // Validate the image without allocating a full-size Bitmap.
+                    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+                    if (bounds.outWidth <= 0 || bounds.outHeight <= 0 ||
+                        bounds.outWidth > 5000 || bounds.outHeight > 5000 ||
+                        !bounds.outMimeType.orEmpty().startsWith("image/")) {
+                        throw IllegalArgumentException("Invalid daily card image")
+                    }
+
+                    val shareDirectory = File(cacheDir, "shared").apply {
+                        if (!exists() && !mkdirs()) throw IllegalStateException("Cannot create share cache")
+                    }
+                    shareDirectory.listFiles()?.filter {
+                        it.name.startsWith("dolary-daily-card-") &&
+                            System.currentTimeMillis() - it.lastModified() > 2L * 24 * 60 * 60 * 1000
+                    }?.forEach { it.delete() }
+
+                    imageFile = File(shareDirectory, "dolary-daily-card-${System.currentTimeMillis()}.jpg")
+                    FileOutputStream(imageFile!!).use { output ->
+                        output.write(bytes)
+                        output.flush()
+                    }
+
+                    val imageUri = FileProvider.getUriForFile(
+                        this@MainActivity,
+                        "$packageName.fileprovider",
+                        imageFile!!
+                    )
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "image/jpeg"
                         putExtra(Intent.EXTRA_STREAM, imageUri)
@@ -451,10 +478,17 @@ class MainActivity : AppCompatActivity() {
                         clipData = ClipData.newUri(contentResolver, "بطاقة دولاري", imageUri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-                    runOnUiThread { startActivity(Intent.createChooser(shareIntent, "مشاركة بطاقة دولاري")) }
-                } catch (_: Exception) {
                     runOnUiThread {
-                        Toast.makeText(this@MainActivity, "تعذر تجهيز بطاقة المشاركة، حاول مرة ثانية", Toast.LENGTH_SHORT).show()
+                        try {
+                            startActivity(Intent.createChooser(shareIntent, "مشاركة بطاقة دولاري"))
+                        } catch (error: Exception) {
+                            Toast.makeText(this@MainActivity, "تعذر فتح قائمة المشاركة", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (error: Exception) {
+                    imageFile?.delete()
+                    runOnUiThread {
+                        Toast.makeText(this@MainActivity, "تعذر تجهيز بطاقة المشاركة: ${error.localizedMessage ?: "خطأ غير معروف"}", Toast.LENGTH_LONG).show()
                     }
                 }
             }, "dolary-card-share").start()
