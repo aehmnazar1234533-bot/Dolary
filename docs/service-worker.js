@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v8';
+const CACHE_NAME = 'dolary-pwa-v9';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
