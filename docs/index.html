@@ -455,6 +455,7 @@ document.getElementById("shareDailyCard").addEventListener("click",()=>{
    updateProvinceOptions();
    renderProvinceCards();
    calculate();
+   renderDailyCard(null);
   }finally{
    clearTimeout(timeout);
    refreshInProgress=false;
