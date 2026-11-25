@@ -571,6 +571,8 @@ document.getElementById("shareDailyCard").addEventListener("click",()=>{
 });
 
 
+ const toastElement=document.getElementById('toast');let toastTimer=null;
+ function showToast(message){if(!toastElement)return;toastElement.textContent=String(message);toastElement.classList.add('show');if(toastTimer!==null)clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastElement.classList.remove('show'),2800);}
  const ALERT_KEY='dolary.priceAlert.v1', ALERT_HISTORY_KEY='dolary.priceAlertHistory.v1', ALERT_LAST_PREFIX='dolary.lastRate.';
  const alertProvinceEl=document.getElementById('alertProvince'),alertConditionEl=document.getElementById('alertCondition'),alertTargetEl=document.getElementById('alertTarget');
  const alertStatusEl=document.getElementById('priceAlertStatus'),alertRuleEl=document.getElementById('priceAlertRule'),alertHistoryEl=document.getElementById('priceAlertHistory');
