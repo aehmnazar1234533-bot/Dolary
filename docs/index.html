@@ -2,6 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080d1b">
 <meta name="description" content="تابع سعر الدولار الآن مقابل الدينار العراقي في السوق الموازي بمحافظات العراق. اعرف بيش الدولار اليوم وشكد سعر 100 دولار، واستخدم حاسبة تحويل دولاري.">
@@ -27,7 +30,7 @@
 }
 </script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+
 :root{color-scheme:dark;--bg:#080d1b;--panel:rgba(255,255,255,.075);--line:rgba(255,255,255,.13);--muted:#9eabc2;--text:#f4f7ff;--cyan:#67e8f9;--blue:#818cf8;--gold:#f6d58b}
 *{box-sizing:border-box}
 .seg{display:flex;gap:8px;margin:12px 0}.seg button{flex:1;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);border-radius:12px;padding:11px 8px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:.2s}.seg button.active{border-color:var(--cyan);background:rgba(103,232,249,.12);color:var(--cyan)}
@@ -62,7 +65,26 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 @media(prefers-reduced-motion:reduce){.app-hero-coin,.app-hero-glow,.card-top .live:before{animation:none!important}}
 
 @media(max-width:760px){.province-rates{grid-template-columns:repeat(2,minmax(0,1fr))}.province-rate{padding:14px}.province-rate strong{font-size:17px}.nav{height:70px}.rate-shell{order:-1}.navlinks{display:none}.hero{grid-template-columns:1fr;padding:42px 0 30px;gap:35px}.hero-copy{text-align:center}.lead{margin:auto}.actions{justify-content:center}.hero-note{text-align:center}.rate-card{padding:22px}.grid,.features{grid-template-columns:1fr}.section{padding:38px 0}.download{padding:30px 20px}.footer{justify-content:center;text-align:center}.footer span{width:100%}}
-@media(max-width:380px){.province-rates{grid-template-columns:1fr}}\n@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+@media(max-width:380px){.province-rates{grid-template-columns:1fr}}
+
+/* Performance refinements: preserve visuals while reducing work on small devices */
+.privacy-link{color:var(--cyan);font-weight:700;text-decoration:underline;text-underline-offset:4px}
+@media(min-width:761px){
+ .section:not(:first-child){content-visibility:auto;contain-intrinsic-size:1px 620px}
+}
+@media(max-width:760px){
+ .glass{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 12px 34px #0004,inset 0 1px rgba(255,255,255,.09)}
+ .glow,.download:before{filter:none;opacity:.55}
+ .rate-card{animation:none}
+ .app-hero-coin,.app-hero-glow{animation:none}
+ .hero-copy,.rate-shell,.panel,.feature{animation:none}
+ .province-rate:hover,.nav-cta:hover,.btn:hover{transform:none;box-shadow:none}
+ .province-picker-backdrop{backdrop-filter:none}
+}
+@media(prefers-reduced-motion:reduce){
+ .rate-card,.hero-copy,.rate-shell,.panel,.feature{animation:none!important}
+}
+\n@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 .website-province-native{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
 .website-province-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:13px 15px;border:1px solid var(--line);border-radius:15px;background:rgba(5,12,27,.72);color:var(--text);font:700 14px 'IBM Plex Sans Arabic',Tahoma,sans-serif;text-align:right;cursor:pointer;transition:.2s}
@@ -177,7 +199,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
  <p class="download-note">زر التحميل جاهز — نضيف رابط التطبيق عند تزويدنا به.</p>
 </div></section>
 </main>
-<footer class="wrap footer"><span>© <span id="year"></span> DOLARY — دولاري</span><span>صُنع ليكون أبسط وأسهل.</span></footer>
+<footer class="wrap footer"><span>© <span id="year"></span> DOLARY — دولاري</span><span>صُنع ليكون أبسط وأسهل.</span><a class="privacy-link" href="https://aehmnazar1234533-bot.github.io/Dolary/play_store/privacy_policy.html" target="_blank" rel="noopener noreferrer">سياسة الخصوصية</a></footer>
 <div class="toast" id="toast" role="status"></div>
 <div class="province-picker-overlay" id="provincePickerModal" aria-hidden="true"><div class="province-picker-backdrop" data-close-province></div><section class="province-picker-sheet" role="dialog" aria-modal="true" aria-labelledby="provincePickerTitle"><div class="province-picker-handle"></div><button type="button" class="province-picker-close" data-close-province aria-label="إغلاق">×</button><div class="province-picker-modal-head"><span class="province-picker-modal-icon">⌖</span><div><strong id="provincePickerTitle">اختيار المحافظة</strong><small>اختر المحافظة لعرض سعر الدولار فيها</small></div></div><input id="provincePickerSearch" class="province-picker-search" type="search" placeholder="ابحث عن محافظة..." aria-label="ابحث عن محافظة"><div id="provincePickerOptions" class="province-picker-options"></div></section></div>
 <script>
@@ -402,10 +424,25 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
  }));
  document.getElementById('year').textContent=new Date().getFullYear();
  loadRate();
- refreshTimer=setInterval(loadRate,15*60*1000);
- window.addEventListener('pagehide',()=>{
+ function startRateRefresh(){
   if(refreshTimer!==null)clearInterval(refreshTimer);
+  if(!document.hidden)refreshTimer=setInterval(loadRate,15*60*1000);
+ }
+ document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+   if(refreshTimer!==null){clearInterval(refreshTimer);refreshTimer=null;}
+  }else{
+   loadRate();
+   startRateRefresh();
+  }
  });
+ window.addEventListener('pagehide',()=>{
+  if(refreshTimer!==null){clearInterval(refreshTimer);refreshTimer=null;}
+ });
+ window.addEventListener('pageshow',()=>{
+  if(!document.hidden){loadRate();startRateRefresh();}
+ });
+ startRateRefresh();
 })();
 </script>
 <script type="text/javascript">
