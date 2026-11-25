@@ -23,6 +23,8 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  // Dolary has its own PWA scope. Never let the root AEHM TECH worker serve Dolary pages.
+  if (url.pathname === '/dolary' || url.pathname.startsWith('/dolary/')) return;
 
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
