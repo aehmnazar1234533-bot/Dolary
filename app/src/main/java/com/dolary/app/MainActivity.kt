@@ -433,7 +433,7 @@ class MainActivity : AppCompatActivity() {
             if (requestId != latestRatesRequestId || isFinishing || isDestroyed) return@execute
             var connection: HttpURLConnection? = null
             try {
-                connection = (URL(RATES_URL).openConnection() as HttpURLConnection).apply {
+                val openedConnection = (URL(RATES_URL).openConnection() as HttpURLConnection).apply {
                     requestMethod = "GET"
                     connectTimeout = 10000
                     readTimeout = 12000
@@ -442,17 +442,18 @@ class MainActivity : AppCompatActivity() {
                     setRequestProperty("Cache-Control", "no-cache")
                     setRequestProperty("User-Agent", "Dolary Android App/1.4")
                 }
+                connection = openedConnection
                 synchronized(ratesRequestLock) {
-                    if (requestId == latestRatesRequestId) activeRatesConnection = connection
-                    else connection.disconnect()
+                    if (requestId == latestRatesRequestId) activeRatesConnection = openedConnection
+                    else openedConnection.disconnect()
                 }
                 if (requestId != latestRatesRequestId) return@execute
 
-                val code = connection.responseCode
+                val code = openedConnection.responseCode
                 if (code !in 200..299) throw Exception("HTTP $code")
 
                 val response = BufferedReader(
-                    InputStreamReader(connection.inputStream, StandardCharsets.UTF_8)
+                    InputStreamReader(openedConnection.inputStream, StandardCharsets.UTF_8)
                 ).use { it.readText() }
 
                 val json = JSONObject(response)
