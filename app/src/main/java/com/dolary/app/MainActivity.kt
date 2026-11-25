@@ -115,6 +115,7 @@ class MainActivity : AppCompatActivity() {
             navSpacer.requestLayout()
             insets
         }
+        ViewCompat.requestApplyInsets(root)
         updateSystemBars()
 
         webView.settings.javaScriptEnabled = true
