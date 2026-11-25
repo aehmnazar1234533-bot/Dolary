@@ -13,9 +13,9 @@
   "theme_color": "#080d1b",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/aehmnazar1234533-bot/Dolary/main/app/src/main/assets/dolary_logo.png",
+      "src": "./dolary-icon.webp",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/webp",
       "purpose": "any"
     }
   ]
