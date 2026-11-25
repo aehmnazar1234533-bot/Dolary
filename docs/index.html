@@ -63,6 +63,33 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 
 @media(max-width:760px){.province-rates{grid-template-columns:repeat(2,minmax(0,1fr))}.province-rate{padding:14px}.province-rate strong{font-size:17px}.nav{height:70px}.rate-shell{order:-1}.navlinks{display:none}.hero{grid-template-columns:1fr;padding:42px 0 30px;gap:35px}.hero-copy{text-align:center}.lead{margin:auto}.actions{justify-content:center}.hero-note{text-align:center}.rate-card{padding:22px}.grid,.features{grid-template-columns:1fr}.section{padding:38px 0}.download{padding:30px 20px}.footer{justify-content:center;text-align:center}.footer span{width:100%}}
 @media(max-width:380px){.province-rates{grid-template-columns:1fr}}\n@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+.website-province-native{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+.website-province-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:13px 15px;border:1px solid var(--line);border-radius:15px;background:rgba(5,12,27,.72);color:var(--text);font:700 14px 'IBM Plex Sans Arabic',Tahoma,sans-serif;text-align:right;cursor:pointer;transition:.2s}
+.website-province-trigger:hover{border-color:#67e8f9aa;background:rgba(103,232,249,.08)}
+.website-province-trigger svg{width:19px;height:19px;fill:none;stroke:var(--cyan);stroke-width:2}
+.province-picker-overlay{position:fixed;inset:0;z-index:1000;display:none;align-items:flex-end;justify-content:center;padding:18px}
+.province-picker-overlay.open{display:flex}
+.province-picker-backdrop{position:absolute;inset:0;background:rgba(2,6,18,.72);backdrop-filter:blur(7px);animation:appear .18s both}
+.province-picker-sheet{position:relative;width:min(540px,100%);max-height:min(82vh,760px);overflow:hidden;padding:17px;border:1px solid var(--line);border-radius:25px;background:linear-gradient(150deg,#17243b,#0c1426 75%);box-shadow:0 25px 90px #0009;animation:appear .22s both;display:flex;flex-direction:column}
+.province-picker-handle{width:42px;height:4px;border-radius:5px;background:#8190a9;opacity:.6;margin:0 auto 15px}
+.province-picker-close{position:absolute;top:12px;left:14px;width:35px;height:35px;border:1px solid var(--line);border-radius:12px;background:#ffffff0b;color:var(--text);font-size:23px;cursor:pointer}
+.province-picker-modal-head{display:flex;align-items:center;gap:12px;padding:3px 2px 15px}
+.province-picker-modal-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:#67e8f91b;color:var(--cyan);font-size:25px}
+.province-picker-modal-head strong{display:block;font-size:16px}
+.province-picker-modal-head small{display:block;margin-top:4px;color:var(--muted);font-size:11px}
+.province-picker-search{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:#070d1b;color:var(--text);font:inherit;outline:0;margin-bottom:11px}
+.province-picker-search:focus{border-color:var(--cyan)}
+.province-picker-options{overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:2px 2px 8px}
+.province-picker-option{min-width:0;display:flex;align-items:center;gap:9px;padding:12px 10px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.045);color:var(--text);text-align:right;font:inherit;cursor:pointer;transition:.18s}
+.province-picker-option.active{border-color:var(--cyan);background:#67e8f91b}
+.province-picker-option:active{transform:scale(.98)}
+.province-picker-option-mark{width:29px;height:29px;flex:0 0 auto;display:grid;place-items:center;border-radius:10px;background:#67e8f91a;color:var(--cyan);font-size:13px}
+.province-picker-option-copy{min-width:0;flex:1}
+.province-picker-option-copy strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.province-picker-option-copy small{display:block;margin-top:4px;color:var(--muted);font-size:9px;white-space:nowrap}
+@media(max-width:420px){.province-picker-overlay{padding:10px}.province-picker-sheet{padding:14px;border-radius:21px}.province-picker-options{grid-template-columns:1fr}.province-picker-option{padding:11px 12px}}
+
 </style>
 </head>
 <body>
@@ -82,7 +109,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
  <div class="rate-shell" id="rate"><h1 class="rate-heading">الدولار <span class="gradient">اليوم</span></h1><div class="glow"></div><div class="glass rate-card"><div class="app-hero-glow" aria-hidden="true"></div><div class="app-hero-coin" aria-hidden="true">$</div>
   <div class="card-top"><span>مؤشر سعر الصرف</span><span class="live"><i></i> <span id="status">جاري التحديث</span></span></div>
   <div class="rate-label">سعر 100 دولار أمريكي <span class="flag">🇺🇸</span> في السوق الموازي</div>
-  <select class="province-picker" id="provinceSelect" aria-label="اختيار المحافظة"><option value="baghdad">بغداد</option></select>
+  <select class="province-picker website-province-native" id="provinceSelect" aria-label="اختيار المحافظة" tabindex="-1"><option value="baghdad">بغداد</option></select><button type="button" class="website-province-trigger" id="provincePickerOpen" aria-haspopup="dialog" aria-expanded="false"><span id="provincePickerLabel">بغداد</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
   <div class="rate-value" id="rateValue">—</div><div class="currency">دينار عراقي لكل 100 دولار <span>🇮🇶</span></div>
   <div class="rate-foot"><span>المصدر: <strong>XEIQD — السوق الموازي</strong></span><span id="updated">بانتظار البيانات</span></div>
  </div></div>
@@ -152,6 +179,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 </main>
 <footer class="wrap footer"><span>© <span id="year"></span> DOLARY — دولاري</span><span>صُنع ليكون أبسط وأسهل.</span></footer>
 <div class="toast" id="toast" role="status"></div>
+<div class="province-picker-overlay" id="provincePickerModal" aria-hidden="true"><div class="province-picker-backdrop" data-close-province></div><section class="province-picker-sheet" role="dialog" aria-modal="true" aria-labelledby="provincePickerTitle"><div class="province-picker-handle"></div><button type="button" class="province-picker-close" data-close-province aria-label="إغلاق">×</button><div class="province-picker-modal-head"><span class="province-picker-modal-icon">⌖</span><div><strong id="provincePickerTitle">اختيار المحافظة</strong><small>اختر المحافظة لعرض سعر الدولار فيها</small></div></div><input id="provincePickerSearch" class="province-picker-search" type="search" placeholder="ابحث عن محافظة..." aria-label="ابحث عن محافظة"><div id="provincePickerOptions" class="province-picker-options"></div></section></div>
 <script>
 (()=>{'use strict';
  const rateEl=document.getElementById('rateValue');
@@ -262,12 +290,15 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
    provinceSelect.append(option);
   });
   provinceSelect.value=selectedSlug;
+  const selected=availableCities.find(city=>city.slug===selectedSlug);
+  if(selected)provincePickerLabel.textContent=cityName(selected);
  }
  function chooseCity(slug){
   const city=availableCities.find(item=>item.slug===slug);
   if(!city)return;
   selectedSlug=slug;
   provinceSelect.value=slug;
+  provincePickerLabel.textContent=cityName(city);
   ratePer100=pickDisplayRate(city);
   if(ratePer100===null)return;
   animateNumber(rateEl,ratePer100);
@@ -324,6 +355,40 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
    refreshInProgress=false;
   }
  }
+
+ // Themed province picker (keeps the select as the source of truth).
+ const provincePickerModal=document.getElementById('provincePickerModal');
+ const provincePickerOpen=document.getElementById('provincePickerOpen');
+ const provincePickerLabel=document.getElementById('provincePickerLabel');
+ const provincePickerOptions=document.getElementById('provincePickerOptions');
+ const provincePickerSearch=document.getElementById('provincePickerSearch');
+ function closeProvincePicker(){provincePickerModal.classList.remove('open');provincePickerModal.setAttribute('aria-hidden','true');provincePickerOpen.setAttribute('aria-expanded','false');}
+ function renderProvincePickerOptions(){
+  provincePickerOptions.replaceChildren();
+  availableCities.forEach(city=>{
+   const button=document.createElement('button');button.type='button';
+   button.className='province-picker-option'+(city.slug===selectedSlug?' active':'');
+   button.setAttribute('aria-pressed',String(city.slug===selectedSlug));
+   const mark=document.createElement('span');mark.className='province-picker-option-mark';mark.textContent=city.slug===selectedSlug?'✓':'⌖';
+   const copy=document.createElement('span');copy.className='province-picker-option-copy';
+   const name=document.createElement('strong');name.textContent=cityName(city);
+   const rate=document.createElement('small');rate.textContent=fmt(pickDisplayRate(city))+' د.ع / 100 دولار';
+   copy.append(name,rate);button.append(mark,copy);
+   button.addEventListener('click',()=>{chooseCity(city.slug);closeProvincePicker();});
+   provincePickerOptions.append(button);
+  });
+ }
+ provincePickerOpen.addEventListener('click',()=>{
+  renderProvincePickerOptions();provincePickerSearch.value='';
+  provincePickerModal.classList.add('open');provincePickerModal.setAttribute('aria-hidden','false');provincePickerOpen.setAttribute('aria-expanded','true');
+ });
+ provincePickerSearch.addEventListener('input',()=>{
+  const q=provincePickerSearch.value.trim();
+  [...provincePickerOptions.children].forEach(button=>button.hidden=!button.textContent.includes(q));
+ });
+ provincePickerModal.querySelectorAll('[data-close-province]').forEach(el=>el.addEventListener('click',closeProvincePicker));
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProvincePicker();});
+
  provinceSelect.addEventListener('change',()=>chooseCity(provinceSelect.value));
  amountEl.addEventListener('input',calculate);
  directionButtons.forEach(button=>button.addEventListener('click',()=>{
