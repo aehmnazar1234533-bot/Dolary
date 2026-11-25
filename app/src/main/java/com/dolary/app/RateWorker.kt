@@ -217,7 +217,7 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
             "${item.first}: ${formatRate(item.third)} د.ع (${directionMark} ${formatRate(kotlin.math.abs(delta))})"
         }
         val notification = Notification.Builder(context, MainActivity.NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stat_dolary)
+            .setSmallIcon(R.drawable.ic_notification_dolary)
             .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.ic_notification_large))
             .setColor(0xFF1769FF.toInt())
             .setCategory(Notification.CATEGORY_STATUS)
