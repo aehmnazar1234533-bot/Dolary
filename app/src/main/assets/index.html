@@ -256,6 +256,9 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
 @keyframes fadeOut{to{opacity:0}}
 @keyframes sheetOut{to{transform:translate(-50%,100%)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Preserve the premium layout while reducing GPU work on compact phones. */
+@media (max-width: 480px){.bottom-nav{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--surface)}.hero-glow{filter:none;animation:none}}
 </style>
 </head>
 <body>
@@ -633,7 +636,7 @@ function rateRow(p, i = 0) {
   const safeStatusText = escapeHtml(statusText);
   const safeInitial = escapeHtml(provinceInitial(p.name));
   return `
-    <div class="rate-row ${animateRows ? "enter" : ""}" style="--i:${Math.min(i,12)}">
+    <div class="rate-row ${animateRows ? "enter" : ""}" style="--i:${Math.min(i,5)}">
       <div class="city-icon">${safeInitial}</div>
       <div class="city-main" data-open="${safeName}">
         <div class="city-name">${safeName} ${stale}</div>
@@ -769,7 +772,7 @@ document.querySelectorAll(".nav-item").forEach(btn => {
     const nextEl = document.getElementById(nextId);
     nextEl.classList.add("active", dir);
     window.scrollTo(0, 0);
-    if (nextId === "homeScreen") { animateRows = true; renderRates(); }
+    if (nextId === "homeScreen") { animateRows = true; renderRates(); if (historyChartNeedsRender) renderRateHistory(); }
     if (nextId === "favoritesScreen") { animateRows = true; renderFavorites(); }
     if (nextId === "notificationsScreen") renderNotifications();
   });
@@ -1026,6 +1029,11 @@ function readRateHistory(){
   try { const v=JSON.parse(localStorage.getItem(RATE_HISTORY_KEY)||"[]"); return Array.isArray(v)?v:[]; }
   catch(e){ return []; }
 }
+let historyChartNeedsRender = false;
+function isHomeScreenVisible(){
+  const home = document.getElementById("homeScreen");
+  return !!home && home.classList.contains("active");
+}
 function recordRateHistory(){
   const rates={};
   allProvinces.forEach(p=>{if(Number.isFinite(p.rate)&&p.rate>0)rates[p.name]=Math.round(p.rate);});
@@ -1037,11 +1045,13 @@ function recordRateHistory(){
   const cutoff=now-30*86400000;
   const kept=rows.filter(x=>x&&Number(x.t)>=cutoff&&x.rates&&typeof x.rates==="object").slice(-1500);
   try{localStorage.setItem(RATE_HISTORY_KEY,JSON.stringify(kept));}catch(e){}
-  renderRateHistory();
+  if (isHomeScreenVisible()) renderRateHistory(); else historyChartNeedsRender = true;
 }
 function renderRateHistory(){
   const host=document.getElementById("historyChart"),summary=document.getElementById("historySummary");
   if(!host)return;
+  if (!isHomeScreenVisible()) { historyChartNeedsRender = true; return; }
+  historyChartNeedsRender = false;
   const cutoff=Date.now()-historyDays*86400000;
   const rows=readRateHistory().filter(x=>Number(x.t)>=cutoff&&x.rates&&Number.isFinite(Number(x.rates[selectedProvince])));
   if(rows.length<2){
