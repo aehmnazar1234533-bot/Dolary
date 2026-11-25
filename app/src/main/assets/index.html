@@ -143,6 +143,19 @@ main{padding:14px 16px}
 .switch input:checked+span{background:var(--primary)}
 .switch input:checked+span:before{transform:translateX(-20px)}
 
+
+.daily-share-section{margin:18px 0 20px}
+.daily-share-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 11px}
+.daily-share-heading h2{font-size:17px;font-weight:900}
+.daily-share-heading p{font-size:10.5px;color:var(--muted);margin-top:4px}
+.daily-share-badge{flex:0 0 auto;padding:6px 9px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:9px;font-weight:900}
+.daily-share-preview{overflow:hidden;border:1px solid rgba(112,160,255,.24);border-radius:23px;background:#0b1530;box-shadow:0 14px 30px rgba(10,25,55,.2)}
+.daily-share-canvas{display:block;width:100%;height:auto;aspect-ratio:4/5}
+.daily-share-actions{display:flex;gap:9px;margin-top:10px}
+.daily-share-button{width:100%;min-height:52px;border:0;border-radius:16px;background:linear-gradient(135deg,#1769ff,#4b8cff);color:#fff;font:900 13px inherit;cursor:pointer;box-shadow:0 8px 20px rgba(23,105,255,.22);transition:transform .15s,filter .2s}
+.daily-share-button:active{transform:scale(.98);filter:brightness(.95)}
+.daily-share-note{display:block;margin-top:8px;text-align:center;font-size:9.5px;color:var(--muted);line-height:1.7}
+
 .bottom-nav{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(496px,calc(100% - 24px));height:64px;background:var(--nav-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:24px;box-shadow:0 12px 32px rgba(18,38,76,.16);display:grid;grid-template-columns:repeat(4,1fr);gap:4px;z-index:30;padding:6px}
 .nav-item{border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:800;cursor:pointer;border-radius:18px;transition:background .2s,color .2s,transform .15s}
 .nav-item:active{transform:scale(.94)}
@@ -354,6 +367,18 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           <div class="stat"><span>المتوسط</span><strong id="statAvg">—</strong><em id="statAvgName">&nbsp;</em></div>
           <div class="stat lo"><span>الأقل</span><strong id="statMin">—</strong><em id="statMinName">&nbsp;</em></div>
         </div>
+
+        <section class="daily-share-section" aria-labelledby="dailyShareTitle">
+          <div class="daily-share-heading">
+            <div><h2 id="dailyShareTitle">بطاقة دولاري اليومية</h2><p>سعر محافظتك… بصورة تستاهل المشاركة</p></div>
+            <span class="daily-share-badge">تتحدث مع السعر</span>
+          </div>
+          <div class="daily-share-preview">
+            <canvas id="dailyShareCanvas" class="daily-share-canvas" width="1080" height="1350" role="img" aria-label="بطاقة سعر الدولار اليومية من دولاري"></canvas>
+          </div>
+          <div class="daily-share-actions"><button type="button" class="daily-share-button" id="shareDailyCard">مشاركة بطاقة اليوم　↗</button></div>
+          <small class="daily-share-note">صورة جاهزة للواتساب والقصص · السعر استرشادي حسب آخر قراءة متاحة</small>
+        </section>
 
         <div class="section-head">
           <div>
@@ -990,6 +1015,7 @@ function updateSelectedProvince(){
   persistSelectedProvince();
   document.getElementById("selectedProvinceName").textContent = p.name;
   setMainRate(p.rate);
+  renderDailyCard(p);
   renderRateHistory();
   if (typeof updateAdvancedConverter === "function") updateAdvancedConverter();
   const trend = document.getElementById("mainTrend");
@@ -997,6 +1023,64 @@ function updateSelectedProvince(){
   if (p.change == null) trend.textContent = "—";
   else { trend.className = "trend " + (p.change >= 0 ? "up" : "down"); trend.textContent = `${p.change >= 0 ? "↑" : "↓"} ${money(Math.abs(p.change))}`; }
 }
+
+
+function paintDolaryDailyCard(canvas, info) {
+  if (!canvas) return;
+  const ctx=canvas.getContext("2d"); if(!ctx)return;
+  const w=canvas.width,h=canvas.height;
+  const rounded=(x,y,width,height,r)=>{
+    const q=Math.min(r,width/2,height/2);ctx.beginPath();ctx.moveTo(x+q,y);
+    ctx.arcTo(x+width,y,x+width,y+height,q);ctx.arcTo(x+width,y+height,x,y+height,q);
+    ctx.arcTo(x,y+height,x,y,q);ctx.arcTo(x,y,x+width,y,q);ctx.closePath();
+  };
+  const text=(v,x,y,size,color,align="right",weight=700)=>{
+    ctx.save();ctx.direction="rtl";ctx.textAlign=align;ctx.textBaseline="alphabetic";
+    ctx.font=weight+" "+size+"px Tahoma, Arial, sans-serif";ctx.fillStyle=color;ctx.fillText(String(v),x,y,900);ctx.restore();
+  };
+  const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#102a58");bg.addColorStop(.48,"#0b1735");bg.addColorStop(1,"#071020");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  const glow=ctx.createRadialGradient(870,160,20,870,160,690);glow.addColorStop(0,"rgba(56,142,255,.38)");glow.addColorStop(1,"rgba(56,142,255,0)");ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
+  ctx.save();ctx.strokeStyle="rgba(151,195,255,.09)";ctx.lineWidth=2;for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(70,1120,220+i*75,0,Math.PI*2);ctx.stroke();}ctx.restore();
+  rounded(35,35,w-70,h-70,44);ctx.strokeStyle="rgba(178,211,255,.22)";ctx.lineWidth=2;ctx.stroke();
+  rounded(825,92,150,150,38);const mark=ctx.createLinearGradient(825,92,975,242);mark.addColorStop(0,"#66c4ff");mark.addColorStop(1,"#2768ff");ctx.fillStyle=mark;ctx.fill();text("D",900,198,86,"#ffffff","center",900);
+  text("دولاري",785,158,60,"#ffffff","right",900);text("DOLARY  ·  IRAQ EXCHANGE",785,207,22,"#a9c8f7","right",700);
+  const dateText=new Date().toLocaleDateString("ar-IQ",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  rounded(78,105,390,68,28);ctx.fillStyle="rgba(255,255,255,.09)";ctx.fill();text(dateText,435,151,22,"#dbe9ff","right",700);
+  rounded(695,292,285,62,26);ctx.fillStyle="rgba(48,213,160,.13)";ctx.fill();ctx.strokeStyle="rgba(83,239,190,.3)";ctx.stroke();ctx.beginPath();ctx.arc(935,323,8,0,Math.PI*2);ctx.fillStyle="#5cf0bb";ctx.fill();text("مؤشر السوق الموازي",905,333,24,"#aaf6da","right",800);
+  text("سعر الدولار اليوم",w/2,500,42,"#b8cbed","center",700);text(info.province||"العراق",w/2,585,68,"#ffffff","center",900);text("100 دولار أمريكي",w/2,680,30,"#9fb9df","center",700);
+  const value=info.rate==null?"غير متوفر":Number(info.rate).toLocaleString("en-US",{maximumFractionDigits:0});text(value,w/2,855,118,"#ffffff","center",900);text("دينار عراقي",w/2,920,34,"#8fb8f0","center",800);
+  rounded(85,1000,910,174,32);ctx.fillStyle="rgba(255,255,255,.075)";ctx.fill();ctx.strokeStyle="rgba(175,205,255,.16)";ctx.stroke();
+  text("المحافظة",925,1060,22,"#91acd4","right",700);text(info.province||"—",925,1110,28,"#ffffff","right",800);
+  text("آخر تحديث",540,1060,22,"#91acd4","right",700);text(info.updated||"وقت التحديث غير متاح",540,1110,23,"#ffffff","right",700);
+  text(info.stale?"آخر سعر محفوظ":"البيانات من XEIQD",925,1150,18,info.stale?"#ffd78a":"#69e6ba","right",700);
+  ctx.strokeStyle="rgba(175,205,255,.2)";ctx.beginPath();ctx.moveTo(85,1210);ctx.lineTo(995,1210);ctx.stroke();
+  text("تابع أسعار الدولار في العراق",995,1260,22,"#dceaff","right",700);text("aehmnazar1234533-bot.github.io/Dolary",85,1260,17,"#89a9d7","left",700);
+  text("سعر استرشادي وقد يختلف حسب السوق ومكاتب الصيرفة",w/2,1300,18,"#8ea3c4","center",600);
+}
+function renderDailyCard(p) {
+  const canvas=document.getElementById("dailyShareCanvas");if(!canvas)return;
+  const updated=p&&p.updatedAt?new Date(p.updatedAt):null;
+  const updatedText=updated&&!Number.isNaN(updated.getTime())?updated.toLocaleString("ar-IQ",{dateStyle:"short",timeStyle:"short"}):"وقت التحديث غير متاح";
+  paintDolaryDailyCard(canvas,{province:p&&p.name?p.name:selectedProvince,rate:p&&Number.isFinite(Number(p.rate))?Number(p.rate):null,updated:updatedText,stale:!!(p&&p.stale)});
+}
+document.getElementById("shareDailyCard")?.addEventListener("click",()=>{
+  const p=provinces.find(x=>x.name===selectedProvince)||provinces[0];
+  if(!p||!Number.isFinite(Number(p.rate))||Number(p.rate)<=0){showToast("السعر غير متاح حالياً، حدّث الأسعار أولاً");return;}
+  const canvas=document.getElementById("dailyShareCanvas");
+  try{
+    const dataUrl=canvas.toDataURL("image/jpeg",.94);
+    const caption="سعر الدولار اليوم في "+p.name+": "+money(p.rate)+" د.ع لكل 100 دولار. تابع دولاري: https://aehmnazar1234533-bot.github.io/Dolary/";
+    if(window.AndroidBridge&&AndroidBridge.shareDailyCard){AndroidBridge.shareDailyCard(dataUrl.substring(dataUrl.indexOf(",")+1),caption);return;}
+    canvas.toBlob(async blob=>{
+      if(!blob)return;
+      const file=new File([blob],"dolary-daily-card.jpg",{type:"image/jpeg"});
+      try{
+        if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]}))await navigator.share({files:[file],title:"بطاقة دولاري اليومية",text:caption});
+        else{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="dolary-daily-card.jpg";a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);showToast("تم تجهيز بطاقة دولاري للمشاركة");}
+      }catch(error){if(error&&error.name!=="AbortError")showToast("تعذرت المشاركة، حاول مرة ثانية");}
+    },"image/jpeg",.94);
+  }catch(error){showToast("تعذر تجهيز صورة البطاقة حالياً");}
+});
 
 document.getElementById("openAboutApp")?.addEventListener("click", () => {
   document.getElementById("modalContent").innerHTML = `
