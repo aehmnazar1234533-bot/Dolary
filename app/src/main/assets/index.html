@@ -203,6 +203,41 @@ main{padding:14px 16px}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(41,213,149,.18)}50%{box-shadow:0 0 0 7px rgba(41,213,149,.04)}}
 @media (min-width:521px){body{background:#dfe7f0}.theme-dark body{background:#050a12}.app-shell{box-shadow:0 0 50px rgba(20,40,80,.12)}}
 
+
+/* Notifications screen – refined Dolary card layout */
+.notifications-page-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.notifications-title-icon{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:var(--primary-soft);border:1px solid var(--border);color:var(--primary);font-size:25px;font-weight:900}
+.notifications-master{padding:16px;border-radius:23px;gap:13px}
+.notifications-master .notify-copy strong{font-size:14px}
+.notifications-master .notify-copy span{font-size:11px;line-height:1.7}
+.target-alert-card{margin-top:14px;padding:17px 16px;background:var(--surface);border:1px solid var(--border);border-radius:23px;box-shadow:var(--shadow-sm)}
+.target-alert-heading{display:flex;align-items:center;gap:11px;margin-bottom:18px}
+.target-alert-icon{width:43px;height:43px;flex:0 0 auto;display:grid;place-items:center;border-radius:14px;background:var(--primary-soft);color:var(--primary)}
+.target-alert-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.target-alert-heading strong{display:block;font-size:14px;font-weight:900}
+.target-alert-heading span{display:block;margin-top:5px;font-size:10.5px;line-height:1.7;color:var(--muted)}
+.target-field{display:block;margin-top:14px;min-width:0}
+.target-field>label,.target-direction-label{display:block;margin-bottom:8px;font-size:11px;font-weight:800;color:var(--muted)}
+.target-field select,.target-input-wrap{width:100%;min-height:52px;border:1px solid var(--border);border-radius:15px;background:var(--surface-2);color:var(--text)}
+.target-field select{display:block;padding:0 13px;font:inherit;font-size:14px;font-weight:800;outline:none}
+.target-input-wrap{display:flex;align-items:center;gap:10px;padding:0 13px}
+.target-input-wrap input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:inherit;font-size:17px;font-weight:800;padding:13px 0}
+.target-input-wrap input::placeholder{color:var(--muted);opacity:.75;font-size:14px;font-weight:500}
+.target-input-wrap span{flex:0 0 auto;color:var(--muted);font-size:10px;font-weight:700;white-space:nowrap}
+.target-direction-label{margin:17px 2px 0}
+.target-direction{margin-top:0;padding:4px;border-radius:15px}
+.target-direction button{min-height:46px;font-size:11px;line-height:1.5}
+.target-direction button.active{background:var(--primary);color:#07111f;box-shadow:0 5px 14px rgba(55,125,235,.2)}
+.target-save-btn{width:100%;min-height:52px;margin-top:15px;padding:0 17px;border:0;border-radius:16px;background:linear-gradient(135deg,var(--primary),#3e83ed);color:#07111f;font:inherit;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:space-between;cursor:pointer;box-shadow:0 8px 18px rgba(55,125,235,.18);transition:transform .15s,filter .15s}
+.target-save-btn:active{transform:scale(.985);filter:brightness(.96)}
+.target-alert-status{display:flex;align-items:flex-start;gap:8px;margin-top:12px;padding:10px 11px;border-radius:12px;background:var(--surface-2);color:var(--muted);font-size:10.5px;line-height:1.7}
+.target-status-dot{width:7px;height:7px;flex:0 0 auto;margin-top:5px;border-radius:50%;background:var(--star-off)}
+.notifications-feed-heading{margin:23px 2px 11px}
+.notifications-feed-heading strong{display:block;font-size:14px;font-weight:900}
+.notifications-feed-heading span{display:block;margin-top:4px;font-size:10px;color:var(--muted)}
+#notificationsScreen .notification-card{border-radius:17px;padding:14px}
+@media(max-width:380px){.target-alert-card{padding:14px 12px}.target-direction button{font-size:10px;padding:9px 3px}.target-input-wrap span{font-size:9px}}
+
 /* ===== Motion system (Dolary) ===== */
 :root{--dx:-1;--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.3,1.6,.5,1)}
 html[dir=ltr]{--dx:1}
@@ -358,44 +393,44 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
       </section>
 
       <section id="notificationsScreen" class="screen">
-        <div class="page-title">
-          <h2>الإشعارات</h2>
-          <p>تابع تغيرات سعر الدولار</p>
+        <div class="page-title notifications-page-title">
+          <div><h2>الإشعارات</h2><p>تابع تغيرات سعر الدولار أولاً بأول</p></div>
+          <div class="notifications-title-icon" aria-hidden="true">♧</div>
         </div>
 
-        <div class="notify-master">
-          <div class="notify-icon">
-            <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
-          </div>
+        <div class="notify-master notifications-master">
+          <div class="notify-icon"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></div>
           <div class="notify-copy">
             <strong>إشعارات تغير السعر</strong>
             <span id="notificationPermissionHint">تنبيه عند ارتفاع أو انخفاض السعر</span>
             <button type="button" class="notification-settings-btn" id="notificationSettingsBtn">فتح إعدادات الإشعارات</button>
           </div>
-          <label class="switch">
-            <input type="checkbox" id="notifyToggle" checked />
-            <span></span>
-          </label>
+          <label class="switch"><input type="checkbox" id="notifyToggle" checked /><span></span></label>
         </div>
 
-        <div class="settings-card" style="margin-top:14px">
-          <div class="setting-block">
-            <strong>تنبيه عند سعر محدد</strong>
-            <span>اختار المحافظة والسعر، ودولاري ينبهك عند وصول السعر للهدف أو تجاوزه</span>
-            <label class="field-label" for="targetProvince">المحافظة</label>
-            <select id="targetProvince" class="province-picker"><option value="بغداد">بغداد</option></select>
-            <label class="field-label" for="targetRate">السعر المستهدف لكل 100 دولار (دينار)</label>
-            <input id="targetRate" type="number" min="1" step="1" inputmode="numeric" placeholder="مثلاً 150000" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font:inherit">
-            <div class="seg" id="targetDirection" role="radiogroup" aria-label="اتجاه التنبيه">
-              <button type="button" data-direction="above">عند الوصول أو الارتفاع</button>
-              <button type="button" data-direction="below">عند الوصول أو الانخفاض</button>
-            </div>
-            <button type="button" id="saveTargetAlert" style="width:100%;margin-top:12px;padding:13px;border:0;border-radius:13px;background:var(--primary);color:#07111f;font:inherit;font-weight:800">حفظ التنبيه</button>
-            <span id="targetAlertStatus" style="display:block;margin-top:9px">التنبيه غير مضبوط</span>
+        <div class="target-alert-card">
+          <div class="target-alert-heading">
+            <div class="target-alert-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8"/></svg></div>
+            <div><strong>تنبيه عند سعر محدد</strong><span>حدد المحافظة والسعر، وننبهك من يوصل السعر لهدفك</span></div>
           </div>
+          <div class="target-field">
+            <label for="targetProvince">المحافظة</label>
+            <select id="targetProvince" class="province-picker"><option value="بغداد">بغداد</option></select>
+          </div>
+          <div class="target-field">
+            <label for="targetRate">السعر المستهدف لكل 100 دولار</label>
+            <div class="target-input-wrap"><input id="targetRate" type="number" min="1" step="1" inputmode="numeric" placeholder="مثلاً 150000"><span>دينار عراقي</span></div>
+          </div>
+          <div class="target-direction-label">متى تريد التنبيه؟</div>
+          <div class="seg target-direction" id="targetDirection" role="radiogroup" aria-label="اتجاه التنبيه">
+            <button type="button" data-direction="above">عند الارتفاع</button>
+            <button type="button" data-direction="below">عند الانخفاض</button>
+          </div>
+          <button type="button" class="target-save-btn" id="saveTargetAlert"><span>حفظ التنبيه</span><span aria-hidden="true">←</span></button>
+          <div class="target-alert-status"><span class="target-status-dot"></span><span id="targetAlertStatus">التنبيه غير مضبوط</span></div>
         </div>
 
-        <div class="subsection-title">آخر التنبيهات</div>
+        <div class="notifications-feed-heading"><div><strong>آخر التنبيهات</strong><span>سجل تغيّرات الأسعار التي وصلتك</span></div></div>
         <div id="notificationFeed" class="notification-feed"></div>
       </section>
 
