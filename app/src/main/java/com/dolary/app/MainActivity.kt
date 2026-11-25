@@ -418,7 +418,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     bitmap.recycle()
-                    val imageUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", imageFile)
+                    val imageUri = FileProvider.getUriForFile(this@MainActivity, "$packageName.fileprovider", imageFile)
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "image/jpeg"
                         putExtra(Intent.EXTRA_STREAM, imageUri)
@@ -429,7 +429,7 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread { startActivity(Intent.createChooser(shareIntent, "مشاركة بطاقة دولاري")) }
                 } catch (_: Exception) {
                     runOnUiThread {
-                        Toast.makeText(this, "تعذر تجهيز بطاقة المشاركة، حاول مرة ثانية", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "تعذر تجهيز بطاقة المشاركة، حاول مرة ثانية", Toast.LENGTH_SHORT).show()
                     }
                 }
             }, "dolary-card-share").start()
