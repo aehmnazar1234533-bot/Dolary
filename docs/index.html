@@ -49,6 +49,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 .rate-card>*:not(.app-hero-glow):not(.app-hero-coin){position:relative;z-index:1}
 .app-hero-glow{position:absolute;z-index:0;left:-60px;bottom:-90px;width:240px;height:240px;border-radius:50%;background:rgba(80,150,255,.14);filter:blur(4px);pointer-events:none}
 .app-hero-coin{position:absolute;z-index:0;left:-10px;bottom:-38px;font-weight:900;font-size:170px;line-height:1;color:rgba(255,255,255,.06);pointer-events:none}
+.rate-value,.result strong{font-variant-numeric:tabular-nums}
 .rate-value.number-change,.result strong.number-change{animation:numberPop .32s ease-out;transform-origin:center}
 @keyframes numberPop{0%{transform:scale(1)}35%{transform:scale(1.065)}100%{transform:scale(1)}}
 .result strong{display:block}
@@ -247,17 +248,37 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
   return Number.isFinite(fallback)&&fallback>0?fallback:null;
  }
  function animateNumber(element,target,suffix='',fractionDigits=0){
-  const nextText=fmt(target,fractionDigits)+suffix;
-  const changed=element.dataset.currentValue!==undefined&&element.dataset.currentValue!==String(target);
-  if(typeof element.getAnimations==='function'){
-   element.getAnimations().forEach(animation=>animation.cancel());
-  }
-  element.textContent=nextText;
-  element.dataset.currentValue=String(target);
+  const nextValue=Number(target);
+  if(!Number.isFinite(nextValue)){element.textContent='—';return;}
+  const previousValue=Number(element.dataset.currentValue);
+  const hasPrevious=element.dataset.currentValue!==undefined&&Number.isFinite(previousValue);
+  const changed=hasPrevious&&previousValue!==nextValue;
+  const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const oldFrame=numberFrames.get(element);
+  if(oldFrame)cancelAnimationFrame(oldFrame);
+  element.dataset.currentValue=String(nextValue);
   element.classList.remove('number-change');
-  if(changed&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-   requestAnimationFrame(()=>element.classList.add('number-change'));
+  if(!changed||reduceMotion){
+   element.textContent=fmt(nextValue,fractionDigits)+suffix;
+   return;
   }
+  const duration=element===rateEl?720:380;
+  const startedAt=performance.now();
+  element.classList.add('number-change');
+  const step=now=>{
+   const progress=Math.min(1,(now-startedAt)/duration);
+   const eased=1-Math.pow(1-progress,3);
+   const value=previousValue+(nextValue-previousValue)*eased;
+   element.textContent=fmt(value,fractionDigits)+suffix;
+   if(progress<1){
+    numberFrames.set(element,requestAnimationFrame(step));
+   }else{
+    element.textContent=fmt(nextValue,fractionDigits)+suffix;
+    numberFrames.delete(element);
+    element.classList.remove('number-change');
+   }
+  };
+  numberFrames.set(element,requestAnimationFrame(step));
  }
  function calculate(){
   const amount=Number(amountEl.value);
