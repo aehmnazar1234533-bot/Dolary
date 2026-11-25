@@ -1,1 +1,22 @@
 :root{--b:#050914;--p:#ffffff09;--l:#ffffff18;--t:#f4f7ff;--m:#9aa8bd;--c:#66e8f9;--bl:#8091ff;--g:#f2cf7a}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 12% 8%,#4d6eff38,transparent 30%),radial-gradient(circle at 88% 25%,#00cde11f,transparent 28%),var(--b);color:var(--t);font-family:Arial,"IBM Plex Sans Arabic",sans-serif}a{color:inherit;text-decoration:none}.w{width:min(1100px,calc(100% - 32px));margin:auto}.nav{height:78px;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:11px}.mark{width:44px;height:44px;padding:4px;border-radius:14px;background:linear-gradient(135deg,var(--c),var(--bl))}.mark img{width:100%;height:100%}.brand b{letter-spacing:2px}.brand small{display:block;color:var(--m);font-size:9px;letter-spacing:1.5px}.links{display:flex;gap:24px;color:#bdc8d9;font-size:13px}.links a:hover{color:var(--c)}.btn{display:inline-block;padding:12px 17px;border:1px solid var(--l);border-radius:14px;background:var(--p);font-weight:700;font-size:12px}.primary{background:linear-gradient(110deg,var(--c),#9aa7ff);color:#07101c;border:0}.hero{min-height:calc(100vh - 78px);display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:55px;padding:55px 0 80px}.ey{display:inline-flex;padding:8px 12px;border:1px solid #66e8f933;background:#66e8f90f;border-radius:999px;color:var(--c);font-size:12px}.hero h1{font-size:clamp(44px,7vw,78px);line-height:1.08;margin:22px 0 17px}.grad{background:linear-gradient(100deg,var(--c),#aeb7ff 58%,var(--g));-webkit-background-clip:text;color:transparent}.lead{max-width:590px;color:#aab7ca;font-size:17px;line-height:2}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+/* AEHM TECH visual polish */
+body{overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:64px 64px;mask-image:linear-gradient(to bottom,black,transparent 72%);z-index:-1}
+.nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(18px);background:#050914c9;border-bottom:1px solid #ffffff0c}
+.mark{box-shadow:0 0 28px #8b5cff45}
+.brand b{font-size:15px}
+.hero{position:relative}
+.hero:before{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:#7c4dff18;filter:blur(20px);right:44%;top:12%;z-index:-1}
+.hero-copy{animation:rise .7s ease both}
+.card{position:relative;overflow:hidden}
+.card:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;background:#66e8f918;filter:blur(20px);top:-80px;left:-50px}
+.app{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.app:hover{transform:translateY(-7px);border-color:#66e8f955;box-shadow:0 18px 45px #0008}
+.panel{transition:border-color .25s ease}
+.panel:hover{border-color:#ffffff30}
+.btn{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.btn:hover{transform:translateY(-2px);border-color:#ffffff35;box-shadow:0 10px 30px #0005}
+.primary:hover{box-shadow:0 12px 35px #66e8f933}
+.section{scroll-margin-top:85px}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@media(max-width:760px){.nav{height:68px}.brand small{display:none}.hero h1{font-size:48px}.hero:before{right:0;top:20%}.card{margin-top:10px}.section{padding:58px 0}.contact{padding:32px 20px}}
