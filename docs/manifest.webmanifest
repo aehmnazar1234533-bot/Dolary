@@ -8,7 +8,9 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone"],
+  "display_override": [
+    "standalone"
+  ],
   "background_color": "#080d1b",
   "theme_color": "#080d1b",
   "icons": [
@@ -16,6 +18,12 @@
       "src": "./dolary-icon.webp",
       "sizes": "512x512",
       "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
