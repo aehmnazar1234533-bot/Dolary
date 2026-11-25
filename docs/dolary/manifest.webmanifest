@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "دولاري - سعر الدولار في العراق",
+  "short_name": "دولاري",
+  "description": "تابع سعر الدولار مقابل الدينار العراقي في محافظات العراق.",
+  "lang": "ar-IQ",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#080d1b",
+  "theme_color": "#080d1b",
+  "icons": [
+    {
+      "src": "./dolary-mark.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
