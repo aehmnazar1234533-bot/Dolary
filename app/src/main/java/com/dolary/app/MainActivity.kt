@@ -401,6 +401,17 @@ class MainActivity : AppCompatActivity() {
 
 
         @JavascriptInterface
+        fun getDailyCardLogoBase64(): String {
+            return try {
+                this@MainActivity.assets.open("dolary_logo.png").use { input ->
+                    Base64.encodeToString(input.readBytes(), Base64.NO_WRAP)
+                }
+            } catch (_: Exception) {
+                ""
+            }
+        }
+
+        @JavascriptInterface
         fun shareDailyCard(base64Image: String, caption: String) {
             if (base64Image.isBlank() || base64Image.length > 5_000_000) return
             Thread({
