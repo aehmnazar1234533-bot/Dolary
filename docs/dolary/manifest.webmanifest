@@ -15,16 +15,16 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "https://aehamtech.top/dolary/dolary-mark.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
+      "src": "./dolary-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://aehamtech.top/dolary/dolary-mark.svg",
+      "src": "./dolary-icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
