@@ -51,6 +51,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navSpacer: View
     private lateinit var adContainer: FrameLayout
     private var adView: AdView? = null
+    private var mainPageLoaded = false
+    private var adConsentReady = false
+    private var adsRequested = false
     private lateinit var adMobConsentManager: AdMobConsentManager
     private lateinit var appOpenAdManager: AppOpenAdManager
     private lateinit var prefs: SharedPreferences
@@ -139,6 +142,8 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 progressBar.visibility = View.GONE
+                mainPageLoaded = true
+                loadAdsWhenReady()
                 pushCachedDataToWebView()
                 fetchRates()
                 scheduleBackgroundUpdates()
@@ -192,11 +197,8 @@ class MainActivity : AppCompatActivity() {
                     adMobConsentManager.initializeAdsIfAllowed()
                     runOnUiThread {
                         try {
-                            if (!isFinishing && !isDestroyed && adMobConsentManager.canRequestAds()) {
-                                adContainer.visibility = View.VISIBLE
-                                adView?.loadAd(AdRequest.Builder().build())
-                                appOpenAdManager.loadAd(this@MainActivity)
-                            }
+                            adConsentReady = adMobConsentManager.canRequestAds()
+                            loadAdsWhenReady()
                             webView.evaluateJavascript("window.AndroidBridge && AndroidBridge.setPrivacyOptionsVisible && AndroidBridge.setPrivacyOptionsVisible(${adMobConsentManager.privacyOptionsRequired()});", null)
                         } catch (_: Exception) {
                         }
@@ -208,6 +210,15 @@ class MainActivity : AppCompatActivity() {
             // Ads must never be able to crash the app.
             adContainer.visibility = View.GONE
         }
+    }
+
+    private fun loadAdsWhenReady() {
+        if (!mainPageLoaded || !adConsentReady || adsRequested || isFinishing || isDestroyed) return
+        val banner = adView ?: return
+        adsRequested = true
+        adContainer.visibility = View.VISIBLE
+        banner.loadAd(AdRequest.Builder().build())
+        appOpenAdManager.loadAd(this)
     }
 
     private fun getAdaptiveBannerSize(): AdSize {
@@ -237,7 +248,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (::adMobConsentManager.isInitialized && adMobConsentManager.canRequestAds()) {
+        if (mainPageLoaded && adConsentReady && ::adMobConsentManager.isInitialized && adMobConsentManager.canRequestAds()) {
             appOpenAdManager.showAdIfAvailable(this)
         }
     }
