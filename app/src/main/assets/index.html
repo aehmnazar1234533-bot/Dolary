@@ -609,7 +609,7 @@ let sortDescending = true;
 let selectedProvince = localStorage.getItem("selectedDollarProvince") || "بغداد";
 let lastNetworkError = null;
 
-const money = n => (n == null || Number.isNaN(Number(n))) ? "غير متوفر" : Math.round(Number(n)).toLocaleString("en-US");
+const formatLatinNumber = (n, decimals=0) => { if (n == null || Number.isNaN(Number(n))) return "غير متوفر"; const value = Number(n); return value.toFixed(decimals).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ","); };\nconst money = n => formatLatinNumber(n, 0);
 const fmtTime = iso => {
   if (!iso) return "غير متوفر";
   try { return new Date(iso).toLocaleTimeString("ar-IQ", {hour:"2-digit", minute:"2-digit"}); }
@@ -638,7 +638,7 @@ function setMainRate(rate){
   if (rate == null || Number.isNaN(Number(rate))) { el.innerHTML = "غير متوفر"; shownMainRate = null; return; }
   const to = Math.round(Number(rate));
   const from = shownMainRate == null ? Math.round(to * 0.92) : shownMainRate;
-  const paint = v => { el.innerHTML = `${Math.round(v).toLocaleString("en-US")} <span>د.ع</span>`; };
+  const paint = v => { el.innerHTML = `${formatLatinNumber(Math.round(v))} <span>د.ع</span>`; };
   const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduce || from === to) { paint(to); shownMainRate = to; return; }
   el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick");
@@ -1150,7 +1150,7 @@ ctx.save();ctx.globalAlpha=1;ctx.font="900 720px Arial, sans-serif";ctx.textAlig
 
 
  text("الدولار اليوم",w/2,490,50,"#d7e8ff","center",800,950);text(info.province||"العراق",w/2,610,78,"#ffffff","center",900,940);
- const value=info.rate==null?"غير متوفر":Number(info.rate).toLocaleString("en-US",{maximumFractionDigits:0});text(value,w/2,845,104,"#ffffff","center",900);text("دينار عراقي",w/2,905,29,"#8fb8f0","center",800);
+ const value=info.rate==null?"غير متوفر":formatLatinNumber(Math.round(Number(info.rate)));text(value,w/2,845,104,"#ffffff","center",900);text("دينار عراقي",w/2,905,29,"#8fb8f0","center",800);
 
   rounded(85,1000,910,174,32);ctx.fillStyle="rgba(255,255,255,.075)";ctx.fill();ctx.strokeStyle="rgba(175,205,255,.16)";ctx.stroke();
 
