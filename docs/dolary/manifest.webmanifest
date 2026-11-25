@@ -8,20 +8,23 @@
   "start_url": "https://aehamtech.top/dolary/",
   "scope": "https://aehamtech.top/dolary/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#080d1b",
   "theme_color": "#080d1b",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "./dolary-mark.svg",
+      "src": "./dolary-icon.svg?v=14",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "./dolary-mark.svg",
+      "src": "./dolary-icon.svg?v=14",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
