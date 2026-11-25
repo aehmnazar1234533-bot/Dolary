@@ -398,7 +398,19 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
   renderDailyCard(city);
  }
 
-const dailyCardLogo=new Image();dailyCardLogo.crossOrigin="anonymous";dailyCardLogo.decoding="async";dailyCardLogo.onload=()=>{if(window.__dailyCardInfo)paintDolaryDailyCard(document.getElementById("dailyShareCanvas"),window.__dailyCardInfo);};dailyCardLogo.onerror=()=>{dailyCardLogo.dataset.failed="true";};dailyCardLogo.src="./dolary-icon.webp";
+const dailyCardLogo=new Image();
+const dailyCardTemplate=new Image();
+dailyCardLogo.crossOrigin="anonymous";
+dailyCardTemplate.crossOrigin="anonymous";
+dailyCardLogo.decoding="async";
+dailyCardTemplate.decoding="async";
+const redrawDolaryCard=()=>{if(window.__dailyCardInfo)paintDolaryDailyCard(document.getElementById("dailyShareCanvas"),window.__dailyCardInfo);};
+dailyCardLogo.onload=redrawDolaryCard;
+dailyCardTemplate.onload=redrawDolaryCard;
+dailyCardLogo.onerror=()=>{dailyCardLogo.dataset.failed="true";};
+dailyCardTemplate.onerror=()=>{dailyCardTemplate.dataset.failed="true";};
+dailyCardLogo.src="./dolary-icon.webp";
+dailyCardTemplate.src="./daily-card-template.webp";
 
 function drawDolaryProvinceLandmark(ctx,slug,x,y,w,h){
   ctx.save();
@@ -496,39 +508,78 @@ function drawDolaryProvinceLandmark(ctx,slug,x,y,w,h){
 }
 
 function paintDolaryDailyCard(canvas,info){
- window.__dailyCardInfo=info;
- if(!canvas)return;const ctx=canvas.getContext("2d");if(!ctx)return;const w=canvas.width,h=canvas.height;
- const rounded=(x,y,width,height,r)=>{const q=Math.min(r,width/2,height/2);ctx.beginPath();ctx.moveTo(x+q,y);ctx.arcTo(x+width,y,x+width,y+height,q);ctx.arcTo(x+width,y+height,x,y+height,q);ctx.arcTo(x,y+height,x,y,q);ctx.arcTo(x,y,x+width,y,q);ctx.closePath();};
- const text=(v,x,y,size,color,align="right",weight=700,maxWidth=900)=>{ctx.save();ctx.direction="rtl";ctx.textAlign=align;ctx.textBaseline="alphabetic";const family="Tajawal, \"Noto Sans Arabic\", Tahoma, Arial, sans-serif";let fitted=size;ctx.font=weight+" "+fitted+"px "+family;while(ctx.measureText(String(v)).width>maxWidth&&fitted>14){fitted-=2;ctx.font=weight+" "+fitted+"px "+family;}ctx.fillStyle=color;ctx.fillText(String(v),x,y,maxWidth);ctx.restore();};
- const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#123a74");bg.addColorStop(.52,"#0b2348");bg.addColorStop(1,"#0a1c3a");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
- const glow=ctx.createRadialGradient(870,160,20,870,160,690);glow.addColorStop(0,"rgba(65,150,255,.34)");glow.addColorStop(1,"rgba(65,150,255,0)");ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
- const lowerGlow=ctx.createRadialGradient(90,1190,10,90,1190,430);lowerGlow.addColorStop(0,"rgba(80,150,255,.17)");lowerGlow.addColorStop(1,"rgba(80,150,255,0)");ctx.fillStyle=lowerGlow;ctx.fillRect(0,0,w,h);
-  ctx.save();
-  ctx.globalAlpha = 0.30;
-  ctx.translate(105, 430);
-  ctx.scale(2.8, 3.25);
-  drawDolaryProvinceLandmark(ctx, info.slug || "", 0, 0, 310, 155);
+  window.__dailyCardInfo=info;
+  if(!canvas)return;
+  const ctx=canvas.getContext("2d");if(!ctx)return;
+  const w=canvas.width,h=canvas.height;
+  const rounded=(x,y,width,height,r)=>{
+    const q=Math.min(r,width/2,height/2);
+    ctx.beginPath();ctx.moveTo(x+q,y);ctx.arcTo(x+width,y,x+width,y+height,q);
+    ctx.arcTo(x+width,y+height,x,y+height,q);ctx.arcTo(x,y+height,x,y,q);
+    ctx.arcTo(x,y,x+width,y,q);ctx.closePath();
+  };
+  const text=(value,x,y,size,color,align="center",weight=800,maxWidth=900,glow=true)=>{
+    ctx.save();ctx.direction="rtl";ctx.textAlign=align;ctx.textBaseline="alphabetic";
+    const family='Tajawal, "Noto Sans Arabic", "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif';
+    let fitted=size;ctx.font=weight+" "+fitted+"px "+family;
+    while(ctx.measureText(String(value)).width>maxWidth&&fitted>16){fitted-=2;ctx.font=weight+" "+fitted+"px "+family;}
+    ctx.fillStyle=color;
+    if(glow){ctx.shadowColor="rgba(72,174,255,.34)";ctx.shadowBlur=12;}
+    ctx.fillText(String(value),x,y,maxWidth);ctx.restore();
+  };
+  const strokeGlow=(draw,color="#63d7ff",width=4)=>{
+    ctx.save();ctx.strokeStyle=color;ctx.lineWidth=width;ctx.shadowColor=color;ctx.shadowBlur=14;
+    draw();ctx.restore();
+  };
+  if(dailyCardTemplate.complete&&dailyCardTemplate.naturalWidth){
+    ctx.drawImage(dailyCardTemplate,0,0,w,h);
+  }else{
+    const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#071b3b");bg.addColorStop(.5,"#0b2b59");bg.addColorStop(1,"#06152d");
+    ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  }
+
+  // Brand: the same new square logo is used by the Android launcher and the website.
+  if(dailyCardLogo.complete&&dailyCardLogo.naturalWidth){
+    ctx.save();ctx.shadowColor="rgba(43,160,255,.55)";ctx.shadowBlur=18;
+    ctx.drawImage(dailyCardLogo,305,48,148,148);ctx.restore();
+  }
+  text("دولاري",730,125,58,"#ffffff","right",900,280,true);
+  text("DOLARY",730,171,30,"#b9dcff","right",800,280,false);
+
+  // Dynamic governorate name in the empty luminous name plate.
+  text(info.province||"العراق",540,528,88,"#ffffff","center",900,440,true);
+
+  // Main live price.
+  const rateValue=info.rate==null?"غير متوفر":Number(info.rate).toLocaleString("en-US",{maximumFractionDigits:0});
+  text(rateValue,540,790,150,"#ffffff","center",900,850,true);
+  text("دينار عراقي",540,875,47,"#d9edff","center",800,820,true);
+  text("لكل 100 دولار أمريكي",540,925,25,"#9ccaff","center",700,800,false);
+  const updateLabel=info.updated&&info.updated!=="وقت التحديث غير متاح"?"آخر تحديث: "+info.updated:"آخر تحديث غير متاح";
+  text(updateLabel,540,951,19,"#b8d9ff","center",700,840,false);
+
+  // Date tile: calendar icon and automatically changing date.
+  ctx.save();ctx.strokeStyle="#69dcff";ctx.lineWidth=7;ctx.lineCap="round";ctx.lineJoin="round";
+  rounded(220,1013,50,46,8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(220,1027);ctx.lineTo(270,1027);ctx.moveTo(232,1005);ctx.lineTo(232,1018);ctx.moveTo(258,1005);ctx.lineTo(258,1018);ctx.stroke();
+  for(let row=0;row<2;row++)for(let col=0;col<3;col++){ctx.fillStyle="#83e4ff";ctx.fillRect(232+col*13,1035+row*9,5,5);}
   ctx.restore();
-  ctx.save();ctx.globalAlpha=1;ctx.font="900 720px Arial, sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="rgba(255,255,255,.065)";ctx.shadowColor="rgba(80,150,255,.52)";ctx.shadowBlur=42;ctx.fillText("$",260,790);ctx.shadowBlur=2;ctx.fillStyle="rgba(150,195,255,.035)";ctx.fillText("$",265,790);ctx.restore();
- ctx.save();ctx.strokeStyle="rgba(151,195,255,.09)";ctx.lineWidth=2;for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(70,1120,220+i*75,0,Math.PI*2);ctx.stroke();}ctx.restore();
- rounded(35,35,w-70,h-70,44);ctx.strokeStyle="rgba(178,211,255,.22)";ctx.lineWidth=2;ctx.stroke();
- rounded(825,92,150,150,38);ctx.save();ctx.clip();if(dailyCardLogo.complete&&dailyCardLogo.naturalWidth){ctx.drawImage(dailyCardLogo,825,92,150,150);}else{const mark=ctx.createLinearGradient(825,92,975,242);mark.addColorStop(0,"#66c4ff");mark.addColorStop(1,"#2768ff");ctx.fillStyle=mark;ctx.fillRect(825,92,150,150);}ctx.restore();
- text("دولاري",785,158,52,"#ffffff","right",900);text("DOLARY  ·  IRAQ EXCHANGE",785,202,17,"#a9c8f7","right",700);
+  const dateText=new Date().toLocaleDateString("en-GB");
+  text("تاريخ اليوم",245,1102,29,"#c6e7ff","center",700,290,false);
+  text(dateText,245,1161,38,"#ffffff","center",900,300,true);
 
+  // Province tile: location pin and selected governorate.
+  ctx.save();ctx.translate(885,1038);ctx.strokeStyle="#69dcff";ctx.fillStyle="#69dcff";ctx.lineWidth=7;
+  ctx.beginPath();ctx.moveTo(0,28);ctx.bezierCurveTo(-5,19,-24,2,-24,-12);ctx.arc(0,-12,24,Math.PI,0,true);ctx.bezierCurveTo(24,2,5,19,0,28);ctx.closePath();ctx.stroke();
+  ctx.beginPath();ctx.arc(0,-12,7,0,Math.PI*2);ctx.fill();ctx.restore();
+  text("المحافظة",885,1102,29,"#c6e7ff","center",700,205,false);
+  text(info.province||"العراق",885,1161,40,"#ffffff","center",900,210,true);
 
- text("الدولار اليوم",w/2,490,50,"#d7e8ff","center",800,950);text(info.province||"العراق",w/2,610,78,"#ffffff","center",900,940);
- const value=info.rate==null?"غير متوفر":Number(info.rate).toLocaleString("en-US",{maximumFractionDigits:0});text(value,w/2,845,104,"#ffffff","center",900);text("دينار عراقي",w/2,905,29,"#8fb8f0","center",800);
-
-  rounded(85,1000,910,174,32);ctx.fillStyle="rgba(255,255,255,.075)";ctx.fill();ctx.strokeStyle="rgba(175,205,255,.16)";ctx.stroke();
-
-  const today=new Date().toLocaleDateString("en-GB");
-  text("تاريخ اليوم",235,1057,19,"#91acd4","center",700);
-  text(today,235,1110,25,"#ffffff","center",800);
-  text("المحافظة",845,1057,19,"#91acd4","center",700);
-  text(info.province||"—",845,1110,25,"#ffffff","center",800,250);
-  ctx.strokeStyle="rgba(175,205,255,.18)";ctx.beginPath();ctx.moveTo(540,1028);ctx.lineTo(540,1145);ctx.stroke();
- ctx.strokeStyle="rgba(175,205,255,.2)";ctx.beginPath();ctx.moveTo(85,1210);ctx.lineTo(995,1210);ctx.stroke();text("تابع أسعار الدولار في العراق",995,1255,19,"#dceaff","right",700);text("aehmnazar1234533-bot.github.io/Dolary",85,1255,14,"#89a9d7","left",700);
+  // A discreet source-independent update note under the city artwork.
+  if(info.stale){
+    text("آخر قراءة محفوظة",540,1192,17,"#a9c9f2","center",700,300,false);
+  }
 }
+
 function renderDailyCard(city){
  const canvas=document.getElementById("dailyShareCanvas");if(!canvas)return;
  const stamp=city&&(city.updated_at||window.__ratesUpdatedAt),date=stamp?new Date(stamp):null;
