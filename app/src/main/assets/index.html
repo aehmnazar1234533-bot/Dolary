@@ -227,7 +227,7 @@ main{padding:14px 16px}
 
 /* Notifications screen – refined Dolary card layout */
 .notifications-page-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
-.notifications-title-icon{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:var(--primary-soft);border:1px solid var(--border);color:var(--primary);font-size:25px;font-weight:900}
+.notifications-title-icon{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:var(--primary-soft);border:1px solid var(--border);color:var(--primary)} .notifications-title-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .notifications-master{padding:16px;border-radius:23px;gap:13px}
 .notifications-master .notify-copy strong{font-size:14px}
 .notifications-master .notify-copy span{font-size:11px;line-height:1.7}
@@ -428,7 +428,7 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
       <section id="notificationsScreen" class="screen">
         <div class="page-title notifications-page-title">
           <div><h2>الإشعارات</h2><p>تابع تغيرات سعر الدولار أولاً بأول</p></div>
-          <div class="notifications-title-icon" aria-hidden="true">♧</div>
+          <div class="notifications-title-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></div>
         </div>
 
         <div class="notify-master notifications-master">
@@ -544,7 +544,7 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
             <span>معلومات دولاري وحقوق الملكية وطرق التواصل</span>
           </span>
           <span class="about-entry-arrow" aria-hidden="true">‹</span>
-          <span class="version">v1.5</span>
+          <span class="version">v1.6</span>
         </button>
       </section>
     </main>
@@ -1184,7 +1184,7 @@ document.getElementById("shareDailyCard")?.addEventListener("click",()=>{
   const finish=()=>{
     if(button){button.disabled=false;button.textContent="مشاركة بطاقة اليوم　↗";}
   };
-  const caption="الدولار اليوم في "+p.name+": "+money(p.rate)+" د.ع لكل 100 دولار. تابع دولاري: https://aehmnazar1234533-bot.github.io/Dolary/";
+  const caption="الدولار اليوم في "+p.name+": "+money(p.rate)+" د.ع لكل 100 دولار. تابع دولاري: https://aehamtech.top/dolary/";
   if(window.AndroidBridge&&typeof AndroidBridge.shareDailyCard==="function"){
     try{
       // The Android app receives the JPEG directly; no Blob or FileReader round-trip is needed.
