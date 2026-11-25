@@ -164,7 +164,7 @@ main{padding:14px 16px}
 
 .modal.hidden{display:none!important;pointer-events:none!important}.modal{position:fixed;inset:0;z-index:50;pointer-events:auto}
 .modal-backdrop{position:absolute;inset:0;background:rgba(7,15,28,.55);backdrop-filter:blur(3px);animation:fade .2s both}
-.modal-sheet{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(520px,100%);background:var(--surface);border-radius:28px 28px 0 0;padding:10px 18px calc(28px + env(safe-area-inset-bottom));max-height:84vh;overflow:auto;animation:sheet .3s cubic-bezier(.2,.8,.2,1) both}
+.modal-sheet{position:absolute;z-index:1;left:50%;bottom:0;transform:translateX(-50%);width:min(520px,100%);background:var(--surface);border-radius:28px 28px 0 0;padding:10px 18px calc(28px + env(safe-area-inset-bottom));max-height:84vh;overflow:auto;animation:sheet .3s cubic-bezier(.2,.8,.2,1) both}
 .modal-handle{width:44px;height:4px;border-radius:99px;background:var(--border);margin:2px auto 14px}
 .modal-close{position:absolute;top:12px;left:14px;width:34px;height:34px;border:0;border-radius:11px;background:var(--surface-2);font-size:24px;color:var(--muted);cursor:pointer}
 .modal-title{font-size:20px;font-weight:900}
@@ -833,16 +833,47 @@ function openModal(){
   const m = document.getElementById("provinceModal");
   clearTimeout(window.__modalTimer);
   m.classList.remove("closing","hidden");
+  m.style.pointerEvents="auto";
 }
 function closeModal(){
   const m = document.getElementById("provinceModal");
-  if (m.classList.contains("hidden") || m.classList.contains("closing")) return;
-  m.classList.add("closing");
+  if (!m) return;
   clearTimeout(window.__modalTimer);
-  window.__modalTimer = setTimeout(() => { m.classList.add("hidden"); m.classList.remove("closing"); }, 240);
+  m.classList.add("hidden");
+  m.classList.remove("closing");
+  m.style.pointerEvents="none";
+}
+function reopenModal(){
+  const m = document.getElementById("provinceModal");
+  if (!m) return;
+  m.classList.remove("hidden","closing");
+  m.style.pointerEvents="auto";
 }
 document.getElementById("modalClose").addEventListener("click", closeModal);
 document.querySelector(".modal-backdrop").addEventListener("click", closeModal);
+document.getElementById("provinceModal").addEventListener("click", e => {
+  if (e.target.closest("#modalClose")) { closeModal(); return; }
+  const selectBtn = e.target.closest("[data-select-province]");
+  if (selectBtn) {
+    selectedProvince = selectBtn.dataset.selectProvince;
+    updateSelectedProvince();
+    closeModal();
+    showToast(`تم اختيار ${selectedProvince}`);
+    return;
+  }
+  const targetBtn = e.target.closest("[data-target-province]");
+  if (targetBtn) {
+    const name = targetBtn.dataset.targetProvince;
+    const select = document.getElementById("targetProvince");
+    if (select) {
+      if (![...select.options].some(option => option.value === name)) select.add(new Option(name,name));
+      select.value = name;
+    }
+    const label = document.getElementById("targetProvinceLabel");
+    if (label) label.textContent = name;
+    closeModal();
+  }
+});
 
 const SCREEN_ORDER = ["homeScreen","favoritesScreen","notificationsScreen","settingsScreen"];
 document.querySelectorAll(".nav-item").forEach(btn => {
