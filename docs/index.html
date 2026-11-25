@@ -382,21 +382,21 @@ function paintDolaryDailyCard(canvas,info){
  window.__dailyCardInfo=info;
  if(!canvas)return;const ctx=canvas.getContext("2d");if(!ctx)return;const w=canvas.width,h=canvas.height;
  const rounded=(x,y,width,height,r)=>{const q=Math.min(r,width/2,height/2);ctx.beginPath();ctx.moveTo(x+q,y);ctx.arcTo(x+width,y,x+width,y+height,q);ctx.arcTo(x+width,y+height,x,y+height,q);ctx.arcTo(x,y+height,x,y,q);ctx.arcTo(x,y,x+width,y,q);ctx.closePath();};
- const text=(v,x,y,size,color,align="right",weight=700)=>{ctx.save();ctx.direction="rtl";ctx.textAlign=align;ctx.textBaseline="alphabetic";const family="Tajawal, \"Noto Sans Arabic\", Tahoma, Arial, sans-serif";let fitted=size;ctx.font=weight+" "+fitted+"px "+family;while(ctx.measureText(String(v)).width>900&&fitted>16){fitted-=2;ctx.font=weight+" "+fitted+"px "+family;}ctx.fillStyle=color;ctx.fillText(String(v),x,y,900);ctx.restore();};
+ const text=(v,x,y,size,color,align="right",weight=700,maxWidth=900)=>{ctx.save();ctx.direction="rtl";ctx.textAlign=align;ctx.textBaseline="alphabetic";const family="Tajawal, \"Noto Sans Arabic\", Tahoma, Arial, sans-serif";let fitted=size;ctx.font=weight+" "+fitted+"px "+family;while(ctx.measureText(String(v)).width>maxWidth&&fitted>14){fitted-=2;ctx.font=weight+" "+fitted+"px "+family;}ctx.fillStyle=color;ctx.fillText(String(v),x,y,maxWidth);ctx.restore();};
  const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#102a58");bg.addColorStop(.48,"#0b1735");bg.addColorStop(1,"#071020");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
  const glow=ctx.createRadialGradient(870,160,20,870,160,690);glow.addColorStop(0,"rgba(56,142,255,.38)");glow.addColorStop(1,"rgba(56,142,255,0)");ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
   ctx.save();ctx.globalAlpha=1;ctx.font="900 560px Arial, sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="rgba(111,174,255,.075)";ctx.shadowColor="rgba(77,151,255,.55)";ctx.shadowBlur=58;ctx.fillText("$",w/2,735);ctx.shadowBlur=0;ctx.fillStyle="rgba(160,204,255,.035)";ctx.fillText("$",w/2+5,735);ctx.restore();
  ctx.save();ctx.strokeStyle="rgba(151,195,255,.09)";ctx.lineWidth=2;for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(70,1120,220+i*75,0,Math.PI*2);ctx.stroke();}ctx.restore();
  rounded(35,35,w-70,h-70,44);ctx.strokeStyle="rgba(178,211,255,.22)";ctx.lineWidth=2;ctx.stroke();
  rounded(825,92,150,150,38);ctx.save();ctx.clip();if(dailyCardLogo.complete&&dailyCardLogo.naturalWidth){ctx.drawImage(dailyCardLogo,825,92,150,150);}else{const mark=ctx.createLinearGradient(825,92,975,242);mark.addColorStop(0,"#66c4ff");mark.addColorStop(1,"#2768ff");ctx.fillStyle=mark;ctx.fillRect(825,92,150,150);}ctx.restore();
- text("دولاري",785,158,60,"#ffffff","right",900);text("DOLARY  ·  IRAQ EXCHANGE",785,207,22,"#a9c8f7","right",700);
- const dateText=new Date().toLocaleDateString("ar-IQ",{weekday:"long",day:"numeric",month:"long",year:"numeric"});rounded(78,105,390,68,28);ctx.fillStyle="rgba(255,255,255,.09)";ctx.fill();text(dateText,435,151,22,"#dbe9ff","right",700);
+ text("دولاري",785,158,52,"#ffffff","right",900);text("DOLARY  ·  IRAQ EXCHANGE",785,202,17,"#a9c8f7","right",700);
+ const dateText=new Date().toLocaleDateString("ar-IQ",{weekday:"long",day:"numeric",month:"long",year:"numeric"});rounded(78,105,390,68,28);ctx.fillStyle="rgba(255,255,255,.09)";ctx.fill();text(dateText,435,149,19,"#dbe9ff","right",700,330);
 
- text("سعر الدولار اليوم",w/2,500,42,"#b8cbed","center",700);text(info.province||"العراق",w/2,585,68,"#ffffff","center",900);
- const value=info.rate==null?"غير متوفر":Number(info.rate).toLocaleString("en-US",{maximumFractionDigits:0});text(value,w/2,855,118,"#ffffff","center",900);text("دينار عراقي",w/2,920,34,"#8fb8f0","center",800);
+ text("سعر الدولار اليوم",w/2,495,36,"#b8cbed","center",700);text(info.province||"العراق",w/2,575,58,"#ffffff","center",900);
+ const value=info.rate==null?"غير متوفر":Number(info.rate).toLocaleString("en-US",{maximumFractionDigits:0});text(value,w/2,845,104,"#ffffff","center",900);text("دينار عراقي",w/2,905,29,"#8fb8f0","center",800);
  rounded(85,1000,910,174,32);ctx.fillStyle="rgba(255,255,255,.075)";ctx.fill();ctx.strokeStyle="rgba(175,205,255,.16)";ctx.stroke();
- text("المحافظة",925,1060,22,"#91acd4","right",700);text(info.province||"—",925,1110,28,"#ffffff","right",800);text("آخر تحديث",540,1060,22,"#91acd4","right",700);text(info.updated||"وقت التحديث غير متاح",540,1110,23,"#ffffff","right",700);
- ctx.strokeStyle="rgba(175,205,255,.2)";ctx.beginPath();ctx.moveTo(85,1210);ctx.lineTo(995,1210);ctx.stroke();text("تابع أسعار الدولار في العراق",995,1260,22,"#dceaff","right",700);text("aehmnazar1234533-bot.github.io/Dolary",85,1260,17,"#89a9d7","left",700);
+ text("المحافظة",925,1055,19,"#91acd4","right",700);text(info.province||"—",925,1100,24,"#ffffff","right",800);text("آخر تحديث",540,1055,19,"#91acd4","right",700);text(info.updated||"وقت التحديث غير متاح",540,1100,20,"#ffffff","right",700);
+ ctx.strokeStyle="rgba(175,205,255,.2)";ctx.beginPath();ctx.moveTo(85,1210);ctx.lineTo(995,1210);ctx.stroke();text("تابع أسعار الدولار في العراق",995,1255,19,"#dceaff","right",700);text("aehmnazar1234533-bot.github.io/Dolary",85,1255,14,"#89a9d7","left",700);
 }
 function renderDailyCard(city){
  const canvas=document.getElementById("dailyShareCanvas");if(!canvas)return;
