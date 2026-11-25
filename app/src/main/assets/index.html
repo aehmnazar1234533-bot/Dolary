@@ -1187,24 +1187,82 @@ function renderDailyCard(p) {
   paintDolaryDailyCard(canvas,{province:p&&p.name?p.name:selectedProvince,slug:p&&p.slug?p.slug:"",rate:p&&p.rate!=null&&Number.isFinite(Number(p.rate))?Number(p.rate):null,updated:updatedText,stale:!!(p&&p.stale)});
 }
 document.getElementById("shareDailyCard")?.addEventListener("click",()=>{
+  const button=document.getElementById("shareDailyCard");
   const p=provinces.find(x=>x.name===selectedProvince)||provinces[0];
-  if(!p||!Number.isFinite(Number(p.rate))||Number(p.rate)<=0){showToast("السعر غير متاح حالياً، حدّث الأسعار أولاً");return;}
+  if(!p||!Number.isFinite(Number(p.rate))||Number(p.rate)<=0){
+    showToast("السعر غير متاح حالياً، حدّث الأسعار أولاً");
+    return;
+  }
   const canvas=document.getElementById("dailyShareCanvas");
+  if(!canvas||typeof canvas.toBlob!=="function"){
+    showToast("جهازك لا يدعم تجهيز صورة البطاقة");
+    return;
+  }
+  if(button){button.disabled=true;button.textContent="جاري تجهيز البطاقة…";}
+  const finish=()=>{
+    if(button){button.disabled=false;button.textContent="مشاركة بطاقة اليوم　↗";}
+  };
+  const caption="الدولار اليوم في "+p.name+": "+money(p.rate)+" د.ع لكل 100 دولار. تابع دولاري: https://aehmnazar1234533-bot.github.io/Dolary/";
   try{
-    if(!canvas||!canvas.getContext("2d"))throw new Error("بطاقة المشاركة غير جاهزة");
-    const dataUrl=canvas.toDataURL("image/jpeg",.94);
-    if(!dataUrl||!dataUrl.startsWith("data:image/jpeg;base64,"))throw new Error("تعذر تصدير البطاقة");
-    const caption="الدولار اليوم في "+p.name+": "+money(p.rate)+" د.ع لكل 100 دولار. تابع دولاري: https://aehmnazar1234533-bot.github.io/Dolary/";
-    if(window.AndroidBridge&&AndroidBridge.shareDailyCard){AndroidBridge.shareDailyCard(dataUrl.substring(dataUrl.indexOf(",")+1),caption);return;}
     canvas.toBlob(async blob=>{
-      if(!blob)return;
-      const file=new File([blob],"dolary-daily-card.jpg",{type:"image/jpeg"});
+      if(!blob){
+        finish();
+        showToast("تعذر إنشاء صورة البطاقة، حاول مرة ثانية");
+        return;
+      }
+      const file=new File([blob],"dolary-daily-card.jpg",{type:"image/jpeg",lastModified:Date.now()});
+      if(window.AndroidBridge&&typeof AndroidBridge.shareDailyCard==="function"){
+        try{
+          const reader=new FileReader();
+          reader.onerror=()=>{
+            finish();
+            showToast("تعذر قراءة صورة البطاقة، حاول مرة ثانية");
+          };
+          reader.onload=()=>{
+            try{
+              const dataUrl=String(reader.result||"");
+              const comma=dataUrl.indexOf(",");
+              if(comma<0)throw new Error("Invalid image data");
+              AndroidBridge.shareDailyCard(dataUrl.slice(comma+1),caption);
+              finish();
+            }catch(error){
+              finish();
+              showToast("تعذرت مشاركة البطاقة، حاول مرة ثانية");
+            }
+          };
+          reader.readAsDataURL(blob);
+        }catch(error){
+          finish();
+          showToast("تعذر تجهيز صورة البطاقة حالياً");
+        }
+        return;
+      }
       try{
-        if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]}))await navigator.share({files:[file],title:"بطاقة دولاري اليومية",text:caption});
-        else{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="dolary-daily-card.jpg";a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);showToast("تم تجهيز بطاقة دولاري للمشاركة");}
-      }catch(error){if(error&&error.name!=="AbortError")showToast("تعذرت المشاركة، حاول مرة ثانية");}
+        if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+          await navigator.share({files:[file],title:"بطاقة دولاري اليومية",text:caption});
+        }else{
+          const url=URL.createObjectURL(blob),a=document.createElement("a");
+          a.href=url;a.download="dolary-daily-card.jpg";
+          document.body.appendChild(a);a.click();a.remove();
+          setTimeout(()=>URL.revokeObjectURL(url),30000);
+          showToast("تم تنزيل بطاقة دولاري، ويمكنك مشاركتها الآن");
+        }
+      }catch(error){
+        if(error&&error.name!=="AbortError"){
+          try{
+            const url=URL.createObjectURL(blob),a=document.createElement("a");
+            a.href=url;a.download="dolary-daily-card.jpg";
+            document.body.appendChild(a);a.click();a.remove();
+            setTimeout(()=>URL.revokeObjectURL(url),30000);
+            showToast("تم تنزيل البطاقة بدلاً من المشاركة المباشرة");
+          }catch(_){showToast("تعذرت المشاركة، حاول مرة ثانية");}
+        }
+      }finally{finish();}
     },"image/jpeg",.94);
-  }catch(error){showToast("تعذر تجهيز صورة البطاقة حالياً");}
+  }catch(error){
+    finish();
+    showToast("تعذر تجهيز صورة البطاقة حالياً");
+  }
 });
 
 document.getElementById("openAboutApp")?.addEventListener("click", () => {
