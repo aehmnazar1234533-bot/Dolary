@@ -287,6 +287,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         @JavascriptInterface
+        fun setQuietHours(enabled: Boolean, start: String, end: String) {
+            val validTime = Regex("^(?:[01]\\d|2[0-3]):[0-5]\\d$")
+            if (!validTime.matches(start) || !validTime.matches(end) || start == end) return
+            prefs.edit().putBoolean("quiet_hours_enabled", enabled).putString("quiet_hours_start", start).putString("quiet_hours_end", end).apply()
+        }
+
+        @JavascriptInterface
         fun setTargetAlert(rate: Int, direction: String, province: String) {
             if (rate <= 0 || province.isBlank()) return
             val safeDirection = if (direction == "below") "below" else "above"
