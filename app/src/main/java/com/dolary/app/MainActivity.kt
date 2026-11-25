@@ -309,7 +309,10 @@ class MainActivity : AppCompatActivity() {
                 else -> 15
             }
             prefs.edit().putInt(KEY_INTERVAL_MIN, safe).apply()
-            if (prefs.getBoolean(KEY_AUTO_UPDATE, true)) scheduleBackgroundUpdates()
+            if (prefs.getBoolean(KEY_AUTO_UPDATE, true)) {
+                RateWorker.cancel(applicationContext)
+                RateWorker.schedule(applicationContext, safe)
+            }
         }
 
         @JavascriptInterface
