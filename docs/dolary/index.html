@@ -408,7 +408,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
   const fallback=Number(city.usd_iqd_per_100);
   return Number.isFinite(fallback)&&fallback>0?fallback:null;
  }
- function animateNumber(element,target,suffix='',fractionDigits=0){
+ function animateNumber(element,target,suffix='',fractionDigits=0,prefix=''){
   const nextValue=Number(target);
   if(!Number.isFinite(nextValue)){element.textContent='—';return;}
   const previousValue=Number(element.dataset.currentValue);
@@ -420,7 +420,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
   element.dataset.currentValue=String(nextValue);
   element.classList.remove('number-change');
   if(!changed||reduceMotion){
-   element.textContent=(element===convertedEl?fmtCalc:fmt)(nextValue,fractionDigits)+suffix;
+   element.textContent=prefix+(element===convertedEl?fmtCalc:fmt)(nextValue,fractionDigits)+suffix;
    return;
   }
   const duration=element===rateEl?720:380;
@@ -435,7 +435,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
    if(progress<1){
     numberFrames.set(element,requestAnimationFrame(step));
    }else{
-    element.textContent=fmt(nextValue,fractionDigits)+suffix;
+    element.textContent=prefix+fmtCalc(nextValue,fractionDigits)+suffix;
     numberFrames.delete(element);
     element.classList.remove('number-change');
    }
@@ -467,7 +467,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
    convertedEl.textContent='—';
    return;
   }
-  animateNumber(convertedEl,result,convertDirection==='usd'?' د.ع':' USD',convertDirection==='usd'?0:2);
+  animateNumber(convertedEl,result,convertDirection==='usd'?' د.ع':'',convertDirection==='usd'?0:2,convertDirection==='usd'?'':'USD ');
  }
  function renderProvinceCards(){
   provinceRates.replaceChildren();
