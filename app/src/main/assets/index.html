@@ -330,6 +330,23 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           </label>
         </div>
 
+        <div class="settings-card" style="margin-top:14px">
+          <div class="setting-block">
+            <strong>تنبيه عند سعر محدد</strong>
+            <span>اختار المحافظة والسعر، ودولاري ينبهك عند وصول السعر للهدف أو تجاوزه</span>
+            <label class="field-label" for="targetProvince">المحافظة</label>
+            <select id="targetProvince" class="province-picker"><option value="بغداد">بغداد</option></select>
+            <label class="field-label" for="targetRate">السعر المستهدف لكل 100 دولار (دينار)</label>
+            <input id="targetRate" type="number" min="1" step="1" inputmode="numeric" placeholder="مثلاً 150000" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font:inherit">
+            <div class="seg" id="targetDirection" role="radiogroup" aria-label="اتجاه التنبيه">
+              <button type="button" data-direction="above">عند الوصول أو الارتفاع</button>
+              <button type="button" data-direction="below">عند الوصول أو الانخفاض</button>
+            </div>
+            <button type="button" id="saveTargetAlert" style="width:100%;margin-top:12px;padding:13px;border:0;border-radius:13px;background:var(--accent);color:#07111f;font:inherit;font-weight:800">حفظ التنبيه</button>
+            <span id="targetAlertStatus" style="display:block;margin-top:9px">التنبيه غير مضبوط</span>
+          </div>
+        </div>
+
         <div class="subsection-title">آخر التنبيهات</div>
         <div id="notificationFeed" class="notification-feed"></div>
       </section>
@@ -783,6 +800,32 @@ window.refreshNotificationPermissionStatus = refreshNotificationPermissionStatus
 document.getElementById("notificationSettingsBtn").addEventListener("click", () => {
   if (window.AndroidBridge && AndroidBridge.openNotificationSettings) AndroidBridge.openNotificationSettings();
 });
+const targetConfigKey = "dolaryTargetAlert";
+let targetAlert = (() => { try { const x=JSON.parse(localStorage.getItem(targetConfigKey)||"null"); return x && typeof x==="object" ? x : null; } catch(e){ return null; } })();
+function renderTargetAlert(){
+  const province=document.getElementById("targetProvince");
+  const input=document.getElementById("targetRate");
+  const status=document.getElementById("targetAlertStatus");
+  if(!province||!input||!status)return;
+  province.innerHTML=provinces.map(p=>`<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join("");
+  if(targetAlert){ province.value=targetAlert.province; input.value=targetAlert.rate; }
+  document.querySelectorAll("#targetDirection button").forEach(b=>b.classList.toggle("active",b.dataset.direction===(targetAlert?.direction||"above")));
+  status.textContent=targetAlert ? `مفعّل: ${targetAlert.province} عند ${money(targetAlert.rate)} د.ع (${targetAlert.direction==="below"?"عند الانخفاض":"عند الارتفاع"})` : "التنبيه غير مضبوط";
+}
+document.querySelectorAll("#targetDirection button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#targetDirection button").forEach(x=>x.classList.toggle("active",x===b));
+}));
+document.getElementById("saveTargetAlert").addEventListener("click",()=>{
+  const rate=Number(document.getElementById("targetRate").value);
+  const province=document.getElementById("targetProvince").value;
+  const direction=document.querySelector("#targetDirection button.active")?.dataset.direction||"above";
+  if(!Number.isFinite(rate)||rate<=0){showToast("اكتب سعر مستهدف صحيح");return;}
+  targetAlert={rate:Math.round(rate),province,direction};
+  localStorage.setItem(targetConfigKey,JSON.stringify(targetAlert));
+  if(window.AndroidBridge?.setTargetAlert) AndroidBridge.setTargetAlert(targetAlert.rate,targetAlert.direction,targetAlert.province);
+  renderTargetAlert(); showToast("تم حفظ تنبيه السعر المستهدف");
+});
+
 document.getElementById("notifyToggle").addEventListener("change", e => {
   const enabled = e.target.checked;
   localStorage.setItem("notifyEnabledDollarIraq", enabled ? "1":"0");
@@ -1016,8 +1059,10 @@ document.getElementById("mainRate").innerHTML = `جاري جلب السعر <spa
 renderRates();
 renderFavorites();
 renderNotifications();
+renderTargetAlert();
 
 if (window.AndroidBridge) {
+  if (targetAlert && AndroidBridge.setTargetAlert) AndroidBridge.setTargetAlert(targetAlert.rate,targetAlert.direction,targetAlert.province);
   AndroidBridge.setNotificationsEnabled(document.getElementById("notifyToggle").checked);
   AndroidBridge.setAutoUpdateEnabled(document.getElementById("autoUpdateToggle").checked);
   AndroidBridge.setUpdateIntervalMinutes(intervalMinutes);
