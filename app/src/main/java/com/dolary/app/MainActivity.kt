@@ -377,6 +377,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         @JavascriptInterface
+        fun shareDolaryWebsite() {
+            runOnUiThread {
+                try {
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_SUBJECT, "موقع دولاري - أسعار الدولار في العراق")
+                        putExtra(Intent.EXTRA_TEXT, "تابع أسعار الدولار في محافظات العراق عبر موقع دولاري:\nhttps://aehmnazar1234533-bot.github.io/Dolary/")
+                    }
+                    startActivity(Intent.createChooser(shareIntent, "مشاركة موقع دولاري"))
+                } catch (_: Exception) {
+                }
+            }
+        }
+
+        @JavascriptInterface
         fun openPrivacyPolicy() {
             runOnUiThread {
                 try {
