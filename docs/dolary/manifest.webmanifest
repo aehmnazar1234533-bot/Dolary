@@ -1,28 +1,30 @@
 {
-  "id": "/dolary/",
+  "id": "https://aehamtech.top/dolary/",
   "name": "دولاري - سعر الدولار في العراق",
   "short_name": "دولاري",
   "description": "تابع سعر الدولار مقابل الدينار العراقي في محافظات العراق.",
   "lang": "ar-IQ",
   "dir": "rtl",
-  "start_url": "/dolary/",
-  "scope": "/dolary/",
+  "start_url": "https://aehamtech.top/dolary/",
+  "scope": "https://aehamtech.top/dolary/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#080d1b",
   "theme_color": "#080d1b",
+  "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "./dolary-mark.svg",
-      "sizes": "192x192",
+      "src": "https://aehamtech.top/dolary/dolary-mark.svg",
+      "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "./dolary-mark.svg",
+      "src": "https://aehamtech.top/dolary/dolary-mark.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ]
 }
