@@ -1202,8 +1202,8 @@ document.getElementById("shareDailyCard")?.addEventListener("click",()=>{
     return;
   }
   const canvas=document.getElementById("dailyShareCanvas");
-  if(!canvas||typeof canvas.toBlob!=="function"){
-    showToast("جهازك لا يدعم تجهيز صورة البطاقة");
+  if(!canvas){
+    showToast("بطاقة اليوم غير جاهزة، حاول مرة ثانية");
     return;
   }
   if(button){button.disabled=true;button.textContent="جاري تجهيز البطاقة…";}
