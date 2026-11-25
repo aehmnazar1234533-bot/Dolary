@@ -503,6 +503,12 @@ function paintDolaryDailyCard(canvas,info){
  const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#123a74");bg.addColorStop(.52,"#0b2348");bg.addColorStop(1,"#0a1c3a");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
  const glow=ctx.createRadialGradient(870,160,20,870,160,690);glow.addColorStop(0,"rgba(65,150,255,.34)");glow.addColorStop(1,"rgba(65,150,255,0)");ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
  const lowerGlow=ctx.createRadialGradient(90,1190,10,90,1190,430);lowerGlow.addColorStop(0,"rgba(80,150,255,.17)");lowerGlow.addColorStop(1,"rgba(80,150,255,0)");ctx.fillStyle=lowerGlow;ctx.fillRect(0,0,w,h);
+  ctx.save();
+  ctx.globalAlpha = 0.30;
+  ctx.translate(105, 430);
+  ctx.scale(2.8, 3.25);
+  drawDolaryProvinceLandmark(ctx, info.slug || "", 0, 0, 310, 155);
+  ctx.restore();
   ctx.save();ctx.globalAlpha=1;ctx.font="900 720px Arial, sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="rgba(255,255,255,.065)";ctx.shadowColor="rgba(80,150,255,.52)";ctx.shadowBlur=42;ctx.fillText("$",260,790);ctx.shadowBlur=2;ctx.fillStyle="rgba(150,195,255,.035)";ctx.fillText("$",265,790);ctx.restore();
  ctx.save();ctx.strokeStyle="rgba(151,195,255,.09)";ctx.lineWidth=2;for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(70,1120,220+i*75,0,Math.PI*2);ctx.stroke();}ctx.restore();
  rounded(35,35,w-70,h-70,44);ctx.strokeStyle="rgba(178,211,255,.22)";ctx.lineWidth=2;ctx.stroke();
@@ -514,13 +520,13 @@ function paintDolaryDailyCard(canvas,info){
  const value=info.rate==null?"غير متوفر":Number(info.rate).toLocaleString("en-US",{maximumFractionDigits:0});text(value,w/2,845,104,"#ffffff","center",900);text("دينار عراقي",w/2,905,29,"#8fb8f0","center",800);
 
   rounded(85,1000,910,174,32);ctx.fillStyle="rgba(255,255,255,.075)";ctx.fill();ctx.strokeStyle="rgba(175,205,255,.16)";ctx.stroke();
-  drawDolaryProvinceLandmark(ctx,info.slug||"",390,1017,300,140);
+
   const today=new Date().toLocaleDateString("en-GB");
   text("تاريخ اليوم",235,1057,19,"#91acd4","center",700);
   text(today,235,1110,25,"#ffffff","center",800);
   text("المحافظة",845,1057,19,"#91acd4","center",700);
   text(info.province||"—",845,1110,25,"#ffffff","center",800,250);
-  ctx.strokeStyle="rgba(175,205,255,.18)";ctx.beginPath();ctx.moveTo(385,1028);ctx.lineTo(385,1145);ctx.moveTo(695,1028);ctx.lineTo(695,1145);ctx.stroke();
+  ctx.strokeStyle="rgba(175,205,255,.18)";ctx.beginPath();ctx.moveTo(540,1028);ctx.lineTo(540,1145);ctx.stroke();
  ctx.strokeStyle="rgba(175,205,255,.2)";ctx.beginPath();ctx.moveTo(85,1210);ctx.lineTo(995,1210);ctx.stroke();text("تابع أسعار الدولار في العراق",995,1255,19,"#dceaff","right",700);text("aehmnazar1234533-bot.github.io/Dolary",85,1255,14,"#89a9d7","left",700);
 }
 function renderDailyCard(city){
