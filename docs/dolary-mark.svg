@@ -3,9 +3,8 @@
  <linearGradient id="d" x1="80" y1="80" x2="430" y2="440" gradientUnits="userSpaceOnUse"><stop stop-color="#6FD6FF"/><stop offset=".28" stop-color="#1677FF"/><stop offset=".72" stop-color="#063EAD"/><stop offset="1" stop-color="#021D63"/></linearGradient>
  <linearGradient id="s" x1="180" y1="130" x2="350" y2="390" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF"/><stop offset=".45" stop-color="#DCE5F1"/><stop offset="1" stop-color="#8FA6C2"/></linearGradient>
  <linearGradient id="gold" x1="170" y1="140" x2="350" y2="390" gradientUnits="userSpaceOnUse"><stop stop-color="#FFE58A"/><stop offset=".5" stop-color="#F5B62E"/><stop offset="1" stop-color="#A96800"/></linearGradient>
- <filter id="g"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>
-<g filter="url(#g)">
+ </defs>
+<g>
  <path d="M139 87C178 118 218 133 270 139c77 9 129 43 148 105 18 60 2 126-45 169-48 44-113 58-175 36l18-48c45 14 89 3 119-27 30-30 39-73 24-113-14-37-46-57-97-63-70-8-123-34-155-79z" fill="url(#d)" stroke="#63C8FF" stroke-width="5"/>
  <path d="M140 87c39 31 80 45 130 51 77 9 129 43 148 105" stroke="url(#gold)" stroke-width="9" stroke-linecap="round"/>
  <path d="M153 139c34 30 73 42 120 43 39 1 70 11 92 30l-31 39c-15-12-36-18-63-18-67 0-118-22-151-65z" fill="url(#d)"/>
