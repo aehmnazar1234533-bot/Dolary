@@ -391,7 +391,7 @@ class MainActivity : AppCompatActivity() {
         fun openDolaryWebsite() {
             runOnUiThread {
                 try {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aehmnazar1234533-bot.github.io/Dolary/")))
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aehamtech.top/dolary/")))
                 } catch (_: Exception) {
                 }
             }
@@ -404,7 +404,7 @@ class MainActivity : AppCompatActivity() {
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_SUBJECT, "موقع دولاري - أسعار الدولار في العراق")
-                        putExtra(Intent.EXTRA_TEXT, "تابع أسعار الدولار في محافظات العراق عبر موقع دولاري:\nhttps://aehmnazar1234533-bot.github.io/Dolary/")
+                        putExtra(Intent.EXTRA_TEXT, "تابع أسعار الدولار في محافظات العراق عبر موقع دولاري:\nhttps://aehamtech.top/dolary/")
                     }
                     startActivity(Intent.createChooser(shareIntent, "مشاركة موقع دولاري"))
                 } catch (_: Exception) {
@@ -524,7 +524,7 @@ class MainActivity : AppCompatActivity() {
         fun openPrivacyPolicy() {
             runOnUiThread {
                 try {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aehmnazar1234533-bot.github.io/Dolary/privacy_policy.html")))
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aehamtech.top/dolary/privacy_policy.html")))
                 } catch (_: Exception) {
                 }
             }
@@ -662,7 +662,6 @@ class MainActivity : AppCompatActivity() {
             if (sides != null) {
                 for (j in 0 until sides.length()) {
                     val side = sides.optJSONObject(j) ?: continue
-                    if (!side.isNull("side")) continue
                     val value = side.optDouble("usd_iqd_per_100", Double.NaN)
                     if (value.isFinite() && value > 0.0 && value <= Int.MAX_VALUE) return true
                 }
