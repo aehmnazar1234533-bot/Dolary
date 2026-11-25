@@ -851,5 +851,34 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   });
 }
 </script>
+
+<script>
+(function(){
+  function track(name, props){ try{ window.dolaryTrack && window.dolaryTrack(name, props || {}); }catch(_){ } }
+  document.addEventListener('click', function(e){
+    const el=e.target.closest('button,a,[data-analytics]');
+    if(!el) return;
+    const id=el.id || '';
+    const custom=el.getAttribute('data-analytics') || '';
+    const map={
+      'refreshBtn':'rate_refresh',
+      'shareDailyCard':'share_daily_card',
+      'savePriceAlert':'price_alert_saved',
+      'removePriceAlert':'price_alert_removed',
+      'provincePickerOpen':'province_picker_open',
+      'notificationSettingsBtn':'notification_settings_open'
+    };
+    const event=custom || map[id];
+    if(event) track(event);
+  }, {passive:true});
+  document.addEventListener('change', function(e){
+    const el=e.target;
+    if(!el) return;
+    if(el.id==='alertProvince') track('price_alert_province_changed');
+    if(el.id==='provinceSelect') track('province_changed');
+    if(el.id==='alertCondition') track('price_alert_condition_changed');
+  }, {passive:true});
+})();
+</script>
 </body>
 </html>
