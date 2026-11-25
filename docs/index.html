@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080d1b">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/aehmnazar1234533-bot/Dolary/main/app/src/main/assets/dolary_logo.png">
+<link rel="apple-touch-icon" href="./dolary-icon.webp">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="دولاري">
@@ -16,12 +16,12 @@
 <meta name="keywords" content="سعر الدولار الان, سعر الدولار الآن, سعر الدولار هسه, سعر الدولار حاليا, بيش الدولار اليوم, شكد الدولار اليوم, الدولار هسه, الدولار الآن, الدولار اليوم, سعر الدولار اليوم في العراق, سعر الدولار مقابل الدينار, الدولار والدينار, الدولار والدينار العراقي, سعر السوق الموازي, سعر الدولار بغداد, تحويل الدولار إلى دينار, دولار, الدولار, الدينار العراقي, دولاري">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://aehmnazar1234533-bot.github.io/Dolary/">
-<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/aehmnazar1234533-bot/Dolary/main/app/src/main/assets/dolary_logo.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/aehmnazar1234533-bot/Dolary/main/app/src/main/assets/dolary_logo.png">
+<link rel="icon" type="image/png" href="./dolary-icon.webp">
+<meta property="og:image" content="./dolary-icon.webp">
 <meta property="og:image:alt" content="شعار تطبيق دولاري">
 <meta name="twitter:title" content="دولاري | سعر الدولار اليوم في العراق">
 <meta name="twitter:description" content="تابع سعر الدولار مقابل الدينار العراقي في المحافظات، واستخدم حاسبة دولاري للتحويل بالاتجاهين.">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/aehmnazar1234533-bot/Dolary/main/app/src/main/assets/dolary_logo.png">
+<meta name="twitter:image" content="./dolary-icon.webp">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ar_IQ">
 <meta property="og:title" content="دولاري | سعر الدولار اليوم في العراق">
@@ -169,7 +169,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 </head>
 <body>
 <header class="wrap nav">
- <a class="brand" href="#home" aria-label="دولاري الصفحة الرئيسية"><span class="logo"><img src="https://raw.githubusercontent.com/aehmnazar1234533-bot/Dolary/main/app/src/main/assets/dolary_logo.png" alt="شعار دولاري"></span><span>DOLARY<small>دولاري</small></span></a>
+ <a class="brand" href="#home" aria-label="دولاري الصفحة الرئيسية"><span class="logo"><img src="./dolary-icon.webp" alt="شعار دولاري"></span><span>DOLARY<small>دولاري</small></span></a>
  <nav class="navlinks" aria-label="القائمة الرئيسية"><a href="#rate">سعر الصرف</a><a href="#convert">حوّل الآن</a><a href="#features">مميزاتنا</a></nav>
  <a class="nav-cta" href="#download">تحميل التطبيق</a>
 </header>
@@ -398,7 +398,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
   renderDailyCard(city);
  }
 
-const dailyCardLogo=new Image();dailyCardLogo.crossOrigin="anonymous";dailyCardLogo.decoding="async";dailyCardLogo.onload=()=>{if(window.__dailyCardInfo)paintDolaryDailyCard(document.getElementById("dailyShareCanvas"),window.__dailyCardInfo);};dailyCardLogo.onerror=()=>{dailyCardLogo.dataset.failed="true";};dailyCardLogo.src="https://raw.githubusercontent.com/aehmnazar1234533-bot/Dolary/main/app/src/main/assets/dolary_logo.png";
+const dailyCardLogo=new Image();dailyCardLogo.crossOrigin="anonymous";dailyCardLogo.decoding="async";dailyCardLogo.onload=()=>{if(window.__dailyCardInfo)paintDolaryDailyCard(document.getElementById("dailyShareCanvas"),window.__dailyCardInfo);};dailyCardLogo.onerror=()=>{dailyCardLogo.dataset.failed="true";};dailyCardLogo.src="./dolary-icon.webp";
 
 function drawDolaryProvinceLandmark(ctx,slug,x,y,w,h){
   ctx.save();
