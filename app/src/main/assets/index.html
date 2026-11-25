@@ -1028,7 +1028,15 @@ function updateSelectedProvince(){
 const dailyCardLogo=new Image();
 const redrawDolaryCard=()=>{if(window.__dailyCardInfo)paintDolaryDailyCard(document.getElementById("dailyShareCanvas"),window.__dailyCardInfo);};
 dailyCardLogo.onload=redrawDolaryCard;
-dailyCardLogo.src="dolary-icon.webp";
+dailyCardLogo.onerror=redrawDolaryCard;
+if(window.AndroidBridge&&typeof AndroidBridge.getDailyCardLogoBase64==="function"){
+  try{
+    const packagedLogo=AndroidBridge.getDailyCardLogoBase64();
+    dailyCardLogo.src=packagedLogo?"data:image/webp;base64,"+packagedLogo:"dolary-icon.webp";
+  }catch(_){dailyCardLogo.src="dolary-icon.webp";}
+}else{
+  dailyCardLogo.src="dolary-icon.webp";
+}
 
 function drawDolaryProvinceLandmark(ctx,slug,x,y,w,h){
   ctx.save();
@@ -1203,6 +1211,27 @@ document.getElementById("shareDailyCard")?.addEventListener("click",()=>{
     if(button){button.disabled=false;button.textContent="مشاركة بطاقة اليوم　↗";}
   };
   const caption="الدولار اليوم في "+p.name+": "+money(p.rate)+" د.ع لكل 100 دولار. تابع دولاري: https://aehmnazar1234533-bot.github.io/Dolary/";
+  if(window.AndroidBridge&&typeof AndroidBridge.shareDailyCard==="function"){
+    try{
+      // The Android app receives the JPEG directly; no Blob or FileReader round-trip is needed.
+      const dataUrl=canvas.toDataURL("image/jpeg",0.88);
+      const comma=dataUrl.indexOf(",");
+      if(comma<0||!dataUrl.startsWith("data:image/jpeg;base64,"))throw new Error("تعذر تحويل البطاقة إلى JPEG");
+      const encodedImage=dataUrl.slice(comma+1);
+      if(!encodedImage||encodedImage.length>16000000)throw new Error("حجم البطاقة أكبر من المسموح");
+      AndroidBridge.shareDailyCard(encodedImage,caption);
+    }catch(error){
+      showToast("تعذر تجهيز البطاقة: "+(error&&error.message?error.message:"خطأ غير معروف"));
+    }finally{
+      finish();
+    }
+    return;
+  }
+  if(typeof canvas.toBlob!=="function"){
+    finish();
+    showToast("هذا المتصفح لا يدعم تجهيز صورة البطاقة");
+    return;
+  }
   try{
     canvas.toBlob(async blob=>{
       if(!blob){
@@ -1211,32 +1240,6 @@ document.getElementById("shareDailyCard")?.addEventListener("click",()=>{
         return;
       }
       const file=new File([blob],"dolary-daily-card.jpg",{type:"image/jpeg",lastModified:Date.now()});
-      if(window.AndroidBridge&&typeof AndroidBridge.shareDailyCard==="function"){
-        try{
-          const reader=new FileReader();
-          reader.onerror=()=>{
-            finish();
-            showToast("تعذر قراءة صورة البطاقة، حاول مرة ثانية");
-          };
-          reader.onload=()=>{
-            try{
-              const dataUrl=String(reader.result||"");
-              const comma=dataUrl.indexOf(",");
-              if(comma<0)throw new Error("Invalid image data");
-              AndroidBridge.shareDailyCard(dataUrl.slice(comma+1),caption);
-              finish();
-            }catch(error){
-              finish();
-              showToast("تعذرت مشاركة البطاقة، حاول مرة ثانية");
-            }
-          };
-          reader.readAsDataURL(blob);
-        }catch(error){
-          finish();
-          showToast("تعذر تجهيز صورة البطاقة حالياً");
-        }
-        return;
-      }
       try{
         if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
           await navigator.share({files:[file],title:"بطاقة دولاري اليومية",text:caption});
