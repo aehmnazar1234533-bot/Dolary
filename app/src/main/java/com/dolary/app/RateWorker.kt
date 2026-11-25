@@ -38,6 +38,7 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
 
     companion object {
         private const val WORK_NAME = "dolary_rate_refresh"
+        private const val KEY_NOTIFICATION_BASELINE = "notification_rates_baseline"
 
         fun schedule(context: Context, intervalMinutes: Int) {
             val minutes = when (intervalMinutes) {
@@ -88,12 +89,15 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
             // Never replace a known-good cache with an empty, malformed, or unusable response.
             if (currentRates.isEmpty()) return Result.retry()
 
-            val previous = prefs.getString(MainActivity.KEY_LAST_JSON, null)
-            val previousRates = previous?.let { parseRates(it) } ?: emptyMap()
-            prefs.edit().putString(MainActivity.KEY_LAST_JSON, response).apply()
+            // Use an alert-only snapshot: the foreground UI also updates KEY_LAST_JSON,
+            // which otherwise consumes the change before this worker can compare it.
+            val previousForAlerts = prefs.getString(KEY_NOTIFICATION_BASELINE, null)
+            val previousRates = previousForAlerts?.let { parseRates(it) } ?: emptyMap()
+            prefs.edit().putString(KEY_NOTIFICATION_BASELINE, response).apply()
 
-            if (prefs.getBoolean(MainActivity.KEY_NOTIFICATIONS, true) && previousRates.isNotEmpty()) {
-                notifyIfChanged(context, previous!!, response, prefs)
+            // First successful run only seeds the baseline; it must not create a false alert.
+            if (previousRates.isNotEmpty() && prefs.getBoolean(MainActivity.KEY_NOTIFICATIONS, true)) {
+                notifyIfChanged(context, previousForAlerts!!, response, prefs)
             }
             Result.success()
         } catch (e: Exception) {
@@ -146,19 +150,18 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
         }
         val now = System.currentTimeMillis()
         val cooldownMs = TimeUnit.MINUTES.toMillis(30)
-        val changed = targets.mapNotNull { name ->
-            val oldRate = oldMap[name]
-            val newRate = newMap[name]
-            if (oldRate == null || newRate == null) return@mapNotNull null
-            val delta = newRate - oldRate
-            val lastAlert = lastAlertTimes.optLong(name, 0L)
-            val crossedTarget = targetEnabled && name == targetProvince && targetRate > 0 &&
-                if (targetDirection == "below") oldRate > targetRate && newRate <= targetRate
-                else oldRate < targetRate && newRate >= targetRate
-            if (crossedTarget) Triple(name, oldRate, newRate)
-            else if (kotlin.math.abs(delta) < 25 || now - lastAlert < cooldownMs) null
-            else Triple(name, oldRate, newRate)
-        }
+        val changed = RateAlertEvaluator.evaluate(
+            oldRates = oldMap,
+            newRates = newMap,
+            targetProvinces = targets,
+            targetEnabled = targetEnabled,
+            targetProvince = targetProvince,
+            targetRate = targetRate,
+            targetDirection = targetDirection,
+            lastAlertTimes = targets.associateWith { lastAlertTimes.optLong(it, 0L) },
+            nowMillis = now,
+            cooldownMillis = cooldownMs
+        ).map { Triple(it.province, it.oldRate, it.newRate) }
         if (changed.isEmpty()) return
 
         val history = try {

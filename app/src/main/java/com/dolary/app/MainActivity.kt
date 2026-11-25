@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
         navSpacer = findViewById(R.id.navSpacer)
         adContainer = findViewById(R.id.adContainer)
         adMobConsentManager = AdMobConsentManager(this)
-        appOpenAdManager = AppOpenAdManager()
+        appOpenAdManager = AppOpenAdManager(prefs)
         setupAds()
 
         // Edge-to-edge is enforced on recent Android versions: size the coloured bars from the real insets.
@@ -629,6 +629,11 @@ class MainActivity : AppCompatActivity() {
                 null
             )
         }
+    }
+
+    override fun onStop() {
+        appOpenAdManager.onAppBackgrounded()
+        super.onStop()
     }
 
     override fun onPause() {
