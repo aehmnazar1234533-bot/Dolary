@@ -40,6 +40,17 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 .app-hero-coin{position:absolute;z-index:0;left:-10px;bottom:-38px;font-weight:900;font-size:170px;line-height:1;color:rgba(255,255,255,.06);pointer-events:none;animation:floatCoin 7s ease-in-out infinite}
 .rate-value.tick,.result strong.tick{animation:tick .5s cubic-bezier(.2,.8,.2,1);transform-origin:center}
 .result strong{display:block;will-change:transform}
+.province-picker{width:100%;margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:rgba(5,12,27,.72);color:var(--text);font:600 14px inherit;outline:none}
+.province-picker:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #67e8f922}
+.province-section{padding-top:26px}
+.province-rates{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.province-rate{width:100%;text-align:right;padding:17px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035));color:var(--text);cursor:pointer;transition:.2s;font:inherit}
+.province-rate:hover{transform:translateY(-3px);border-color:#67e8f988}
+.province-rate.active{border-color:var(--cyan);background:rgba(103,232,249,.12);box-shadow:0 0 0 1px #67e8f933}
+.province-rate span{display:block;color:var(--muted);font-size:12px}
+.province-rate strong{display:block;font-size:19px;margin-top:8px;letter-spacing:.2px}
+.province-rate small{display:block;color:#8ef0c5;font-size:10px;margin-top:5px}
+.province-empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:22px}
 .card-top .live{position:relative}
 .card-top .live:before{content:"";width:7px;height:7px;border-radius:50%;background:#29d595;box-shadow:0 0 0 4px rgba(41,213,149,.18);animation:pulse 2s infinite}
 @keyframes floatCoin{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-12px) rotate(3deg)}}
@@ -68,7 +79,8 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
  </div>
  <div class="rate-shell" id="rate"><h1 class="rate-heading">الدولار <span class="gradient">اليوم</span></h1><div class="glow"></div><div class="glass rate-card"><div class="app-hero-glow" aria-hidden="true"></div><div class="app-hero-coin" aria-hidden="true">$</div>
   <div class="card-top"><span>مؤشر سعر الصرف</span><span class="live"><i></i> <span id="status">جاري التحديث</span></span></div>
-  <div class="rate-label">سعر 100 دولار أمريكي <span class="flag">🇺🇸</span> في السوق الموازي — <strong id="provinceName">بغداد</strong></div>
+  <div class="rate-label">سعر 100 دولار أمريكي <span class="flag">🇺🇸</span> في السوق الموازي</div>
+  <select class="province-picker" id="provinceSelect" aria-label="اختيار المحافظة"><option value="baghdad">بغداد</option></select>
   <div class="rate-value" id="rateValue">—</div><div class="currency">دينار عراقي لكل 100 دولار <span>🇮🇶</span></div>
   <div class="rate-foot"><span>المصدر: <strong>XEIQD — السوق الموازي</strong></span><span id="updated">بانتظار البيانات</span></div>
  </div></div>
@@ -85,6 +97,10 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
  </div>
 </section>
 <div class="ad-slot" aria-label="مساحة إعلانية"><div><strong>مساحة إعلانية</strong>مساحة مخصصة لإعلان بين الأقسام</div></div>
+<section class="wrap section province-section" id="provinces">
+ <div class="section-head"><h2>أسعار الدولار في المحافظات</h2><p>اختَر المحافظة لمشاهدة سعر 100 دولار، والأسعار المعروضة تُجلب مباشرةً من مصدر التطبيق.</p></div>
+ <div class="province-rates" id="provinceRates" aria-live="polite"><div class="province-empty">جاري تحميل أسعار المحافظات…</div></div>
+</section>
 <section class="wrap section" id="features">
  <div class="section-head"><h2>كل ما تحتاجه، بواجهة واحدة</h2><p>دولاري يجعل متابعة العملات أبسط وأوضح.</p></div>
  <div class="features">
@@ -135,8 +151,35 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 <div class="toast" id="toast" role="status"></div>
 <script>
 (()=>{'use strict';
- const rateEl=document.getElementById('rateValue'),statusEl=document.getElementById('status'),updatedEl=document.getElementById('updated'),usdEl=document.getElementById('usd'),convertedEl=document.getElementById('converted'),errorEl=document.getElementById('error'),provinceEl=document.getElementById('provinceName');
- let ratePer100=null;
+ const rateEl=document.getElementById('rateValue'),statusEl=document.getElementById('status'),updatedEl=document.getElementById('updated'),usdEl=document.getElementById('usd'),convertedEl=document.getElementById('converted'),errorEl=document.getElementById('error'),provinceSelect=document.getElementById('provinceSelect'),provinceRates=document.getElementById('provinceRates');
+ let ratePer100=null,availableCities=[],selectedSlug='baghdad';
+ const cityName=city=>city&&city.name&&city.name.ar?city.name.ar:(city&&city.slug?city.slug:'محافظة');
+ function chooseCity(slug){
+  const city=availableCities.find(item=>item.slug===slug);if(!city)return;
+  selectedSlug=slug;provinceSelect.value=slug;ratePer100=pickDisplayRate(city);
+  animateNumber(rateEl,ratePer100);
+  statusEl.textContent='سعر السوق الموازي';
+  const stamp=city.updated_at||window.__ratesUpdatedAt;
+  updatedEl.textContent=stamp?'آخر تحديث: '+new Date(stamp).toLocaleString('ar-IQ',{dateStyle:'short',timeStyle:'short'}):'تم جلب السعر الآن';
+  calculate();renderProvinceCards();
+ }
+ function renderProvinceCards(){
+  provinceRates.replaceChildren();
+  if(!availableCities.length){const empty=document.createElement('div');empty.className='province-empty';empty.textContent='لا توجد أسعار محافظات متاحة حالياً.';provinceRates.append(empty);return;}
+  availableCities.forEach(city=>{
+   const rate=pickDisplayRate(city),button=document.createElement('button');
+   button.type='button';button.className='province-rate'+(city.slug===selectedSlug?' active':'');
+   button.setAttribute('aria-pressed',String(city.slug===selectedSlug));
+   const name=document.createElement('span');name.textContent=cityName(city);
+   const value=document.createElement('strong');value.textContent=fmt(rate)+' د.ع';
+   const note=document.createElement('small');note.textContent=city.slug===selectedSlug?'المحافظة المختارة':'لكل 100 دولار';
+   button.append(name,value,note);button.addEventListener('click',()=>chooseCity(city.slug));provinceRates.append(button);
+  });
+ }
+ function updateProvinceOptions(){
+  provinceSelect.replaceChildren();
+  availableCities.forEach(city=>{const option=document.createElement('option');option.value=city.slug;option.textContent=cityName(city);provinceSelect.append(option);});
+ }
  const numberFrames=new WeakMap();
  const fmt=(n,max=0)=>new Intl.NumberFormat('ar-IQ',{maximumFractionDigits:max}).format(n);
  function animateNumber(el,target,suffix=''){
@@ -173,23 +216,21 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
    if(!response.ok)throw new Error('تعذر الاتصال بمصدر أسعار السوق الموازي');
    const data=await response.json();
    if(!data||!Array.isArray(data.cities))throw new Error('صيغة بيانات الأسعار غير صحيحة');
-   const city=data.cities.find(c=>c&&c.slug==='baghdad');
-   const value=city?pickDisplayRate(city):null;
-   if(value===null)throw new Error('سعر بغداد غير متوفر حالياً');
-   ratePer100=value;
-   animateNumber(rateEl,value);
-   provinceEl.textContent=city.name&&city.name.ar?city.name.ar:'بغداد';
-   statusEl.textContent='سعر السوق الموازي';
-   const stamp=city.updated_at||data.updated_at;
-   updatedEl.textContent=stamp?'آخر تحديث: '+new Date(stamp).toLocaleString('ar-IQ',{dateStyle:'short',timeStyle:'short'}):'تم جلب السعر الآن';
-   errorEl.textContent='السعر من نفس مصدر تطبيق دولاري، وقد يختلف حسب وقت التحديث والمحافظة ومكتب الصيرفة.';
-   calculate();
+   availableCities=data.cities.filter(city=>city&&city.slug&&pickDisplayRate(city)!==null&&Number.isFinite(pickDisplayRate(city))&&pickDisplayRate(city)>0);
+   if(!availableCities.length)throw new Error('لا توجد أسعار محافظات متاحة حالياً');
+   window.__ratesUpdatedAt=data.updated_at||null;
+   updateProvinceOptions();
+   if(!availableCities.some(city=>city.slug===selectedSlug))selectedSlug=availableCities.some(city=>city.slug==='baghdad')?'baghdad':availableCities[0].slug;
+   chooseCity(selectedSlug);
+   errorEl.textContent='الأسعار تُجلب مباشرةً من نفس مصدر تطبيق دولاري، وقد تختلف حسب وقت التحديث ومكاتب الصيرفة.';
+   renderProvinceCards();
   }catch(e){
    statusEl.textContent='غير متاح حالياً';updatedEl.textContent='تعذر جلب البيانات';
    errorEl.textContent='لم نتمكن من جلب سعر السوق الموازي الآن. حاول لاحقاً؛ لن نعرض سعراً تقديرياً أو رسمياً بدلاً منه.';
-   rateEl.textContent='—';ratePer100=null;calculate();
+   rateEl.textContent='—';ratePer100=null;availableCities=[];updateProvinceOptions();renderProvinceCards();calculate();
   }
  }
+ provinceSelect.addEventListener('change',()=>chooseCity(provinceSelect.value));
  usdEl.addEventListener('input',calculate);
  document.getElementById('year').textContent=new Date().getFullYear();
  loadRate();setInterval(loadRate,15*60*1000);
