@@ -367,6 +367,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         @JavascriptInterface
+        fun openDolaryWebsite() {
+            runOnUiThread {
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aehmnazar1234533-bot.github.io/Dolary/")))
+                } catch (_: Exception) {
+                }
+            }
+        }
+
+        @JavascriptInterface
         fun openPrivacyPolicy() {
             runOnUiThread {
                 try {
