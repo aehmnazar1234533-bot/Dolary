@@ -38,7 +38,8 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 .rate-card>*:not(.app-hero-glow):not(.app-hero-coin){position:relative;z-index:1}
 .app-hero-glow{position:absolute;z-index:0;left:-60px;bottom:-90px;width:240px;height:240px;border-radius:50%;background:rgba(80,150,255,.18);filter:blur(6px);pointer-events:none;animation:driftGlow 9s ease-in-out infinite}
 .app-hero-coin{position:absolute;z-index:0;left:-10px;bottom:-38px;font-weight:900;font-size:170px;line-height:1;color:rgba(255,255,255,.06);pointer-events:none;animation:floatCoin 7s ease-in-out infinite}
-.rate-value.tick{animation:tick .5s cubic-bezier(.2,.8,.2,1)}
+.rate-value.tick,.result strong.tick{animation:tick .5s cubic-bezier(.2,.8,.2,1);transform-origin:center}
+.result strong{display:block;will-change:transform}
 .card-top .live{position:relative}
 .card-top .live:before{content:"";width:7px;height:7px;border-radius:50%;background:#29d595;box-shadow:0 0 0 4px rgba(41,213,149,.18);animation:pulse 2s infinite}
 @keyframes floatCoin{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-12px) rotate(3deg)}}
@@ -136,8 +137,27 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 (()=>{'use strict';
  const rateEl=document.getElementById('rateValue'),statusEl=document.getElementById('status'),updatedEl=document.getElementById('updated'),usdEl=document.getElementById('usd'),convertedEl=document.getElementById('converted'),errorEl=document.getElementById('error'),provinceEl=document.getElementById('provinceName');
  let ratePer100=null;
+ const numberFrames=new WeakMap();
  const fmt=(n,max=0)=>new Intl.NumberFormat('ar-IQ',{maximumFractionDigits:max}).format(n);
- function calculate(){const amount=Number(usdEl.value);convertedEl.textContent=ratePer100!==null&&Number.isFinite(amount)&&amount>=0?fmt(amount*(ratePer100/100),0)+' د.ع':'— د.ع'}
+ function animateNumber(el,target,suffix=''){
+  const previous=numberFrames.get(el);if(previous)cancelAnimationFrame(previous);
+  const from=Number(el.dataset.currentValue);
+  const start=Number.isFinite(from)?from:0;
+  const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const duration=reduced?0:720;
+  const started=performance.now();
+  el.classList.remove('tick');void el.offsetWidth;el.classList.add('tick');
+  const draw=now=>{
+   const progress=duration?Math.min(1,(now-started)/duration):1;
+   const eased=1-Math.pow(1-progress,3);
+   const value=start+(target-start)*eased;
+   el.textContent=fmt(value)+suffix;
+   if(progress<1){numberFrames.set(el,requestAnimationFrame(draw));}
+   else{el.dataset.currentValue=String(target);numberFrames.delete(el);}
+  };
+  numberFrames.set(el,requestAnimationFrame(draw));
+ }
+ function calculate(){const amount=Number(usdEl.value);if(ratePer100!==null&&Number.isFinite(amount)&&amount>=0)animateNumber(convertedEl,amount*(ratePer100/100),' د.ع');else convertedEl.textContent='— د.ع'}
  function pickDisplayRate(city){
   if(Array.isArray(city.sides)){
    const middle=city.sides.find(s=>s&&(s.side===null||typeof s.side==='undefined')&&s.usd_iqd_per_100!=null);
@@ -157,10 +177,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
    const value=city?pickDisplayRate(city):null;
    if(value===null)throw new Error('سعر بغداد غير متوفر حالياً');
    ratePer100=value;
-   rateEl.classList.remove('tick');
-   rateEl.textContent=fmt(value);
-   void rateEl.offsetWidth;
-   rateEl.classList.add('tick');
+   animateNumber(rateEl,value);
    provinceEl.textContent=city.name&&city.name.ar?city.name.ar:'بغداد';
    statusEl.textContent='سعر السوق الموازي';
    const stamp=city.updated_at||data.updated_at;
