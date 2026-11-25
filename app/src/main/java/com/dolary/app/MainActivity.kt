@@ -31,6 +31,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -198,7 +199,19 @@ class MainActivity : AppCompatActivity() {
                     android.view.Gravity.CENTER
                 )
             )
+            banner.adListener = object : AdListener() {
+                override fun onAdLoaded() {
+                    if (!isFinishing && !isDestroyed) adContainer.visibility = View.VISIBLE
+                }
+
+                override fun onAdFailedToLoad(error: com.google.android.gms.ads.LoadAdError) {
+                    // Never reserve a blank strip when AdMob has no fill or the network fails.
+                    adContainer.visibility = View.GONE
+                    adsRequested = false
+                }
+            }
             adView = banner
+            adContainer.visibility = View.GONE
 
             adMobConsentManager.gatherConsent {
                 try {
@@ -224,7 +237,7 @@ class MainActivity : AppCompatActivity() {
         if (!mainPageLoaded || !adConsentReady || adsRequested || isFinishing || isDestroyed) return
         val banner = adView ?: return
         adsRequested = true
-        adContainer.visibility = View.VISIBLE
+        adContainer.visibility = View.GONE
         banner.loadAd(AdRequest.Builder().build())
         appOpenAdManager.loadAd(this)
     }
@@ -503,9 +516,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun pushCachedDataToWebView() {
-        val cached = prefs.getString(KEY_LAST_JSON, null) ?: return
-        val quoted = JSONObject.quote(cached)
-        webView.evaluateJavascript("window.setLiveRates($quoted, true, true);", null)
+        val cached = prefs.getString(KEY_LAST_JSON, null)
+        if (!cached.isNullOrBlank()) {
+            val quoted = JSONObject.quote(cached)
+            webView.evaluateJavascript("window.setLiveRates($quoted, true, true);", null)
+        }
+        // History is independent from the rates cache and must still sync after background alerts.
         val history = prefs.getString(KEY_NOTIFICATION_HISTORY, "[]") ?: "[]"
         webView.evaluateJavascript("window.setNativeNotificationHistory(${JSONObject.quote(history)});", null)
     }
@@ -624,6 +640,10 @@ class MainActivity : AppCompatActivity() {
         adView?.resume()
         if (::webView.isInitialized) {
             scheduleBackgroundUpdates()
+            if (mainPageLoaded) {
+                pushCachedDataToWebView()
+                loadAdsWhenReady()
+            }
             webView.evaluateJavascript(
                 "window.refreshNotificationPermissionStatus && window.refreshNotificationPermissionStatus();",
                 null
