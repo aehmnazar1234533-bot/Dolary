@@ -3,28 +3,7 @@
   "name": "دولاري - سعر الدولار في العراق",
   "short_name": "دولاري",
   "description": "تابع سعر الدولار مقابل الدينار العراقي في محافظات العراق.",
-  "lang": "ar-IQ",
-  "dir": "rtl",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "display_override": [
-    "standalone"
-  ],
-  "background_color": "#080d1b",
-  "theme_color": "#080d1b",
-  "icons": [
-    {
-      "src": "./dolary-icon.webp",
-      "sizes": "512x512",
-      "type": "image/webp",
-      "purpose": "any"
-    },
-    {
-      "src": "./apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any"
-    }
-  ]
+  "lang": "ar-IQ", "dir": "rtl", "start_url": "./", "scope": "./", "display": "standalone",
+  "display_override": ["standalone"], "background_color": "#080d1b", "theme_color": "#080d1b",
+  "icons": [{"src":"./dolary-mark.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
 }
