@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         webView.settings.allowFileAccess = false
         webView.settings.allowContentAccess = false
         // The page is bundled locally and does not need WebView network access.
-        webView.settings.blockNetworkLoads = true
+        webView.settings.blockNetworkLoads = false
         // File-URL cross-origin access remains disabled by WebView defaults.
         // The bundled asset is loaded directly; JavaScript cannot access other files.
         webView.settings.javaScriptCanOpenWindowsAutomatically = false
@@ -153,6 +153,7 @@ class MainActivity : AppCompatActivity() {
                 progressBar.visibility = View.GONE
                 mainPageLoaded = true
                 loadAdsWhenReady()
+                webView.evaluateJavascript("(function(){try{var m=document.getElementById('provinceModal');if(m){m.classList.add('hidden');m.classList.remove('closing');m.style.pointerEvents='none';}}catch(e){}})();", null)
                 pushCachedDataToWebView()
                 fetchRates()
                 scheduleBackgroundUpdates()
