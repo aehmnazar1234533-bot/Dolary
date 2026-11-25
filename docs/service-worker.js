@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v5';
+const CACHE_NAME = 'dolary-pwa-v6';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
@@ -53,5 +53,22 @@ self.addEventListener('fetch', event => {
     } catch (_) {
       return cached || Response.error();
     }
+  })());
+});
+
+// Open Dolary when the user taps a price alert notification.
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const target = new URL('./#price-alerts', self.location.href).href;
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of windows) {
+      if ('focus' in client) {
+        await client.focus();
+        if ('navigate' in client) await client.navigate(target);
+        return;
+      }
+    }
+    if (self.clients.openWindow) await self.clients.openWindow(target);
   })());
 });
