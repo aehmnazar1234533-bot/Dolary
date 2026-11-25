@@ -41,6 +41,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.Locale
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
@@ -54,6 +55,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appOpenAdManager: AppOpenAdManager
     private lateinit var prefs: SharedPreferences
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val ratesExecutor = Executors.newSingleThreadExecutor()
+    private val ratesRequestLock = Any()
+    @Volatile private var activeRatesConnection: HttpURLConnection? = null
 
     companion object {
         const val PREFS_NAME = "dolary_prefs"
@@ -415,12 +419,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     // A newer manual/automatic request always wins; slow older responses cannot overwrite it.
-    private var latestRatesRequestId = 0
+    @Volatile private var latestRatesRequestId = 0
 
     private fun fetchRates() {
-        val requestId = ++latestRatesRequestId
+        val requestId = synchronized(ratesRequestLock) {
+            latestRatesRequestId += 1
+            activeRatesConnection?.disconnect()
+            activeRatesConnection = null
+            latestRatesRequestId
+        }
         progressBar.visibility = View.VISIBLE
-        Thread({
+        ratesExecutor.execute {
+            if (requestId != latestRatesRequestId || isFinishing || isDestroyed) return@execute
             var connection: HttpURLConnection? = null
             try {
                 connection = (URL(RATES_URL).openConnection() as HttpURLConnection).apply {
@@ -432,6 +442,11 @@ class MainActivity : AppCompatActivity() {
                     setRequestProperty("Cache-Control", "no-cache")
                     setRequestProperty("User-Agent", "Dolary Android App/1.4")
                 }
+                synchronized(ratesRequestLock) {
+                    if (requestId == latestRatesRequestId) activeRatesConnection = connection
+                    else connection.disconnect()
+                }
+                if (requestId != latestRatesRequestId) return@execute
 
                 val code = connection.responseCode
                 if (code !in 200..299) throw Exception("HTTP $code")
@@ -441,13 +456,10 @@ class MainActivity : AppCompatActivity() {
                 ).use { it.readText() }
 
                 val json = JSONObject(response)
-                if (!hasUsableRates(json)) {
-                    throw Exception("لم تصل أسعار صالحة من المصدر")
-                }
+                if (!hasUsableRates(json)) throw Exception("لم تصل أسعار صالحة من المصدر")
 
                 mainHandler.post {
                     if (requestId != latestRatesRequestId || isFinishing || isDestroyed) return@post
-                    // Save only a validated response and only if it is still the newest request.
                     prefs.edit().putString(KEY_LAST_JSON, response).apply()
                     progressBar.visibility = View.GONE
                     webView.evaluateJavascript(
@@ -465,9 +477,12 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             } finally {
+                synchronized(ratesRequestLock) {
+                    if (activeRatesConnection === connection) activeRatesConnection = null
+                }
                 connection?.disconnect()
             }
-        }, "DolaryRates-$requestId").start()
+        }
     }
 
     private fun hasUsableRates(json: JSONObject): Boolean {
@@ -529,6 +544,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        synchronized(ratesRequestLock) {
+            latestRatesRequestId += 1
+            activeRatesConnection?.disconnect()
+            activeRatesConnection = null
+        }
+        ratesExecutor.shutdownNow()
         adView?.destroy()
         mainHandler.removeCallbacksAndMessages(null)
         if (::webView.isInitialized) {
