@@ -416,7 +416,7 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun getDailyCardLogoBase64(): String {
             return try {
-                this@MainActivity.assets.open("dolary-icon.webp").use { input ->
+                this@MainActivity.assets.open("dolary-mark.svg").use { input ->
                     Base64.encodeToString(input.readBytes(), Base64.NO_WRAP)
                 }
             } catch (_: Exception) {
