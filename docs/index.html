@@ -7,6 +7,11 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080d1b">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/aehmnazar1234533-bot/Dolary/main/app/src/main/assets/dolary_logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="دولاري">
 <meta name="description" content="تابع سعر الدولار الآن مقابل الدينار العراقي في السوق الموازي بمحافظات العراق. اعرف بيش الدولار اليوم وشكد سعر 100 دولار، واستخدم حاسبة تحويل دولاري.">
 <meta name="keywords" content="سعر الدولار الان, سعر الدولار الآن, سعر الدولار هسه, سعر الدولار حاليا, بيش الدولار اليوم, شكد الدولار اليوم, الدولار هسه, الدولار الآن, الدولار اليوم, سعر الدولار اليوم في العراق, سعر الدولار مقابل الدينار, الدولار والدينار, الدولار والدينار العراقي, سعر السوق الموازي, سعر الدولار بغداد, تحويل الدولار إلى دينار, دولار, الدولار, الدينار العراقي, دولاري">
 <meta name="robots" content="index,follow,max-image-preview:large">
@@ -551,5 +556,13 @@ document.getElementById("shareDailyCard").addEventListener("click",()=>{
  var infolinks_wsid = 0;
 </script>
 <script async src="https://resources.infolinks.com/js/infolinks_main.js"></script>
+<script>
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js', { scope: './' })
+      .catch(() => {});
+  });
+}
+</script>
 </body>
 </html>
