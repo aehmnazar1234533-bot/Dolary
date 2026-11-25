@@ -307,6 +307,8 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           <div id="historySummary" style="font-size:11px;color:var(--muted);margin-top:8px"></div>
         </section>
 
+
+<section class="settings-card" style="margin-top:16px;padding:16px" aria-labelledby="converterTitle"><div class="section-head"><div><h2 id="converterTitle" style="font-size:17px">حاسبة تحويل متقدمة</h2><p>حسب سعر المحافظة المختارة حالياً</p></div></div><div class="seg" id="converterDirection" role="group" aria-label="اتجاه التحويل"><button type="button" data-convert="usd" class="active">دولار ← دينار</button><button type="button" data-convert="iqd">دينار ← دولار</button></div><label class="field-label" for="converterAmount" style="display:block;margin-top:12px">المبلغ المراد تحويله</label><input id="converterAmount" type="number" min="0" step="any" inputmode="decimal" value="100" placeholder="اكتب المبلغ" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font:inherit"><div class="mini-box" style="margin-top:12px"><span id="converterResultLabel">القيمة التقريبية بالدينار</span><strong id="converterResult" style="font-size:22px">—</strong></div><p id="converterRateNote" style="font-size:10px;color:var(--muted);line-height:1.8;margin-top:9px">السعر استرشادي من مصدر التطبيق، وليس سعراً مضموناً للبيع أو الشراء.</p></section>
         <div class="info-card">
           <div class="info-icon">i</div>
           <div>
@@ -395,7 +397,7 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           </div>
 
           <div class="setting-block">
-            <strong>فترة التحديث</strong>
+            <div class="setting-block"><strong>أوقات هدوء الإشعارات</strong><span>إيقاف تنبيهات تغيّر السعر خلال الوقت الذي تحدده، مع استمرار تحديث الأسعار</span><label class="switch" style="margin-top:12px"><input type="checkbox" id="quietHoursToggle"><span></span></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><label style="font-size:11px;color:var(--muted)">من <input id="quietStart" type="time" value="22:00" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);color:var(--text)"></label><label style="font-size:11px;color:var(--muted)">إلى <input id="quietEnd" type="time" value="08:00" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);color:var(--text)"></label></div><button type="button" id="saveQuietHours" style="width:100%;margin-top:10px;padding:12px;border:0;border-radius:12px;background:var(--primary);color:#07111f;font:inherit;font-weight:800">حفظ أوقات الهدوء</button><span id="quietHoursStatus" style="display:block;margin-top:8px">الإشعارات تعمل طوال اليوم</span></div><strong>فترة التحديث</strong>
             <span id="intervalValue">كل 15 دقيقة</span>
             <div class="seg" id="intervalSeg" role="radiogroup" aria-label="فترة التحديث">
               <button data-min="15">15 دقيقة</button>
@@ -658,6 +660,7 @@ document.addEventListener("click", e => {
     persistFavorites();
     popFav = name;
     renderRates();
+    if (typeof updateAdvancedConverter === "function") updateAdvancedConverter();
     renderFavorites();
     setTimeout(() => { popFav = null; }, 600);
     showToast(favorites.includes(name) ? "تمت إضافة المحافظة للمفضلة" : "تمت إزالة المحافظة من المفضلة");
@@ -922,6 +925,7 @@ function updateSelectedProvince(){
   document.getElementById("selectedProvinceName").textContent = p.name;
   setMainRate(p.rate);
   renderRateHistory();
+  if (typeof updateAdvancedConverter === "function") updateAdvancedConverter();
   const trend = document.getElementById("mainTrend");
   trend.className = "trend";
   if (p.change == null) trend.textContent = "—";
@@ -1115,6 +1119,15 @@ window.setLiveRatesError = function(message) {
   if (cachedExists) showToast("ماكو إنترنت حالياً · نستخدم آخر سعر محفوظ");
   else showToast("تعذر جلب الأسعار");
 };
+
+
+let converterDirection="usd";
+function updateAdvancedConverter(){const amount=Number(document.getElementById("converterAmount")?.value),result=document.getElementById("converterResult"),label=document.getElementById("converterResultLabel"),note=document.getElementById("converterRateNote"),p=provinces.find(x=>x.name===selectedProvince)||provinces[0];if(!result||!label||!note)return;if(!p||!Number.isFinite(Number(p.rate))||Number(p.rate)<=0){result.textContent="السعر غير متاح";return;}const perDollar=Number(p.rate)/100;if(!Number.isFinite(amount)||amount<0){result.textContent="أدخل مبلغاً صحيحاً";return;}const value=converterDirection==="usd"?amount*perDollar:amount/perDollar;label.textContent=converterDirection==="usd"?"القيمة التقريبية بالدينار العراقي":"القيمة التقريبية بالدولار الأمريكي";result.textContent=new Intl.NumberFormat("ar-IQ",{maximumFractionDigits:converterDirection==="usd"?0:2}).format(value)+(converterDirection==="usd"?" د.ع":" $");note.textContent="المحافظة: "+selectedProvince+" · سعر المصدر لكل 100 دولار: "+money(p.rate)+" د.ع. السعر استرشادي ولا يحدد سعر بيع أو شراء منفصل.";}
+document.getElementById("converterAmount")?.addEventListener("input",updateAdvancedConverter);
+document.querySelectorAll("#converterDirection button").forEach(b=>b.addEventListener("click",()=>{converterDirection=b.dataset.convert==="iqd"?"iqd":"usd";document.querySelectorAll("#converterDirection button").forEach(x=>x.classList.toggle("active",x===b));updateAdvancedConverter();}));
+const quietToggle=document.getElementById("quietHoursToggle"),quietStart=document.getElementById("quietStart"),quietEnd=document.getElementById("quietEnd");const quietSaved=(()=>{try{return JSON.parse(localStorage.getItem("dolaryQuietHours")||"{}");}catch(e){return {};}})();if(quietToggle)quietToggle.checked=!!quietSaved.enabled;if(quietStart&&quietSaved.start)quietStart.value=quietSaved.start;if(quietEnd&&quietSaved.end)quietEnd.value=quietSaved.end;
+function saveQuietHours(){const enabled=!!quietToggle?.checked,start=quietStart?.value||"22:00",end=quietEnd?.value||"08:00";if(enabled&&start===end){showToast("اختار وقت بداية ونهاية مختلفين");return;}const v={enabled,start,end};localStorage.setItem("dolaryQuietHours",JSON.stringify(v));if(window.AndroidBridge?.setQuietHours)AndroidBridge.setQuietHours(enabled,start,end);const status=document.getElementById("quietHoursStatus");if(status)status.textContent=enabled?"الهدوء مفعّل من "+start+" إلى "+end:"الإشعارات تعمل طوال اليوم";showToast("تم حفظ أوقات الهدوء");}
+document.getElementById("saveQuietHours")?.addEventListener("click",saveQuietHours);if(window.AndroidBridge?.setQuietHours)AndroidBridge.setQuietHours(!!quietSaved.enabled,quietSaved.start||"22:00",quietSaved.end||"08:00");
 
 // Initialize UI state
 const savedNotify = localStorage.getItem("notifyEnabledDollarIraq");
