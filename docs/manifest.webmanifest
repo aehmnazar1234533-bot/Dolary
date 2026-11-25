@@ -18,7 +18,7 @@
       "src": "./dolary-icon.webp",
       "sizes": "512x512",
       "type": "image/webp",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "./apple-touch-icon.png",
