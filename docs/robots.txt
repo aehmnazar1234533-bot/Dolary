@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://aehmnazar1234533-bot.github.io/Dolary/sitemap.xml
