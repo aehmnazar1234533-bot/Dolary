@@ -274,6 +274,7 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
             <span id="lastUpdated">آخر تحديث: الآن</span>
             <span class="trend up" id="mainTrend">—</span>
           </div>
+          <div id="sourceStatus" style="position:relative;z-index:2;margin-top:9px;font-size:10px;color:#c3d4ea">المصدر: XEIQD · بانتظار التحقق من الاتصال</div>
         </div>
 
         <div class="stats-row">
@@ -323,6 +324,7 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           <h2>المفضلة</h2>
           <p>المحافظات التي تتابع أسعارها بسرعة</p>
         </div>
+        <div class="seg" id="favoritesSort" role="group" aria-label="ترتيب المحافظات المفضلة"><button type="button" data-sort="high" class="active">الأعلى سعراً</button><button type="button" data-sort="low">الأقل سعراً</button><button type="button" data-sort="name">حسب الاسم</button></div>
         <div id="favoritesList" class="rate-list empty-aware"></div>
       </section>
 
@@ -670,16 +672,20 @@ document.addEventListener("click", e => {
   if (openEl) openProvince(openEl.dataset.open);
 });
 
+let favoritesSortMode = localStorage.getItem("dolaryFavoritesSort") || "high";
 function renderFavorites() {
   const wrap = document.getElementById("favoritesList");
   if (loadState === "loading" && favorites.length) { wrap.innerHTML = skeletonRows(Math.min(favorites.length, 4)); return; }
   const selected = provinces.filter(p => favorites.includes(p.name));
+  selected.sort((a,b) => favoritesSortMode === "name" ? a.name.localeCompare(b.name,"ar") : favoritesSortMode === "low" ? Number(a.rate)-Number(b.rate) : Number(b.rate)-Number(a.rate));
   wrap.innerHTML = selected.length
     ? selected.map((p,i) => rateRow(p,i)).join("")
     : `<div class="empty-state">ماكو محافظات بالمفضلة حالياً.<br>اضغط النجمة ☆ بجانب المحافظة لإضافتها.</div>`;
+  document.querySelectorAll("#favoritesSort button").forEach(button => button.classList.toggle("active", button.dataset.sort === favoritesSortMode));
   animateRows = false;
   wireRateButtons();
 }
+document.querySelectorAll("#favoritesSort button").forEach(button => button.addEventListener("click", () => { favoritesSortMode = ["high","low","name"].includes(button.dataset.sort) ? button.dataset.sort : "high"; localStorage.setItem("dolaryFavoritesSort",favoritesSortMode); renderFavorites(); }));
 
 function saveNotificationHistory(items){
   let old = [];
@@ -1094,6 +1100,7 @@ window.setLiveRates = function(jsonText, fromCache=false, silent=false) {
     if(!fromCache) recordRateHistory();
     lastNetworkError = null;
     document.getElementById("lastUpdated").textContent = data.updated_at ? `آخر تحديث من المصدر: ${fmtTime(data.updated_at)}` : "آخر تحديث: الآن";
+    const sourceStatus = document.getElementById("sourceStatus"); if (sourceStatus) sourceStatus.textContent = fromCache ? "المصدر: XEIQD · تعرض آخر بيانات محفوظة وقد لا تكون حديثة" : "المصدر: XEIQD · تم الاتصال وتحديث الأسعار";
     updateSelectedProvince();
     renderRates();
     renderFavorites();
@@ -1113,6 +1120,7 @@ window.setLiveRatesError = function(message) {
   loadState = allProvinces.some(p => p.rate != null) ? "ready" : "error";
   const cachedExists = allProvinces.some(p => p.rate != null);
   document.getElementById("lastUpdated").textContent = cachedExists ? "الاتصال غير متوفر · آخر سعر محفوظ ظاهر" : "لا يوجد اتصال بالإنترنت";
+  const sourceStatus = document.getElementById("sourceStatus"); if (sourceStatus) sourceStatus.textContent = cachedExists ? "المصدر: XEIQD · تعذر الاتصال، البيانات المعروضة محفوظة" : "المصدر: XEIQD · لا توجد بيانات حالية أو محفوظة";
   updateStats();
   renderRates();
   updateSelectedProvince();
