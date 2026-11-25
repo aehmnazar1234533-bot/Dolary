@@ -265,22 +265,26 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
     }
 
     private fun pickDisplayRate(city: JSONObject): Int? {
+        val primary = city.optDouble("usd_iqd_per_100", Double.NaN)
+        val primaryTime = runCatching { java.time.Instant.parse(city.optString("updated_at", "")).toEpochMilli() }.getOrDefault(0L)
+        var bestValue: Double? = if (primary.isFinite() && primary > 0.0 && primary <= Int.MAX_VALUE) primary else null
+        var bestTime = if (bestValue != null) primaryTime else Long.MIN_VALUE
+
         val sides = city.optJSONArray("sides")
-        var neutral: Int? = null
         if (sides != null) {
             for (i in 0 until sides.length()) {
                 val s = sides.optJSONObject(i) ?: continue
+                if (!s.isNull("side")) continue
                 val value = s.optDouble("usd_iqd_per_100", Double.NaN)
                 if (!value.isFinite() || value <= 0.0 || value > Int.MAX_VALUE) continue
-                if (s.isNull("side")) {
-                    neutral = value.roundToIntSafe()
-                    break
+                val time = runCatching { java.time.Instant.parse(s.optString("updated_at", "")).toEpochMilli() }.getOrDefault(0L)
+                if (bestValue == null || time > bestTime) {
+                    bestValue = value
+                    bestTime = time
                 }
             }
         }
-        if (neutral != null) return neutral
-        val primary = city.optDouble("usd_iqd_per_100", Double.NaN)
-        return if (primary.isFinite() && primary > 0.0 && primary <= Int.MAX_VALUE) primary.roundToIntSafe() else null
+        return bestValue?.roundToIntSafe()
     }
 
     private fun parseStringArray(raw: String): List<String> {
