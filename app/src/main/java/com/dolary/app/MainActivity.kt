@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.ClipData
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -24,6 +25,7 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.Toast
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -406,7 +408,10 @@ class MainActivity : AppCompatActivity() {
                     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                         ?: throw IllegalArgumentException("Invalid daily card image")
                     val shareDirectory = File(cacheDir, "shared").apply { mkdirs() }
-                    val imageFile = File(shareDirectory, "dolary-daily-card.jpg")
+                    val imageFile = File(shareDirectory, "dolary-daily-card-${System.currentTimeMillis()}.jpg")
+                    shareDirectory.listFiles()?.filter {
+                        it.name.startsWith("dolary-daily-card-") && System.currentTimeMillis() - it.lastModified() > 2L * 24 * 60 * 60 * 1000
+                    }?.forEach { it.delete() }
                     FileOutputStream(imageFile).use { output ->
                         if (!bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 94, output)) {
                             throw IllegalStateException("Unable to write daily card")
@@ -418,11 +423,14 @@ class MainActivity : AppCompatActivity() {
                         type = "image/jpeg"
                         putExtra(Intent.EXTRA_STREAM, imageUri)
                         putExtra(Intent.EXTRA_TEXT, caption.take(2000))
+                        clipData = ClipData.newUri(contentResolver, "بطاقة دولاري", imageUri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
                     runOnUiThread { startActivity(Intent.createChooser(shareIntent, "مشاركة بطاقة دولاري")) }
                 } catch (_: Exception) {
-                    // Do not interrupt the app if an external sharing target is unavailable.
+                    runOnUiThread {
+                        Toast.makeText(this, "تعذر تجهيز بطاقة المشاركة، حاول مرة ثانية", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }, "dolary-card-share").start()
         }
