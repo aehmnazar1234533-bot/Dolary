@@ -75,9 +75,6 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 @media(max-width:760px){
  .glass{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 12px 34px #0004,inset 0 1px rgba(255,255,255,.09)}
  .glow,.download:before{filter:none;opacity:.55}
- .rate-card{animation:none}
- .app-hero-coin,.app-hero-glow{animation:none}
- .hero-copy,.rate-shell,.panel,.feature{animation:none}
  .province-rate:hover,.nav-cta:hover,.btn:hover{transform:none;box-shadow:none}
  .province-picker-backdrop{backdrop-filter:none}
 }
@@ -112,9 +109,8 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 .province-picker-option-copy small{display:block;margin-top:4px;color:var(--muted);font-size:9px;white-space:nowrap}
 @media(max-width:420px){.province-picker-overlay{padding:10px}.province-picker-sheet{padding:14px;border-radius:21px}.province-picker-options{grid-template-columns:1fr}.province-picker-option{padding:11px 12px}}
 
-/* Static motion-free layout and robust rate card sizing */
-*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
-.rate-card{animation:none!important;overflow:hidden}
+/* Smooth motion restored; keep the rate card safely sized */
+.rate-card{overflow:hidden}
 .rate-value{display:block;width:100%;text-align:center;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.25}
 .rate-label{text-align:center;line-height:1.8;margin-top:20px}
 .rate-foot{flex-wrap:wrap;align-items:center;line-height:1.7}
@@ -261,10 +257,15 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
  function animateNumber(element,target,suffix='',fractionDigits=0){
   const previous=numberFrames.get(element);
   if(previous)cancelAnimationFrame(previous);
-  element.textContent=fmt(target,fractionDigits)+suffix;
+  const nextText=fmt(target,fractionDigits)+suffix;
+  const changed=element.dataset.currentValue!==undefined&&element.dataset.currentValue!==String(target);
+  element.textContent=nextText;
   element.dataset.currentValue=String(target);
   element.classList.remove('tick');
   numberFrames.delete(element);
+  if(changed&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+   requestAnimationFrame(()=>element.classList.add('tick'));
+  }
  }
  function calculate(){
   const amount=Number(amountEl.value);
