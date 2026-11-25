@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Dolary D dollar mark">
+  <defs>
+    <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#e7edf6"/><stop offset="1" stop-color="#9fb2ca"/></linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2ea8ff"/><stop offset="1" stop-color="#0057ff"/></linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g filter="url(#glow)">
+    <path d="M157 91c22 42 65 67 126 72 70 6 120 39 139 96 20 60 4 126-43 168-45 40-104 54-163 39l18-44c43 10 83 0 112-26 29-26 40-67 27-105-12-37-43-57-91-61-74-6-125-37-151-91z" fill="url(#silver)"/>
+    <path d="M157 91c22 42 65 67 126 72 70 6 120 39 139 96" fill="none" stroke="url(#blue)" stroke-width="8" stroke-linecap="round"/>
+    <path d="M142 138c30 35 70 49 120 48 35-1 62 7 81 24l-29 34c-13-10-32-15-57-14-67 3-119-21-148-69z" fill="url(#silver)"/>
+    <path d="M138 350c31 22 69 31 113 28 34-2 62 5 84 22l-28 37c-16-11-36-16-60-15-62 3-113-14-150-50z" fill="url(#silver)"/>
+    <path d="M255 113v300" stroke="url(#silver)" stroke-width="34" stroke-linecap="round"/>
+    <path d="M198 190c-31 0-54 21-54 49 0 29 22 45 63 53l42 9c39 8 58 26 58 55 0 34-30 58-75 58-36 0-67-11-91-32" fill="none" stroke="url(#silver)" stroke-width="32" stroke-linecap="round"/>
+  </g>
+</svg>
