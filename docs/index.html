@@ -112,6 +112,26 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 .province-picker-option-copy small{display:block;margin-top:4px;color:var(--muted);font-size:9px;white-space:nowrap}
 @media(max-width:420px){.province-picker-overlay{padding:10px}.province-picker-sheet{padding:14px;border-radius:21px}.province-picker-options{grid-template-columns:1fr}.province-picker-option{padding:11px 12px}}
 
+/* Static motion-free layout and robust rate card sizing */
+*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+.rate-card{animation:none!important;overflow:hidden}
+.rate-value{display:block;width:100%;text-align:center;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.25}
+.rate-label{text-align:center;line-height:1.8;margin-top:20px}
+.rate-foot{flex-wrap:wrap;align-items:center;line-height:1.7}
+.rate-foot>span{min-width:0;overflow-wrap:anywhere}
+.card-top{gap:10px;flex-wrap:wrap}
+.card-top>span{min-width:0}
+.website-province-trigger{min-height:48px}
+.province-picker-overlay.open{overflow-y:auto}
+.province-picker-sheet{max-height:calc(100dvh - 24px)}
+.province-picker-options{min-height:0}
+@media(max-width:420px){
+ .rate-card{padding:18px}
+ .rate-value{font-size:clamp(32px,10vw,44px);letter-spacing:-.5px}
+ .rate-foot{gap:8px}
+ .rate-foot>span{flex:1 1 100%}
+ .currency{display:block;text-align:center;line-height:1.8}
+}
 </style>
 </head>
 <body>
@@ -241,34 +261,10 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
  function animateNumber(element,target,suffix='',fractionDigits=0){
   const previous=numberFrames.get(element);
   if(previous)cancelAnimationFrame(previous);
-  const stored=Number(element.dataset.currentValue);
-  const hasPrevious=Number.isFinite(stored);
-  const from=hasPrevious?stored:target;
-  const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const changed=hasPrevious&&Math.abs(target-from)>0.0001;
-  if(!changed||reduced){
-   element.textContent=fmt(target,fractionDigits)+suffix;
-   element.dataset.currentValue=String(target);
-   numberFrames.delete(element);
-   element.classList.remove('tick');
-   return;
-  }
-  const duration=360;
-  const started=performance.now();
+  element.textContent=fmt(target,fractionDigits)+suffix;
+  element.dataset.currentValue=String(target);
   element.classList.remove('tick');
-  element.classList.add('tick');
-  const draw=now=>{
-   const progress=Math.min(1,(now-started)/duration);
-   const eased=1-Math.pow(1-progress,3);
-   element.textContent=fmt(from+(target-from)*eased,fractionDigits)+suffix;
-   if(progress<1)numberFrames.set(element,requestAnimationFrame(draw));
-   else{
-    element.textContent=fmt(target,fractionDigits)+suffix;
-    element.dataset.currentValue=String(target);
-    numberFrames.delete(element);
-   }
-  };
-  numberFrames.set(element,requestAnimationFrame(draw));
+  numberFrames.delete(element);
  }
  function calculate(){
   const amount=Number(amountEl.value);
