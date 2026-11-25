@@ -163,6 +163,32 @@ main{padding:14px 16px}
 .province-option{border:1px solid var(--border);background:var(--surface);border-radius:16px;padding:13px;text-align:right;cursor:pointer;transition:border-color .18s,background .18s,transform .15s}
 .province-option:active{transform:scale(.97)}
 .province-option.active{border-color:var(--primary);background:var(--primary-soft)}
+.province-modal-heading{display:flex;align-items:center;gap:12px;padding:4px 2px 16px}
+.province-modal-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:15px;background:var(--primary-soft);color:var(--primary);border:1px solid var(--border);flex:0 0 auto}
+.province-modal-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.province-modal-subtitle{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.6}
+.province-option-list{display:flex;flex-direction:column;gap:8px}
+.province-option{width:100%;min-height:66px;display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:17px;text-align:right;box-shadow:var(--shadow-sm)}
+.province-option-mark{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:var(--surface-2);color:var(--primary);font-size:15px;font-weight:900;flex:0 0 auto}
+.province-option.active .province-option-mark{background:var(--primary);color:#fff}
+.province-option-copy{display:block;flex:1;min-width:0}
+.province-option-copy strong{display:block;font-size:13px}
+.province-option-copy span{display:block;font-size:10px;color:var(--muted);margin-top:4px}
+.province-option-chevron{font-size:25px;color:var(--muted);line-height:1}
+.about-entry{width:100%;text-align:right;cursor:pointer;color:var(--text);font:inherit;transition:transform .15s,border-color .2s}
+.about-entry:active{transform:scale(.985)}
+.about-entry-copy{display:block;flex:1;min-width:0}
+.about-entry-copy strong{display:block;font-size:14px}
+.about-entry-copy span{display:block;font-size:10.5px;color:var(--muted);margin-top:5px}
+.about-entry-arrow{font-size:26px;color:var(--muted);line-height:1}
+.about-modal-section{padding:13px 0;border-top:1px solid var(--border)}
+.about-modal-section:first-of-type{border-top:0}
+.about-modal-section strong{font-size:13px}
+.about-modal-section p{font-size:11px;line-height:1.9;color:var(--muted);margin-top:6px}
+.about-modal-brand{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+.about-modal-brand .app-mark-img{width:54px;height:54px}
+.about-contact-btn{width:100%;min-height:48px;border:0;border-radius:15px;background:linear-gradient(135deg,#168b62,#10a878);color:#fff;font:inherit;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 8px 18px rgba(16,168,120,.2);transition:transform .15s}
+.about-contact-btn:active{transform:scale(.98)}
 .province-option strong{display:block;font-size:13px}.province-option span{display:block;font-size:10px;color:var(--muted);margin-top:5px}
 .toast{position:fixed;bottom:98px;left:50%;transform:translate(-50%,15px);background:#111827;color:#fff;padding:10px 16px;border-radius:14px;font-size:12px;opacity:0;pointer-events:none;transition:.25s;z-index:70;max-width:86%;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -424,43 +450,15 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           </div>
         </div>
 
-        <div class="about-card">
-          <img class="app-mark-img" src="dolary_logo.png" alt="دولاري" />
-          <div>
-            <strong>دولاري</strong>
-            <span>أسعار الدولار في محافظات العراق</span>
-          </div>
+        <button type="button" class="about-card about-entry" id="openAboutApp">
+          <img class="app-mark-img" src="dolary_logo.png" alt="شعار التطبيق" />
+          <span class="about-entry-copy">
+            <strong>حول التطبيق</strong>
+            <span>معلومات دولاري وحقوق الملكية وطرق التواصل</span>
+          </span>
+          <span class="about-entry-arrow" aria-hidden="true">‹</span>
           <span class="version">v1.5</span>
-        </div>
-
-        <div class="about-card" style="display:block">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-            <img class="app-mark-img" src="dolary_logo.png" alt="شعار دولاري" />
-            <div>
-              <strong>حول تطبيق دولاري</strong>
-              <span>معلومات التطبيق وحقوق الملكية والتواصل</span>
-            </div>
-          </div>
-          <p style="font-size:12px;line-height:1.9;color:var(--muted);margin:0 0 14px">
-            دولاري يساعدك على متابعة أسعار صرف الدولار مقابل الدينار العراقي في المحافظات، ومتابعة المحافظات المفضلة ورصد تغيّرات الأسعار عبر التنبيهات والتحديث التلقائي.
-          </p>
-          <div style="border-top:1px solid var(--border);padding-top:12px">
-            <strong>حقوق الملكية</strong>
-            <p style="font-size:11px;line-height:1.9;color:var(--muted);margin:6px 0 0">
-              © 2026 أيهم نزار الساعدي. جميع الحقوق محفوظة. تعود حقوق العناصر والمحتويات الأصلية في تطبيق دولاري إلى المطوّر، ولا يجوز نسخها أو إعادة نشرها أو استغلالها تجارياً دون إذن كتابي، بالقدر الذي يسمح به القانون. لا تشمل هذه الحقوق علامات أو مكتبات أو خدمات وبيانات الجهات الخارجية.
-            </p>
-          </div>
-          <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
-            <strong>اقتراح أو طلب تطوير؟</strong>
-            <p style="font-size:11px;line-height:1.8;color:var(--muted);margin:6px 0 10px">
-              يسعدنا سماع رأيك ومقترحاتك أو استقبال طلبات إضافة ميزات جديدة.
-            </p>
-            <button type="button" onclick="window.AndroidBridge && AndroidBridge.openDeveloperWhatsApp && AndroidBridge.openDeveloperWhatsApp()" style="width:100%;min-height:46px;border:0;border-radius:14px;background:#168b62;color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer">
-              تواصل ويانه عبر واتساب
-            </button>
-            <span style="display:block;text-align:center;margin-top:8px;color:var(--muted);font-size:11px;direction:ltr">+964 786 660 6413</span>
-          </div>
-        </div>
+        </button>
       </section>
     </main>
 
@@ -938,13 +936,27 @@ function updateSelectedProvince(){
   else { trend.className = "trend " + (p.change >= 0 ? "up" : "down"); trend.textContent = `${p.change >= 0 ? "↑" : "↓"} ${money(Math.abs(p.change))}`; }
 }
 
+document.getElementById("openAboutApp")?.addEventListener("click", () => {
+  document.getElementById("modalContent").innerHTML = `
+    <div class="about-modal-brand">
+      <img class="app-mark-img" src="dolary_logo.png" alt="شعار دولاري">
+      <div><div class="modal-title">حول تطبيق دولاري</div><div class="province-modal-subtitle">أسعار الدولار في محافظات العراق</div></div>
+    </div>
+    <div class="about-modal-section"><strong>عن التطبيق</strong><p>دولاري يساعدك على متابعة أسعار صرف الدولار مقابل الدينار العراقي في محافظات العراق، ومتابعة المحافظات المفضلة ورصد تغيّرات الأسعار عبر التنبيهات والتحديث التلقائي.</p></div>
+    <div class="about-modal-section"><strong>حقوق الملكية</strong><p>© 2026 أيهم نزار الساعدي. جميع الحقوق محفوظة. تعود حقوق العناصر والمحتويات الأصلية في تطبيق دولاري إلى المطوّر، ولا يجوز نسخها أو إعادة نشرها أو استغلالها تجارياً دون إذن كتابي، بالقدر الذي يسمح به القانون. لا تشمل هذه الحقوق علامات أو مكتبات أو خدمات وبيانات الجهات الخارجية.</p></div>
+    <div class="about-modal-section"><strong>تواصل ويانه</strong><p>عندك اقتراح أو طلب تطوير؟ يسعدنا نسمع رأيك ومقترحاتك.</p><button type="button" class="about-contact-btn" onclick="window.AndroidBridge && AndroidBridge.openDeveloperWhatsApp && AndroidBridge.openDeveloperWhatsApp()">تواصل ويانه عبر واتساب</button><div style="text-align:center;margin-top:9px;color:var(--muted);font-size:11px;direction:ltr">+964 786 660 6413</div></div>`;
+  openModal();
+});
+
 document.getElementById("provinceSelectBtn").addEventListener("click", () => {
   const modal = document.getElementById("provinceModal");
   document.getElementById("modalContent").innerHTML = `
-    <div class="modal-title">اختيار المحافظة</div>
-    <div style="font-size:10px;color:var(--muted);margin-top:5px">اختار المحافظة اللي تريد سعرها يطلع بالبنر الرئيسي.</div>
-    <div class="option-grid">
-      ${provinces.map(p => { const safeName = escapeHtml(p.name); return `<button class="province-option ${p.name === selectedProvince ? "active":""}" data-select-province="${safeName}"><strong>${safeName}</strong><span>${money(p.rate)} د.ع / 100 دولار</span></button>`; }).join("")}
+    <div class="province-modal-heading">
+      <div class="province-modal-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg></div>
+      <div><div class="modal-title">اختيار المحافظة</div><div class="province-modal-subtitle">حدد المحافظة لعرض سعرها في الواجهة الرئيسية</div></div>
+    </div>
+    <div class="province-option-list">
+      ${provinces.map(p => { const safeName = escapeHtml(p.name); const active = p.name === selectedProvince; return `<button type="button" class="province-option ${active ? "active":""}" data-select-province="${safeName}"><span class="province-option-mark">${active ? "✓" : "📍"}</span><span class="province-option-copy"><strong>${safeName}</strong><span>${money(p.rate)} د.ع لكل 100 دولار</span></span><span class="province-option-chevron">‹</span></button>`; }).join("")}
     </div>`;
   openModal();
   document.querySelectorAll("[data-select-province]").forEach(btn => btn.addEventListener("click", () => {
