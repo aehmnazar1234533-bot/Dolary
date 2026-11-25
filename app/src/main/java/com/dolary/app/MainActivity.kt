@@ -12,6 +12,11 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.provider.Settings
 import android.graphics.Color
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.FileOutputStream
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -389,6 +394,37 @@ class MainActivity : AppCompatActivity() {
                 } catch (_: Exception) {
                 }
             }
+        }
+
+
+        @JavascriptInterface
+        fun shareDailyCard(base64Image: String, caption: String) {
+            if (base64Image.isBlank() || base64Image.length > 5_000_000) return
+            Thread({
+                try {
+                    val bytes = Base64.decode(base64Image, Base64.DEFAULT)
+                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                        ?: throw IllegalArgumentException("Invalid daily card image")
+                    val shareDirectory = File(cacheDir, "shared").apply { mkdirs() }
+                    val imageFile = File(shareDirectory, "dolary-daily-card.jpg")
+                    FileOutputStream(imageFile).use { output ->
+                        if (!bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 94, output)) {
+                            throw IllegalStateException("Unable to write daily card")
+                        }
+                    }
+                    bitmap.recycle()
+                    val imageUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", imageFile)
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "image/jpeg"
+                        putExtra(Intent.EXTRA_STREAM, imageUri)
+                        putExtra(Intent.EXTRA_TEXT, caption.take(2000))
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    runOnUiThread { startActivity(Intent.createChooser(shareIntent, "مشاركة بطاقة دولاري")) }
+                } catch (_: Exception) {
+                    // Do not interrupt the app if an external sharing target is unavailable.
+                }
+            }, "dolary-card-share").start()
         }
 
         @JavascriptInterface
