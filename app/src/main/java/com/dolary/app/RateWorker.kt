@@ -129,10 +129,22 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
         val selected = prefs.getString(MainActivity.KEY_SELECTED_PROVINCE, "بغداد") ?: "بغداد"
         val targets = if (favorites.isNotEmpty()) favorites else listOf(selected)
 
+        // Notify only for meaningful movements and avoid repeatedly alerting the same province.
+        // Rates are expressed per USD 100, so a 25 IQD movement is a small but useful threshold.
+        val lastAlertTimes = try {
+            JSONObject(prefs.getString("notification_last_alert_times", "{}") ?: "{}")
+        } catch (_: Exception) {
+            JSONObject()
+        }
+        val now = System.currentTimeMillis()
+        val cooldownMs = TimeUnit.MINUTES.toMillis(30)
         val changed = targets.mapNotNull { name ->
             val oldRate = oldMap[name]
             val newRate = newMap[name]
-            if (oldRate == null || newRate == null || oldRate == newRate) null
+            if (oldRate == null || newRate == null) return@mapNotNull null
+            val delta = newRate - oldRate
+            val lastAlert = lastAlertTimes.optLong(name, 0L)
+            if (kotlin.math.abs(delta) < 25 || now - lastAlert < cooldownMs) null
             else Triple(name, oldRate, newRate)
         }
         if (changed.isEmpty()) return
@@ -155,6 +167,8 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
         val start = maxOf(0, history.length() - 20)
         for (i in start until history.length()) trimmed.put(history.getJSONObject(i))
         prefs.edit().putString(MainActivity.KEY_NOTIFICATION_HISTORY, trimmed.toString()).apply()
+        changed.forEach { item -> lastAlertTimes.put(item.first, now) }
+        prefs.edit().putString("notification_last_alert_times", lastAlertTimes.toString()).apply()
 
         val first = changed.first()
         val difference = first.third - first.second
@@ -182,14 +196,24 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        val detailLines = changed.map { item ->
+            val delta = item.third - item.second
+            val directionMark = if (delta > 0) "↑" else "↓"
+            "${item.first}: ${formatRate(item.third)} د.ع (${directionMark} ${formatRate(kotlin.math.abs(delta))})"
+        }
         val notification = Notification.Builder(context, MainActivity.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_dolary)
             .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.ic_notification_large))
             .setColor(0xFF1769FF.toInt())
-            .setContentTitle("دولاري • تحديث السعر")
+            .setCategory(Notification.CATEGORY_STATUS)
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
+            .setContentTitle(if (changed.size == 1) "دولاري • تغير سعر الدولار" else "دولاري • تحديث أسعار المحافظات")
             .setContentText(text)
-            .setStyle(Notification.BigTextStyle().bigText(text))
+            .setStyle(Notification.InboxStyle().setSummaryText("تحديث السوق الموازي").also { style ->
+                detailLines.forEach { style.addLine(it) }
+            })
             .setAutoCancel(true)
+            .setOnlyAlertOnce(true)
             .setContentIntent(pendingIntent)
             .build()
 
