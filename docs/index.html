@@ -410,7 +410,7 @@ dailyCardTemplate.onload=redrawDolaryCard;
 dailyCardLogo.onerror=()=>{dailyCardLogo.dataset.failed="true";};
 dailyCardTemplate.onerror=()=>{dailyCardTemplate.dataset.failed="true";};
 dailyCardLogo.src="./dolary-icon.webp";
-dailyCardTemplate.src="./daily-card-template.webp";
+dailyCardTemplate.src="./daily-card-template.svg";
 
 function drawDolaryProvinceLandmark(ctx,slug,x,y,w,h){
   ctx.save();
@@ -544,6 +544,7 @@ function paintDolaryDailyCard(canvas,info){
     ctx.drawImage(dailyCardLogo,305,48,148,148);ctx.restore();
   }
   text("دولاري",730,125,58,"#ffffff","right",900,280,true);
+  text("الدولار اليوم",540,365,76,"#ffffff","center",900,930,true);
   text("DOLARY",730,171,30,"#b9dcff","right",800,280,false);
 
   // Dynamic governorate name in the empty luminous name plate.
@@ -578,6 +579,9 @@ function paintDolaryDailyCard(canvas,info){
   if(info.stale){
     text("آخر قراءة محفوظة",540,1192,17,"#a9c9f2","center",700,300,false);
   }
+  strokeGlow(()=>{ctx.beginPath();ctx.moveTo(145,1283);ctx.lineTo(245,1283);ctx.stroke();},"#64ddff",4);
+  strokeGlow(()=>{ctx.beginPath();ctx.moveTo(835,1283);ctx.lineTo(935,1283);ctx.stroke();},"#64ddff",4);
+  text("تابع السعر لحظة بلحظة مع دولاري",540,1295,30,"#e8f6ff","center",800,820,true);
 }
 
 function renderDailyCard(city){
