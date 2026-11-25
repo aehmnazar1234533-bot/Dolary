@@ -609,7 +609,8 @@ let sortDescending = true;
 let selectedProvince = localStorage.getItem("selectedDollarProvince") || "بغداد";
 let lastNetworkError = null;
 
-const formatLatinNumber = (n, decimals=0) => { if (n == null || Number.isNaN(Number(n))) return "غير متوفر"; const value = Number(n); return value.toFixed(decimals).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ","); };\nconst money = n => formatLatinNumber(n, 0);
+const formatLatinNumber = (n, decimals=0) => { if (n == null || Number.isNaN(Number(n))) return "غير متوفر"; const value = Number(n); return value.toFixed(decimals).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ","); };
+const money = n => formatLatinNumber(n, 0);
 const fmtTime = iso => {
   if (!iso) return "غير متوفر";
   try { return new Date(iso).toLocaleTimeString("ar-IQ", {hour:"2-digit", minute:"2-digit"}); }
