@@ -852,9 +852,11 @@ function reopenModal(){
 document.getElementById("modalClose").addEventListener("click", closeModal);
 document.querySelector(".modal-backdrop").addEventListener("click", closeModal);
 document.getElementById("provinceModal").addEventListener("click", e => {
-  if (e.target.closest("#modalClose")) { closeModal(); return; }
+  const closeBtn = e.target.closest("#modalClose");
+  if (closeBtn) { e.preventDefault(); e.stopPropagation(); closeModal(); return; }
   const selectBtn = e.target.closest("[data-select-province]");
   if (selectBtn) {
+    e.preventDefault(); e.stopPropagation();
     selectedProvince = selectBtn.dataset.selectProvince;
     updateSelectedProvince();
     closeModal();
@@ -863,6 +865,7 @@ document.getElementById("provinceModal").addEventListener("click", e => {
   }
   const targetBtn = e.target.closest("[data-target-province]");
   if (targetBtn) {
+    e.preventDefault(); e.stopPropagation();
     const name = targetBtn.dataset.targetProvince;
     const select = document.getElementById("targetProvince");
     if (select) {
@@ -1297,12 +1300,6 @@ document.getElementById("provinceSelectBtn").addEventListener("click", () => {
       ${provinces.map(p => { const safeName = escapeHtml(p.name); const active = p.name === selectedProvince; return `<button type="button" class="province-option ${active ? "active":""}" data-select-province="${safeName}"><span class="province-option-mark">${active ? "✓" : "📍"}</span><span class="province-option-copy"><strong>${safeName}</strong><span>${money(p.rate)} د.ع لكل 100 دولار</span></span><span class="province-option-chevron">‹</span></button>`; }).join("")}
     </div>`;
   openModal();
-  document.querySelectorAll("[data-select-province]").forEach(btn => btn.addEventListener("click", () => {
-    selectedProvince = btn.dataset.selectProvince;
-    updateSelectedProvince();
-    closeModal();
-    showToast(`تم اختيار ${selectedProvince}`);
-  }));
 });
 
 
@@ -1320,15 +1317,15 @@ document.getElementById("targetProvinceOpen").addEventListener("click", () => {
     </div>`;
   openModal();
   const search=document.getElementById("targetProvinceSearch");
-  search.addEventListener("input",()=>document.querySelectorAll("[data-target-province]").forEach(btn=>btn.hidden=!btn.textContent.includes(search.value.trim())));
-  document.querySelectorAll("[data-target-province]").forEach(btn=>btn.addEventListener("click",()=>{
-    const name=btn.dataset.targetProvince;
-    const select=document.getElementById("targetProvince");
-    if(![...select.options].some(option=>option.value===name))select.add(new Option(name,name));
-    select.value=name;
-    document.getElementById("targetProvinceLabel").textContent=name;
-    closeModal();
-  }));
+  if (search) {
+    search.focus();
+    search.addEventListener("input",()=>{
+      const q=search.value.trim();
+      document.querySelectorAll("[data-target-province]").forEach(btn=>{
+        btn.hidden=!btn.textContent.includes(q);
+      });
+    });
+  }
 });
 
 // ---------- Android back button ----------
