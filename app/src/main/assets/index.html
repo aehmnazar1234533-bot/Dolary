@@ -1152,13 +1152,8 @@ function paintDolaryDailyCard(canvas, info) {
   const lowerGlow=ctx.createRadialGradient(0,h,10,0,h,w*.48);
   lowerGlow.addColorStop(0,"rgba(80,150,255,.22)");lowerGlow.addColorStop(1,"rgba(80,150,255,0)");
   ctx.fillStyle=lowerGlow;ctx.fillRect(0,0,w,h);
-  ctx.save();
-  ctx.globalAlpha = 0.30;
-  ctx.translate(105, 430);
-  ctx.scale(2.8, 3.25);
-  drawDolaryProvinceLandmark(ctx, info.slug || "", 0, 0, 310, 155);
-  ctx.restore();
-  ctx.save();ctx.font="900 720px Arial,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+  // Province landmark artwork removed; keep the classic card background clean.
+ctx.save();ctx.font="900 720px Arial,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
   ctx.fillStyle="rgba(255,255,255,.055)";ctx.shadowColor="rgba(80,150,255,.42)";ctx.shadowBlur=38;
   ctx.fillText("$",235,930);ctx.restore();
   ctx.save();ctx.strokeStyle="rgba(151,195,255,.09)";ctx.lineWidth=2;for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(70,1120,220+i*75,0,Math.PI*2);ctx.stroke();}ctx.restore();
