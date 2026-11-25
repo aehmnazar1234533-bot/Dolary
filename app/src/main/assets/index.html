@@ -1061,7 +1061,7 @@ function renderDailyCard(p) {
   const canvas=document.getElementById("dailyShareCanvas");if(!canvas)return;
   const updated=p&&p.updatedAt?new Date(p.updatedAt):null;
   const updatedText=updated&&!Number.isNaN(updated.getTime())?updated.toLocaleString("ar-IQ",{dateStyle:"short",timeStyle:"short"}):"وقت التحديث غير متاح";
-  paintDolaryDailyCard(canvas,{province:p&&p.name?p.name:selectedProvince,rate:p&&Number.isFinite(Number(p.rate))?Number(p.rate):null,updated:updatedText,stale:!!(p&&p.stale)});
+  paintDolaryDailyCard(canvas,{province:p&&p.name?p.name:selectedProvince,rate:p&&p.rate!=null&&Number.isFinite(Number(p.rate))?Number(p.rate):null,updated:updatedText,stale:!!(p&&p.stale)});
 }
 document.getElementById("shareDailyCard")?.addEventListener("click",()=>{
   const p=provinces.find(x=>x.name===selectedProvince)||provinces[0];
