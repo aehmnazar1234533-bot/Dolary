@@ -163,6 +163,14 @@ main{padding:14px 16px}
 .province-option{border:1px solid var(--border);background:var(--surface);border-radius:16px;padding:13px;text-align:right;cursor:pointer;transition:border-color .18s,background .18s,transform .15s}
 .province-option:active{transform:scale(.97)}
 .province-option.active{border-color:var(--primary);background:var(--primary-soft)}
+
+.target-province-native{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+.target-province-trigger{width:100%;min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 15px;border:1px solid var(--border);border-radius:15px;background:var(--surface-2);color:var(--text);font:800 14px inherit;text-align:right;cursor:pointer}
+.target-province-trigger svg{width:19px;height:19px;fill:none;stroke:var(--primary);stroke-width:2;flex:0 0 auto}
+.target-province-trigger:active{transform:scale(.99)}
+.province-modal-search{width:100%;margin:0 0 12px;padding:12px 14px;border:1px solid var(--border);border-radius:13px;background:var(--surface-2);color:var(--text);font:inherit;outline:none}
+.province-option-list{max-height:min(58vh,520px);overflow:auto;padding:2px 3px 8px}
+
 .province-modal-heading{display:flex;align-items:center;gap:12px;padding:4px 2px 16px}
 .province-modal-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:15px;background:var(--primary-soft);color:var(--primary);border:1px solid var(--border);flex:0 0 auto}
 .province-modal-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -415,7 +423,7 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           </div>
           <div class="target-field">
             <label for="targetProvince">المحافظة</label>
-            <select id="targetProvince" class="province-picker"><option value="بغداد">بغداد</option></select>
+            <select id="targetProvince" class="province-picker target-province-native" aria-hidden="true" tabindex="-1"><option value="بغداد">بغداد</option></select><button type="button" id="targetProvinceOpen" class="target-province-trigger"><span id="targetProvinceLabel">بغداد</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
           </div>
           <div class="target-field">
             <label for="targetRate">السعر المستهدف لكل 100 دولار</label>
@@ -1002,6 +1010,32 @@ document.getElementById("provinceSelectBtn").addEventListener("click", () => {
     updateSelectedProvince();
     closeModal();
     showToast(`تم اختيار ${selectedProvince}`);
+  }));
+});
+
+
+// Styled province picker for the target-price alert (keeps the native value bridge).
+document.getElementById("targetProvinceOpen").addEventListener("click", () => {
+  const current = document.getElementById("targetProvince").value || selectedProvince;
+  document.getElementById("modalContent").innerHTML = `
+    <div class="province-modal-heading">
+      <div class="province-modal-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg></div>
+      <div><div class="modal-title">اختيار المحافظة</div><div class="province-modal-subtitle">اختر المحافظة التي تريد متابعة سعرها</div></div>
+    </div>
+    <input class="province-modal-search" id="targetProvinceSearch" type="search" placeholder="ابحث عن محافظة..." aria-label="ابحث عن محافظة">
+    <div class="province-option-list" id="targetProvinceOptions">
+      ${provinces.map(p => { const active=p.name===current; return `<button type="button" class="province-option ${active?"active":""}" data-target-province="${escapeHtml(p.name)}"><span class="province-option-mark">${active?"✓":"📍"}</span><span class="province-option-copy"><strong>${escapeHtml(p.name)}</strong><span>${p.rate==null?"السعر غير متوفر":money(p.rate)+" د.ع لكل 100 دولار"}</span></span><span class="province-option-chevron">‹</span></button>`; }).join("")}
+    </div>`;
+  openModal();
+  const search=document.getElementById("targetProvinceSearch");
+  search.addEventListener("input",()=>document.querySelectorAll("[data-target-province]").forEach(btn=>btn.hidden=!btn.textContent.includes(search.value.trim())));
+  document.querySelectorAll("[data-target-province]").forEach(btn=>btn.addEventListener("click",()=>{
+    const name=btn.dataset.targetProvince;
+    const select=document.getElementById("targetProvince");
+    if(![...select.options].some(option=>option.value===name))select.add(new Option(name,name));
+    select.value=name;
+    document.getElementById("targetProvinceLabel").textContent=name;
+    closeModal();
   }));
 });
 
