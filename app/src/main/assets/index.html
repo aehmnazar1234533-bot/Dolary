@@ -321,7 +321,7 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
   <div class="app-shell">
     <header class="topbar">
       <div class="brand-head">
-        <img class="brand-logo" src="dolary-icon.webp" alt="دولاري" />
+        <img class="brand-logo" src="dolary-mark.svg" alt="دولاري" />
         <div>
           <div class="eyebrow">أسعار السوق</div>
           <h1>دولاري</h1>
@@ -538,7 +538,7 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
         </button>
 
         <button type="button" class="about-card about-entry" id="openAboutApp">
-          <img class="app-mark-img" src="dolary-icon.webp" alt="شعار التطبيق" />
+          <img class="app-mark-img" src="dolary-mark.svg" alt="شعار التطبيق" />
           <span class="about-entry-copy">
             <strong>حول التطبيق</strong>
             <span>معلومات دولاري وحقوق الملكية وطرق التواصل</span>
@@ -1032,10 +1032,10 @@ dailyCardLogo.onerror=redrawDolaryCard;
 if(window.AndroidBridge&&typeof AndroidBridge.getDailyCardLogoBase64==="function"){
   try{
     const packagedLogo=AndroidBridge.getDailyCardLogoBase64();
-    dailyCardLogo.src=packagedLogo?"data:image/webp;base64,"+packagedLogo:"dolary-icon.webp";
-  }catch(_){dailyCardLogo.src="dolary-icon.webp";}
+    dailyCardLogo.src=packagedLogo?"data:image/webp;base64,"+packagedLogo:"dolary-mark.svg";
+  }catch(_){dailyCardLogo.src="dolary-mark.svg";}
 }else{
-  dailyCardLogo.src="dolary-icon.webp";
+  dailyCardLogo.src="dolary-mark.svg";
 }
 
 function drawDolaryProvinceLandmark(ctx,slug,x,y,w,h){
@@ -1271,7 +1271,7 @@ document.getElementById("shareDailyCard")?.addEventListener("click",()=>{
 document.getElementById("openAboutApp")?.addEventListener("click", () => {
   document.getElementById("modalContent").innerHTML = `
     <div class="about-modal-brand">
-      <img class="app-mark-img" src="dolary-icon.webp" alt="شعار دولاري">
+      <img class="app-mark-img" src="dolary-mark.svg" alt="شعار دولاري">
       <div><div class="modal-title">حول تطبيق دولاري</div><div class="province-modal-subtitle">أسعار الدولار في محافظات العراق</div></div>
     </div>
     <div class="about-modal-section"><strong>عن التطبيق</strong><p>دولاري يساعدك على متابعة أسعار صرف الدولار مقابل الدينار العراقي في محافظات العراق، ومتابعة المحافظات المفضلة ورصد تغيّرات الأسعار عبر التنبيهات والتحديث التلقائي.</p></div>
