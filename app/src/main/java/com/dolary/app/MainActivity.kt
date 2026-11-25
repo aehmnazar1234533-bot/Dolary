@@ -247,7 +247,7 @@ class MainActivity : AppCompatActivity() {
         val adWidthPixels = adContainer.width.takeIf { it > 0 } ?: displayMetrics.widthPixels
         val density = displayMetrics.density
         val adWidth = (adWidthPixels / density).toInt().coerceAtLeast(320)
-        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth)
+        return AdSize.getLargeAnchoredAdaptiveBannerAdSize(this, adWidth)
     }
 
     private fun isSystemDark(): Boolean =
@@ -426,50 +426,60 @@ class MainActivity : AppCompatActivity() {
 
         @JavascriptInterface
         fun shareDailyCard(base64Image: String, caption: String) {
-            if (base64Image.isBlank()) {
-                runOnUiThread { Toast.makeText(this@MainActivity, "صورة البطاقة فارغة، حاول مرة ثانية", Toast.LENGTH_SHORT).show() }
+            val encodedImage = base64Image.substringAfter("base64,", base64Image).trim()
+            if (encodedImage.isBlank()) {
+                runOnUiThread {
+                    Toast.makeText(this@MainActivity, "صورة البطاقة فارغة، حاول مرة ثانية", Toast.LENGTH_SHORT).show()
+                }
                 return
             }
-            // Allow a larger image payload; the previous 5 MB Base64 limit silently rejected valid cards.
-            if (base64Image.length > 16_000_000) {
-                runOnUiThread { Toast.makeText(this@MainActivity, "حجم صورة البطاقة كبير، أعد المحاولة", Toast.LENGTH_SHORT).show() }
+            if (encodedImage.length > 16_000_000) {
+                runOnUiThread {
+                    Toast.makeText(this@MainActivity, "حجم صورة البطاقة كبير، أعد المحاولة", Toast.LENGTH_SHORT).show()
+                }
                 return
             }
+
             Thread({
-                var imageFile: File? = null
+                var createdFile: File? = null
                 try {
-                    val bytes = Base64.decode(base64Image, Base64.DEFAULT)
+                    val bytes = Base64.decode(encodedImage, Base64.DEFAULT)
                     if (bytes.isEmpty() || bytes.size > 12 * 1024 * 1024) {
-                        throw IllegalArgumentException("Daily card image size is invalid")
+                        throw IllegalArgumentException("حجم الصورة غير صالح")
                     }
 
-                    // Validate the image without allocating a full-size Bitmap.
+                    // Inspect image metadata without decoding the full bitmap into memory.
                     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
                     if (bounds.outWidth <= 0 || bounds.outHeight <= 0 ||
                         bounds.outWidth > 5000 || bounds.outHeight > 5000 ||
-                        !bounds.outMimeType.orEmpty().startsWith("image/")) {
-                        throw IllegalArgumentException("Invalid daily card image")
+                        bounds.outMimeType != "image/jpeg") {
+                        throw IllegalArgumentException("صيغة صورة البطاقة غير صالحة")
                     }
 
                     val shareDirectory = File(cacheDir, "shared").apply {
-                        if (!exists() && !mkdirs()) throw IllegalStateException("Cannot create share cache")
+                        if (!exists() && !mkdirs()) {
+                            throw IllegalStateException("تعذر إنشاء مجلد المشاركة")
+                        }
                     }
                     shareDirectory.listFiles()?.filter {
                         it.name.startsWith("dolary-daily-card-") &&
                             System.currentTimeMillis() - it.lastModified() > 2L * 24 * 60 * 60 * 1000
                     }?.forEach { it.delete() }
 
-                    imageFile = File(shareDirectory, "dolary-daily-card-${System.currentTimeMillis()}.jpg")
-                    FileOutputStream(imageFile!!).use { output ->
+                    val outputFile = File(
+                        shareDirectory,
+                        "dolary-daily-card-${System.currentTimeMillis()}.jpg"
+                    )
+                    createdFile = outputFile
+                    FileOutputStream(outputFile).use { output ->
                         output.write(bytes)
-                        output.flush()
                     }
 
                     val imageUri = FileProvider.getUriForFile(
                         this@MainActivity,
-                        "$packageName.fileprovider",
-                        imageFile!!
+                        "${packageName}.fileprovider",
+                        outputFile
                     )
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "image/jpeg"
@@ -480,15 +490,31 @@ class MainActivity : AppCompatActivity() {
                     }
                     runOnUiThread {
                         try {
-                            startActivity(Intent.createChooser(shareIntent, "مشاركة بطاقة دولاري"))
+                            if (isFinishing || isDestroyed) {
+                                outputFile.delete()
+                                return@runOnUiThread
+                            }
+                            val chooser = Intent.createChooser(shareIntent, "مشاركة بطاقة دولاري").apply {
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            startActivity(chooser)
                         } catch (error: Exception) {
-                            Toast.makeText(this@MainActivity, "تعذر فتح قائمة المشاركة", Toast.LENGTH_SHORT).show()
+                            outputFile.delete()
+                            Toast.makeText(
+                                this@MainActivity,
+                                "تعذر فتح قائمة المشاركة: ${error.localizedMessage ?: "خطأ غير معروف"}",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 } catch (error: Exception) {
-                    imageFile?.delete()
+                    createdFile?.delete()
                     runOnUiThread {
-                        Toast.makeText(this@MainActivity, "تعذر تجهيز بطاقة المشاركة: ${error.localizedMessage ?: "خطأ غير معروف"}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "تعذر تجهيز بطاقة المشاركة: ${error.localizedMessage ?: "خطأ غير معروف"}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             }, "dolary-card-share").start()
