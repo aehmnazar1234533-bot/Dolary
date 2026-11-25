@@ -1332,11 +1332,19 @@ window.setNativeNotificationHistory = function(jsonText){
 
 // ---------- Live data ----------
 function pickDisplayRate(city){
-  if (Array.isArray(city.sides)) {
-    const middle = city.sides.find(s => s && (s.side === null || typeof s.side === "undefined") && s.usd_iqd_per_100 != null);
-    if (middle) return Number(middle.usd_iqd_per_100);
+  const primary=Number(city?.usd_iqd_per_100);
+  const primaryTime=Date.parse(city?.updated_at||"")||0;
+  let best=(Number.isFinite(primary)&&primary>0)?{value:primary,time:primaryTime}:null;
+  if(Array.isArray(city?.sides)){
+    for(const side of city.sides){
+      const value=Number(side?.usd_iqd_per_100);
+      if(!Number.isFinite(value)||value<=0)continue;
+      if(side?.side!==null&&typeof side?.side!=="undefined")continue;
+      const time=Date.parse(side?.updated_at||"")||0;
+      if(!best||time>best.time)best={value,time};
+    }
   }
-  return city.usd_iqd_per_100 == null ? null : Number(city.usd_iqd_per_100);
+  return best?best.value:null;
 }
 
 function previousSnapshot(){
