@@ -211,7 +211,7 @@ class MainActivity : AppCompatActivity() {
         val adWidthPixels = adContainer.width.takeIf { it > 0 } ?: displayMetrics.widthPixels
         val density = displayMetrics.density
         val adWidth = (adWidthPixels / density).toInt().coerceAtLeast(320)
-        return AdSize.getLargeAnchoredAdaptiveBannerAdSize(this, adWidth)
+        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth)
     }
 
     private fun isSystemDark(): Boolean =
