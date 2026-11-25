@@ -287,6 +287,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         @JavascriptInterface
+        fun setTargetAlert(rate: Int, direction: String, province: String) {
+            if (rate <= 0 || province.isBlank()) return
+            val safeDirection = if (direction == "below") "below" else "above"
+            prefs.edit()
+                .putInt("target_alert_rate", rate)
+                .putString("target_alert_direction", safeDirection)
+                .putString("target_alert_province", province)
+                .putBoolean("target_alert_enabled", true)
+                .apply()
+        }
+
+        @JavascriptInterface
         fun areNotificationsAllowed(): Boolean {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
