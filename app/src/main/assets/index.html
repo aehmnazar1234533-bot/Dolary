@@ -292,6 +292,21 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
 
         <div id="provinceList" class="rate-list"></div>
 
+        <section class="settings-card" style="margin-top:16px;padding:16px">
+          <div class="section-head" style="text-align:right;margin-bottom:12px">
+            <h2 style="font-size:17px;margin:0">سجل سعر الدولار</h2>
+            <p style="font-size:11px;margin-top:5px">الرسم يعتمد على القراءات التي يجمعها التطبيق من وقت تفعيل السجل</p>
+          </div>
+          <div class="seg" id="historyRange" role="radiogroup" aria-label="مدة سجل الأسعار">
+            <button type="button" data-days="7" class="active">7 أيام</button>
+            <button type="button" data-days="30">30 يوم</button>
+          </div>
+          <div id="historyChart" style="min-height:170px;margin-top:12px;overflow:hidden" aria-live="polite">
+            <div class="empty-state">بانتظار تسجيل قراءات الأسعار…</div>
+          </div>
+          <div id="historySummary" style="font-size:11px;color:var(--muted);margin-top:8px"></div>
+        </section>
+
         <div class="info-card">
           <div class="info-icon">i</div>
           <div>
@@ -906,6 +921,7 @@ function updateSelectedProvince(){
   persistSelectedProvince();
   document.getElementById("selectedProvinceName").textContent = p.name;
   setMainRate(p.rate);
+  renderRateHistory();
   const trend = document.getElementById("mainTrend");
   trend.className = "trend";
   if (p.change == null) trend.textContent = "—";
@@ -982,6 +998,56 @@ function setSnapshot(){
   localStorage.setItem("dolaryRatesSnapshot", JSON.stringify(snap));
 }
 
+const RATE_HISTORY_KEY = "dolaryRateHistoryV1";
+let historyDays = 7;
+function readRateHistory(){
+  try { const v=JSON.parse(localStorage.getItem(RATE_HISTORY_KEY)||"[]"); return Array.isArray(v)?v:[]; }
+  catch(e){ return []; }
+}
+function recordRateHistory(){
+  const rates={};
+  allProvinces.forEach(p=>{if(Number.isFinite(p.rate)&&p.rate>0)rates[p.name]=Math.round(p.rate);});
+  if(!Object.keys(rates).length)return;
+  const rows=readRateHistory(), now=Date.now(), minute=Math.floor(now/60000);
+  const last=rows[rows.length-1];
+  if(last && Math.floor(Number(last.t)/60000)===minute) rows[rows.length-1]={t:now,rates};
+  else rows.push({t:now,rates});
+  const cutoff=now-30*86400000;
+  const kept=rows.filter(x=>x&&Number(x.t)>=cutoff&&x.rates&&typeof x.rates==="object").slice(-1500);
+  try{localStorage.setItem(RATE_HISTORY_KEY,JSON.stringify(kept));}catch(e){}
+  renderRateHistory();
+}
+function renderRateHistory(){
+  const host=document.getElementById("historyChart"),summary=document.getElementById("historySummary");
+  if(!host)return;
+  const cutoff=Date.now()-historyDays*86400000;
+  const rows=readRateHistory().filter(x=>Number(x.t)>=cutoff&&x.rates&&Number.isFinite(Number(x.rates[selectedProvince])));
+  if(rows.length<2){
+    host.innerHTML='<div class="empty-state">بعدنا نجمع القراءات. راح يظهر الرسم بعد توفر قراءتين مختلفتين على الأقل لهذه المحافظة.</div>';
+    if(summary)summary.textContent=rows.length? "تم تسجيل قراءة واحدة حتى الآن.":"لا توجد قراءات محفوظة ضمن هذه المدة.";
+    return;
+  }
+  const vals=rows.map(x=>Number(x.rates[selectedProvince])),min=Math.min(...vals),max=Math.max(...vals),span=Math.max(1,max-min);
+  const pts=vals.map((v,i)=>({x:18+i*564/(vals.length-1),y:142-(v-min)/span*112}));
+  const path=pts.map((p,i)=>(i?"L":"M")+p.x.toFixed(1)+" "+p.y.toFixed(1)).join(" ");
+  const first=vals[0],last=vals[vals.length-1],diff=last-first;
+  const labels=[new Date(rows[0].t).toLocaleDateString("ar-IQ",{month:"short",day:"numeric"}),new Date(rows[rows.length-1].t).toLocaleDateString("ar-IQ",{month:"short",day:"numeric"})];
+  host.innerHTML=`<svg viewBox="0 0 600 180" role="img" aria-label="رسم تغير سعر الدولار في ${escapeHtml(selectedProvince)}" style="width:100%;height:auto;display:block">
+    <defs><linearGradient id="historyFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--primary)" stop-opacity=".3"/><stop offset="1" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>
+    <path d="M18 30H582 M18 86H582 M18 142H582" stroke="var(--border)" stroke-dasharray="4 6" fill="none"/>
+    <path d="${path} L582 158 L18 158 Z" fill="url(#historyFill)"/>
+    <path d="${path}" fill="none" stroke="var(--primary)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${pts[pts.length-1].x}" cy="${pts[pts.length-1].y}" r="5" fill="var(--primary)" stroke="var(--surface)" stroke-width="3"/>
+    <text x="18" y="174" fill="var(--muted)" font-size="11">${escapeHtml(labels[0])}</text><text x="582" y="174" text-anchor="end" fill="var(--muted)" font-size="11">${escapeHtml(labels[1])}</text>
+  </svg>`;
+  if(summary)summary.textContent=` ${selectedProvince}: ${money(last)} د.ع · التغير خلال المدة: ${diff>=0?"+":"−"}${money(Math.abs(diff))} د.ع · ${rows.length} قراءة مسجلة`;
+}
+document.querySelectorAll("#historyRange button").forEach(b=>b.addEventListener("click",()=>{
+  historyDays=Number(b.dataset.days)===30?30:7;
+  document.querySelectorAll("#historyRange button").forEach(x=>x.classList.toggle("active",x===b));
+  renderRateHistory();
+}));
+
 window.setLiveRates = function(jsonText, fromCache=false, silent=false) {
   document.getElementById("refreshBtn").classList.remove("spinning");
   try {
@@ -1021,6 +1087,7 @@ window.setLiveRates = function(jsonText, fromCache=false, silent=false) {
 
     localStorage.setItem("dolaryLastSourceUpdate", data.updated_at || "");
     setSnapshot();
+    if(!fromCache) recordRateHistory();
     lastNetworkError = null;
     document.getElementById("lastUpdated").textContent = data.updated_at ? `آخر تحديث من المصدر: ${fmtTime(data.updated_at)}` : "آخر تحديث: الآن";
     updateSelectedProvince();
@@ -1060,6 +1127,7 @@ renderRates();
 renderFavorites();
 renderNotifications();
 renderTargetAlert();
+renderRateHistory();
 
 if (window.AndroidBridge) {
   if (targetAlert && AndroidBridge.setTargetAlert) AndroidBridge.setTargetAlert(targetAlert.rate,targetAlert.direction,targetAlert.province);
