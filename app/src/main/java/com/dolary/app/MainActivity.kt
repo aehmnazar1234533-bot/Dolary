@@ -395,7 +395,7 @@ class MainActivity : AppCompatActivity() {
         fun openPrivacyPolicy() {
             runOnUiThread {
                 try {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aehmnazar1234533-bot.github.io/dolary-privacy-policy/")))
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aehmnazar1234533-bot.github.io/Dolary/privacy_policy.html")))
                 } catch (_: Exception) {
                 }
             }
