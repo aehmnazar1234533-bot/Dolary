@@ -72,6 +72,19 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(41,213,149,.18)}50%{box-shadow:0 0 0 7px rgba(41,213,149,.04)}}
 @media(prefers-reduced-motion:reduce){.app-hero-coin,.app-hero-glow,.card-top .live:before{animation:none!important}}
 
+
+.daily-share-section{max-width:610px;margin:8px auto 0}
+.daily-share-panel{padding:18px;border:1px solid rgba(126,171,235,.2)}
+.daily-share-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.daily-share-head h2{font-size:19px;margin:0}
+.daily-share-head p{font-size:12px;color:var(--muted);margin:5px 0 0}
+.daily-share-tag{white-space:nowrap;border:1px solid rgba(93,230,190,.25);background:rgba(49,208,159,.1);color:#8af0cb;padding:7px 11px;border-radius:999px;font-size:10px;font-weight:800}
+.daily-share-frame{overflow:hidden;border:1px solid rgba(126,171,235,.24);border-radius:22px;background:#09152d;box-shadow:0 16px 38px #0005}
+.daily-share-canvas{display:block;width:100%;height:auto;aspect-ratio:4/5}
+.daily-share-button{width:100%;min-height:52px;margin-top:12px;border:0;border-radius:15px;background:linear-gradient(135deg,#2875ff,#4aa5ff);color:#fff;font:800 14px inherit;cursor:pointer;box-shadow:0 10px 25px #1769ff33;transition:transform .16s}
+.daily-share-button:active{transform:scale(.985)}
+.daily-share-note{display:block;text-align:center;color:var(--muted);font-size:11px;line-height:1.8;margin-top:8px}
+
 @media(max-width:760px){.province-rates{grid-template-columns:repeat(2,minmax(0,1fr))}.province-rate{padding:14px}.province-rate strong{font-size:17px}.nav{height:70px}.rate-shell{order:-1}.navlinks{display:none}.hero{grid-template-columns:1fr;padding:42px 0 30px;gap:35px}.hero-copy{text-align:center}.lead{margin:auto}.actions{justify-content:center}.hero-note{text-align:center}.rate-card{padding:22px}.grid,.features{grid-template-columns:1fr}.section{padding:38px 0}.download{padding:30px 20px}.footer{justify-content:center;text-align:center}.footer span{width:100%}}
 @media(max-width:380px){.province-rates{grid-template-columns:1fr}}
 
@@ -154,6 +167,15 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
   <div class="rate-value" id="rateValue">—</div><div class="currency">دينار عراقي لكل 100 دولار <span>🇮🇶</span></div>
   <div class="rate-foot"><span>المصدر: <strong>XEIQD — السوق الموازي</strong></span><span id="updated">بانتظار البيانات</span></div>
  </div></div>
+</section>
+
+<section class="wrap section daily-share-section" id="daily-card">
+ <div class="glass panel daily-share-panel">
+  <div class="daily-share-head"><div><h2>بطاقة دولاري اليومية</h2><p>اختَر محافظتك وشارك السعر بصورة أنيقة</p></div><span class="daily-share-tag">تتحدث تلقائياً</span></div>
+  <div class="daily-share-frame"><canvas id="dailyShareCanvas" class="daily-share-canvas" width="1080" height="1350" role="img" aria-label="بطاقة سعر الدولار اليومية من دولاري"></canvas></div>
+  <button type="button" class="daily-share-button" id="shareDailyCard">شارك بطاقة اليوم　↗</button>
+  <small class="daily-share-note">صورة جاهزة للواتساب والقصص · السعر استرشادي حسب آخر قراءة متاحة</small>
+ </div>
 </section>
 
 <section class="wrap section" id="convert">
@@ -352,7 +374,48 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
    :'تم جلب السعر الآن';
   calculate();
   renderProvinceCards();
+  renderDailyCard(city);
  }
+
+function paintDolaryDailyCard(canvas,info){
+ if(!canvas)return;const ctx=canvas.getContext("2d");if(!ctx)return;const w=canvas.width,h=canvas.height;
+ const rounded=(x,y,width,height,r)=>{const q=Math.min(r,width/2,height/2);ctx.beginPath();ctx.moveTo(x+q,y);ctx.arcTo(x+width,y,x+width,y+height,q);ctx.arcTo(x+width,y+height,x,y+height,q);ctx.arcTo(x,y+height,x,y,q);ctx.arcTo(x,y,x+width,y,q);ctx.closePath();};
+ const text=(v,x,y,size,color,align="right",weight=700)=>{ctx.save();ctx.direction="rtl";ctx.textAlign=align;ctx.textBaseline="alphabetic";ctx.font=weight+" "+size+"px Tahoma, Arial, sans-serif";ctx.fillStyle=color;ctx.fillText(String(v),x,y,900);ctx.restore();};
+ const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#102a58");bg.addColorStop(.48,"#0b1735");bg.addColorStop(1,"#071020");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+ const glow=ctx.createRadialGradient(870,160,20,870,160,690);glow.addColorStop(0,"rgba(56,142,255,.38)");glow.addColorStop(1,"rgba(56,142,255,0)");ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
+ ctx.save();ctx.strokeStyle="rgba(151,195,255,.09)";ctx.lineWidth=2;for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(70,1120,220+i*75,0,Math.PI*2);ctx.stroke();}ctx.restore();
+ rounded(35,35,w-70,h-70,44);ctx.strokeStyle="rgba(178,211,255,.22)";ctx.lineWidth=2;ctx.stroke();
+ rounded(825,92,150,150,38);const mark=ctx.createLinearGradient(825,92,975,242);mark.addColorStop(0,"#66c4ff");mark.addColorStop(1,"#2768ff");ctx.fillStyle=mark;ctx.fill();text("D",900,198,86,"#ffffff","center",900);
+ text("دولاري",785,158,60,"#ffffff","right",900);text("DOLARY  ·  IRAQ EXCHANGE",785,207,22,"#a9c8f7","right",700);
+ const dateText=new Date().toLocaleDateString("ar-IQ",{weekday:"long",day:"numeric",month:"long",year:"numeric"});rounded(78,105,390,68,28);ctx.fillStyle="rgba(255,255,255,.09)";ctx.fill();text(dateText,435,151,22,"#dbe9ff","right",700);
+ rounded(695,292,285,62,26);ctx.fillStyle="rgba(48,213,160,.13)";ctx.fill();ctx.strokeStyle="rgba(83,239,190,.3)";ctx.stroke();ctx.beginPath();ctx.arc(935,323,8,0,Math.PI*2);ctx.fillStyle="#5cf0bb";ctx.fill();text("مؤشر السوق الموازي",905,333,24,"#aaf6da","right",800);
+ text("سعر الدولار اليوم",w/2,500,42,"#b8cbed","center",700);text(info.province||"العراق",w/2,585,68,"#ffffff","center",900);text("100 دولار أمريكي",w/2,680,30,"#9fb9df","center",700);
+ const value=info.rate==null?"غير متوفر":Number(info.rate).toLocaleString("en-US",{maximumFractionDigits:0});text(value,w/2,855,118,"#ffffff","center",900);text("دينار عراقي",w/2,920,34,"#8fb8f0","center",800);
+ rounded(85,1000,910,174,32);ctx.fillStyle="rgba(255,255,255,.075)";ctx.fill();ctx.strokeStyle="rgba(175,205,255,.16)";ctx.stroke();
+ text("المحافظة",925,1060,22,"#91acd4","right",700);text(info.province||"—",925,1110,28,"#ffffff","right",800);text("آخر تحديث",540,1060,22,"#91acd4","right",700);text(info.updated||"وقت التحديث غير متاح",540,1110,23,"#ffffff","right",700);text(info.stale?"آخر سعر محفوظ":"البيانات من XEIQD",925,1150,18,info.stale?"#ffd78a":"#69e6ba","right",700);
+ ctx.strokeStyle="rgba(175,205,255,.2)";ctx.beginPath();ctx.moveTo(85,1210);ctx.lineTo(995,1210);ctx.stroke();text("تابع أسعار الدولار في العراق",995,1260,22,"#dceaff","right",700);text("aehmnazar1234533-bot.github.io/Dolary",85,1260,17,"#89a9d7","left",700);text("سعر استرشادي وقد يختلف حسب السوق ومكاتب الصيرفة",w/2,1300,18,"#8ea3c4","center",600);
+}
+function renderDailyCard(city){
+ const canvas=document.getElementById("dailyShareCanvas");if(!canvas)return;
+ const stamp=city&&(city.updated_at||window.__ratesUpdatedAt),date=stamp?new Date(stamp):null;
+ const updated=date&&!Number.isNaN(date.getTime())?date.toLocaleString("ar-IQ",{dateStyle:"short",timeStyle:"short"}):"وقت التحديث غير متاح";
+ paintDolaryDailyCard(canvas,{province:city?cityName(city):"العراق",rate:city?pickDisplayRate(city):null,updated,stale:false});
+}
+document.getElementById("shareDailyCard").addEventListener("click",()=>{
+ if(ratePer100===null||!Number.isFinite(Number(ratePer100))||Number(ratePer100)<=0){showToast("السعر غير متاح حالياً، حاول تحديث الصفحة");return;}
+ const canvas=document.getElementById("dailyShareCanvas");
+ canvas.toBlob(async blob=>{
+  if(!blob){showToast("تعذر تجهيز صورة البطاقة");return;}
+  const file=new File([blob],"dolary-daily-card.jpg",{type:"image/jpeg"});
+  const city=availableCities.find(c=>c.slug===selectedSlug),name=city?cityName(city):"العراق";
+  const caption="سعر الدولار اليوم في "+name+": "+fmt(ratePer100)+" د.ع لكل 100 دولار. تابع دولاري: "+location.origin+location.pathname;
+  try{
+   if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]}))await navigator.share({files:[file],title:"بطاقة دولاري اليومية",text:caption});
+   else{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="dolary-daily-card.jpg";a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);showToast("تم تجهيز بطاقة دولاري للمشاركة");}
+  }catch(error){if(error&&error.name!=="AbortError")showToast("تعذرت المشاركة، حاول مرة ثانية");}
+ },"image/jpeg",.94);
+});
+
  async function loadRate(){
   if(refreshInProgress)return;
   refreshInProgress=true;
