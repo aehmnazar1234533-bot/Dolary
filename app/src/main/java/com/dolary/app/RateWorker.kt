@@ -218,8 +218,7 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
         }
         val notification = Notification.Builder(context, MainActivity.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_dolary)
-            .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.ic_notification_large))
-            .setColor(0xFF1769FF.toInt())
+                        .setColor(0xFF1769FF.toInt())
             .setCategory(Notification.CATEGORY_STATUS)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setContentTitle(if (changed.size == 1) "دولاري • تغير سعر الدولار" else "دولاري • تحديث أسعار المحافظات")
