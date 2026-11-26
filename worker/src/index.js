@@ -269,6 +269,10 @@ async function api(request, env) {
 async function checkRates(env) {
   if (!env.PUSH_STORE || !env.VAPID_PRIVATE_KEY || !env.VAPID_PUBLIC_KEY) return;
 
+  const listed = await env.PUSH_STORE.list({ prefix: SUB_PREFIX, limit: MAX_LIST_SIZE });
+  const keys = listed.keys.map(item => item.name).sort();
+  if (!keys.length) return;
+
   const response = await fetch(RATE_URL, {
     headers: { "Accept": "application/json" },
     cf: { cacheTtl: 0 }
@@ -276,13 +280,6 @@ async function checkRates(env) {
   if (!response.ok) throw new Error("XEIQD returned " + response.status);
   const data = await response.json();
   if (!data || !Array.isArray(data.cities)) throw new Error("Invalid XEIQD rates response");
-
-  const listed = await env.PUSH_STORE.list({ prefix: SUB_PREFIX, limit: MAX_LIST_SIZE });
-  const keys = listed.keys.map(item => item.name).sort();
-  if (!keys.length) {
-    await env.PUSH_STORE.put(CURSOR_KEY, "");
-    return;
-  }
 
   const lastKey = await env.PUSH_STORE.get(CURSOR_KEY);
   let start = lastKey ? keys.findIndex(key => key > lastKey) : 0;
