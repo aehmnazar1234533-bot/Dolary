@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v20';
+const CACHE_NAME = 'dolary-pwa-v21';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
@@ -9,7 +9,7 @@ self.addEventListener('install', event => {
     await cache.add(new Request('./manifest.webmanifest?v=14', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-app.css?v=1', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-app.js?v=2', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./pwa-push-config.js?v=1', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-push-config.js?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push.js?v=1', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon.svg?v=14', { cache: 'reload' })).catch(() => {});
