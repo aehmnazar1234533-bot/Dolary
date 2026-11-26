@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v19';
+const CACHE_NAME = 'dolary-pwa-v20';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
@@ -8,7 +8,9 @@ self.addEventListener('install', event => {
     await cache.add(new Request(APP_SHELL, { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./manifest.webmanifest?v=14', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-app.css?v=1', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./pwa-app.js?v=1', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-app.js?v=2', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-push-config.js?v=1', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-push.js?v=1', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon.svg?v=14', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
@@ -62,10 +64,84 @@ self.addEventListener('fetch', event => {
   })());
 });
 
+function storePushHistory(record) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('dolary-push-history', 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains('events')) {
+        request.result.createObjectStore('events', { keyPath: 'id' });
+      }
+    };
+    request.onsuccess = () => {
+      const db = request.result;
+      try {
+        const tx = db.transaction('events', 'readwrite');
+        tx.objectStore('events').put(record);
+        tx.oncomplete = () => { db.close(); resolve(); };
+        tx.onerror = () => { db.close(); reject(tx.error); };
+      } catch (error) {
+        db.close();
+        reject(error);
+      }
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+self.addEventListener('push', event => {
+  event.waitUntil((async () => {
+    let data = {};
+    try {
+      data = event.data ? event.data.json() : {};
+    } catch (_) {
+      data = { title: 'دولاري', body: event.data ? event.data.text() : 'لديك تنبيه جديد.' };
+    }
+
+    const title = data.title || 'دولاري';
+    const options = {
+      body: data.body || 'لديك تنبيه جديد من دولاري.',
+      icon: './dolary-icon.svg?v=14',
+      badge: './dolary-icon.svg?v=14',
+      tag: data.id || 'dolary-push',
+      renotify: true,
+      data: {
+        url: data.url || new URL('./?pwa-notifications=1#pwa-notifications', self.location.href).href
+      }
+    };
+
+    await self.registration.showNotification(title, options);
+
+    if (data.province && Number.isFinite(Number(data.rate)) && data.at) {
+      const record = {
+        id: String(data.id || ('push-' + Date.now())),
+        province: String(data.province),
+        rate: Number(data.rate),
+        message: String(data.message || data.body || 'تنبيه سعر من دولاري'),
+        at: String(data.at)
+      };
+      try {
+        await storePushHistory(record);
+        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        for (const client of clients) {
+          client.postMessage({ type: 'DOLARY_PUSH_RECEIVED', record });
+        }
+      } catch (_) {}
+    }
+  })());
+});
+
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil((async () => {
-    const target = new URL('./#pwa-notifications', self.location.href).href;
+    let target = new URL('./?pwa-notifications=1#pwa-notifications', self.location.href).href;
+    try {
+      const requested = event.notification.data && event.notification.data.url;
+      if (requested) {
+        const candidate = new URL(requested, self.location.href);
+        if (candidate.origin === self.location.origin) target = candidate.href;
+      }
+    } catch (_) {}
+
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const client of windows) {
       if ('focus' in client) {
