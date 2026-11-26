@@ -23,7 +23,11 @@
           <div class="pwa-rate-label">سعر الدولار</div><div class="pwa-rate-value" id="pwaRateValue">— <small>د.ع / 100 USD</small></div>
           <div class="pwa-rate-meta"><span id="pwaUpdatedText">بانتظار البيانات</span><span>XEIQD — السوق الموازي</span></div>
         </div>
-        <section class="daily-share-section pwa-daily-card-section" id="pwaDailyCard">
+        <button type="button" class="pwa-share-price-trigger" id="pwaSharePriceTrigger" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M5 12v7h14v-7"></path></svg>
+          <span>مشاركة السعر</span>
+        </button>
+        <section class="daily-share-section pwa-daily-card-section" id="pwaDailyCard" hidden>
           <div class="daily-share-panel">
             <div class="daily-share-head"><div><h2>بطاقة دولاري اليومية</h2><p>نفس بطاقة تطبيق دولاري، جاهزة للمشاركة</p></div><span class="daily-share-tag">تتحدث تلقائياً</span></div>
             <div class="daily-share-frame"><canvas id="pwaDailyShareCanvas" class="daily-share-canvas" width="1080" height="1350" role="img" aria-label="بطاقة سعر الدولار اليومية من دولاري"></canvas></div>
@@ -31,10 +35,6 @@
             <small class="daily-share-note">صورة جاهزة للواتساب والقصص · السعر استرشادي حسب آخر قراءة متاحة</small>
           </div>
         </section>
-        <div class="pwa-grid">
-          <button type="button" class="pwa-card pwa-action-card" data-pwa-go="pwaCalculatorScreen"><svg viewBox="0 0 24 24"><rect x="5" y="2.8" width="14" height="18.4" rx="2.2"></rect><rect x="8" y="5.5" width="8" height="3.2" rx=".8"></rect><path d="M8 12h2M14 12h2M8 16h2M14 16h2M8 19h8"></path></svg><span><strong>الحاسبة</strong><small>حوّل الدولار والدينار بسرعة</small></span></button>
-          <button type="button" class="pwa-card pwa-action-card" data-pwa-go="pwaFavoritesScreen"><svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3Z"></path></svg><span><strong>المفضلة</strong><small>محافظاتك المفضلة بسرعة</small></span></button>
-        </div>
         <div class="pwa-section-title"><div><h2>آخر الأسعار</h2><p>المحافظات المتاحة من المصدر</p></div></div><div class="pwa-list" id="pwaHomeRates"></div>
       </section>
       <section class="pwa-screen" id="pwaFavoritesScreen"><div class="pwa-title-row"><div><h2>المفضلة</h2><p>المحافظات التي تتابع أسعارها بسرعة</p></div><div class="pwa-title-icon"><svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9 4.5 4.4-1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3Z"></path></svg></div></div><div class="pwa-list" id="pwaFavoritesList"></div></section>
@@ -57,6 +57,10 @@
   `;
 
   (document.body||document.documentElement).appendChild(app);
+
+  var pwaSharePriceStyle=document.createElement('style');
+  pwaSharePriceStyle.textContent='.pwa-share-price-trigger{width:100%;margin:12px 0 0;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid rgba(91,157,255,.32);background:linear-gradient(135deg,rgba(31,83,151,.92),rgba(14,43,84,.96));color:#fff;border-radius:16px;padding:13px 16px;font:700 15px/1 Tajawal,"Noto Sans Arabic",Tahoma,Arial,sans-serif;box-shadow:0 8px 22px rgba(4,20,48,.2);cursor:pointer}.pwa-share-price-trigger svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.pwa-share-price-trigger:active{transform:scale(.985)}.pwa-daily-card-section[hidden]{display:none!important}';
+  document.head.appendChild(pwaSharePriceStyle);
 
   var appState={cities:[],selectedSlug:'baghdad',ratePer100:null,updatedAt:null};
   var FAV_KEY='dolary.pwaFavorites.v1',UNREAD_KEY='dolary.pwaUnread.v1',HISTORY_KEY='dolary.priceAlertHistory.v1',ALERT_KEY='dolary.priceAlert.v1',KNOWN_KEY='dolary.pwaKnownNotification.v1';
@@ -111,6 +115,14 @@
   document.getElementById('pwaNotificationBell').addEventListener('click',function(){showScreen('pwaNotificationsScreen');});
   document.getElementById('pwaNotificationsBack').addEventListener('click',function(){showScreen('pwaHomeScreen');});
   document.getElementById('pwaRefreshBtn').addEventListener('click',function(){var b=this;b.classList.add('spinning');loadRates().finally(function(){setTimeout(function(){b.classList.remove('spinning');},400);});});
+  document.getElementById('pwaSharePriceTrigger').addEventListener('click',function(){
+    var card=document.getElementById('pwaDailyCard'),button=this;
+    var opening=card.hidden;
+    card.hidden=!opening;
+    button.setAttribute('aria-expanded',String(opening));
+    button.querySelector('span').textContent=opening?'إخفاء بطاقة السعر':'مشاركة السعر';
+    if(opening){setTimeout(function(){card.scrollIntoView({behavior:'smooth',block:'start'});},40);}
+  });
   document.getElementById('pwaShareDailyCard').addEventListener('click',sharePwaDailyCard);
   document.getElementById('pwaProvinceSelect').addEventListener('change',function(){appState.selectedSlug=this.value;try{localStorage.setItem('dolary.pwaSelectedProvince.v1',this.value);}catch(_){}var c=appState.cities.find(function(x){return x.slug===appState.selectedSlug;});if(c){appState.ratePer100=rateFor(c);appState.updatedAt=c.updated_at||appState.updatedAt;}renderHome();renderFavorites();calc();renderAlertForm();});
   document.getElementById('pwaCalcAmount').addEventListener('input',calc);
