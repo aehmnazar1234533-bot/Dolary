@@ -416,8 +416,8 @@ async function api(request, env) {
       button{width:100%;border:0;border-radius:14px;padding:14px;margin-top:18px;background:#fff;color:#111;font-weight:800;font-size:16px;cursor:pointer}.status{margin-top:16px;padding:12px;border-radius:12px;background:#101016;color:#bfc0ca;white-space:pre-wrap}
       .hint{font-size:12px;color:#888995;margin-top:12px;line-height:1.6}
     </style></head><body><main class="card"><div class="brand">دولاري</div><div class="sub">لوحة الإشعار العام — Android + iPhone</div>
-    <label>كلمة مرور الإدارة</label><input id="p" type="password" autocomplete="current-password" placeholder="ADMIN_PASSWORD">
-    <label>عنوان الإشعار</label><input id="t" maxlength="120" placeholder="مثلاً: تنبيه مهم">
+    <form id="broadcastForm" method="POST" action="/api/broadcast-form"><label>كلمة مرور الإدارة</label><input id="p" name="password" type="password" autocomplete="current-password" placeholder="كلمة مرور الإدارة" required>
+    <label>عنوان الإشعار</label><input id="t" name="title" maxlength="120" placeholder="مثلاً: تنبيه مهم" required>
     <label>نص الإشعار</label><textarea id="b" maxlength="1000" placeholder="اكتب الرسالة التي تريد إرسالها للمستخدمين..."></textarea>
     <button id="send" type="button">إرسال الإشعار للجميع</button><div id="s" class="status">جاهز للإرسال.</div>
     <div class="hint">المفتاح لا يُحفظ في الصفحة. الإرسال يتم عبر Worker آمن باستخدام Secret.</div>
@@ -452,6 +452,27 @@ async function api(request, env) {
         });
       })();
     </script></body></html>`, {headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}});
+  }
+
+  if (url.pathname === "/api/broadcast-form" && request.method === "POST") {
+    let form;
+    try { form = await request.formData(); } catch (_) { return new Response("بيانات غير صالحة", {status:400, headers:{"Content-Type":"text/plain; charset=utf-8"}}); }
+    const password = String(form.get("password") || "");
+    const title = String(form.get("title") || "");
+    const body = String(form.get("body") || "");
+    const internal = new Request(new URL("/api/broadcast", request.url), {
+      method:"POST",
+      headers:{"Content-Type":"application/json","X-Dolary-Admin-Password":password},
+      body:JSON.stringify({title,body})
+    });
+    const result = await api(internal, env);
+    const data = await result.text();
+    let parsed = {};
+    try { parsed = JSON.parse(data); } catch (_) {}
+    const msg = result.ok && parsed.ok
+      ? "تم الإرسال بنجاح. Android: "+parsed.androidSent+" | iPhone/Web Push: "+parsed.webSent
+      : "فشل الإرسال: "+(parsed.error || result.status);
+    return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>دولاري</title><body style="font-family:system-ui;background:#0b0b0f;color:white;display:grid;place-items:center;min-height:100vh"><div style="background:#17171d;padding:28px;border-radius:20px;text-align:center"><h2>'+msg+'</h2><p><a href="/admin" style="color:white">العودة للوحة الإشعار</a></p></div></body>', {status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}});
   }
 
   if (url.pathname === "/api/broadcast" && request.method === "POST") {
