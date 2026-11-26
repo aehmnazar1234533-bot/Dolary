@@ -211,6 +211,35 @@
     }, true);
   }
 
+  var disableButton = document.getElementById("pwaDisableNotifications");
+  if (disableButton) {
+    disableButton.addEventListener("click", async function (event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      disableButton.disabled = true;
+      disableButton.textContent = "جارٍ إيقاف الإشعارات…";
+      try {
+        localStorage.removeItem(ALERT_KEY);
+        if ("serviceWorker" in navigator && "PushManager" in window) {
+          var reg = await navigator.serviceWorker.ready;
+          var sub = await reg.pushManager.getSubscription();
+          if (sub) {
+            if (apiBase) await api("/api/unsubscribe", { subscription: sub.toJSON() });
+            await sub.unsubscribe();
+          }
+        }
+        permissionText("تم إلغاء اشتراك الإشعارات لهذا الجهاز.");
+        statusText("تم إيقاف التنبيهات وحذف اشتراك هذا الجهاز من خادم دولاري.");
+      } catch (error) {
+        permissionText("تمت محاولة إلغاء الإشعارات. راجع إعدادات Safari إذا بقي الإذن مفعّلاً.");
+        statusText("تعذر تأكيد حذف الاشتراك من الخادم. أعد المحاولة عند توفر الاتصال.");
+      } finally {
+        disableButton.disabled = false;
+        disableButton.textContent = "إلغاء اشتراك إشعارات هذا الجهاز";
+      }
+    }, true);
+  }
+
   var removeButton = document.getElementById("pwaRemoveAlert");
   if (removeButton && apiBase) {
     removeButton.addEventListener("click", async function (event) {
