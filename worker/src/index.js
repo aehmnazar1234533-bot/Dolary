@@ -220,7 +220,7 @@ async function deliver(subscription, data, env) {
       options: {
         ttl: 900,
         urgency: "high",
-        topic: "dolary-rate"
+        topic: String(data.broadcastId || data.id || "dolary-rate")
       }
     },
     subscription,
