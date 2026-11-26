@@ -837,7 +837,6 @@ document.getElementById("shareDailyCard").addEventListener("click",()=>{
 
  provinceSelect.addEventListener('change',()=>chooseCity(provinceSelect.value));
  amountEl.addEventListener('input',calculate);
- if(showCentsToggle){showCentsToggle.addEventListener('change',()=>{showCents=showCentsToggle.checked;try{localStorage.setItem('dolary.showCents',showCents?'1':'0');}catch(_){}calculate();});}
  directionButtons.forEach(button=>button.addEventListener('click',()=>{
   convertDirection=button.dataset.direction==='iqd'?'iqd':'usd';
   directionButtons.forEach(item=>{
