@@ -316,7 +316,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
  <div class="section-head"><h2>حوّلها بثواني</h2><p>اكتب المبلغ وشاهد قيمته التقريبية بالدينار العراقي.</p></div>
  <div class="grid">
   <div class="glass panel"><h3>حاسبة الدولار</h3><p class="muted">حوّل بالاتجاهين حسب سعر المحافظة المختارة من مصدر التطبيق.</p>
-   <div class="seg" id="convertDirection" role="group" aria-label="اتجاه التحويل"><button type="button" data-direction="usd" class="active" aria-label="تحويل من الدولار إلى الدينار" aria-pressed="true">دولار ← دينار</button><button type="button" data-direction="iqd" aria-label="تحويل من الدينار إلى الدولار" aria-pressed="false">دينار ← دولار</button></div>
+   <div class="seg" id="convertDirection" role="group" aria-label="اتجاه التحويل"><button type="button" data-direction="usd" class="active" aria-label="تحويل من الدولار إلى الدينار" aria-pressed="true">دولار ← دينار</button><button type="button" data-direction="iqd" aria-label="تحويل من الدينار إلى الدولار" aria-pressed="false">دينار ← دولار</button></div><label for="showCentsToggle" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.035);color:var(--muted);font-size:12px;cursor:pointer"><span>عرض السنتات</span><input id="showCentsToggle" type="checkbox" style="width:18px;height:18px;accent-color:#67e8f9;cursor:pointer" aria-label="عرض السنتات"></label>
    <label class="field-label" for="usd" id="amountLabel">المبلغ بالدولار الأمريكي</label><div class="input-wrap"><input id="usd" type="number" min="0" step="any" value="100" inputmode="decimal"><span id="amountUnit">USD $</span></div>
    <div class="result"><small id="convertedLabel">القيمة التقريبية بالدينار العراقي</small><strong id="converted">— د.ع</strong></div>
    <div class="calc-breakdown" id="calcBreakdown" aria-live="polite">أدخل المبلغ حتى تظهر العملية والنتيجة بشكل واضح.</div>
@@ -398,10 +398,13 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
  const convertedLabel=document.getElementById('convertedLabel');
  const calcBreakdown=document.getElementById('calcBreakdown');
  const directionButtons=[...document.querySelectorAll('#convertDirection button')];
+ const showCentsToggle=document.getElementById('showCentsToggle');
+ if(showCentsToggle)showCentsToggle.checked=showCents;
  let ratePer100=null;
  let availableCities=[];
  let selectedSlug='baghdad';
  let convertDirection='usd';
+ let showCents=localStorage.getItem('dolary.showCents')==='1';
  let refreshInProgress=false;
  let refreshTimer=null;
  const numberFrames=new WeakMap();
@@ -470,7 +473,8 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
   if(calcBreakdown){
    const shownAmount=fmtCalc(amount,convertDirection==='usd'?2:0);
    const shownRate=fmtCalc(ratePer100,0);
-   const shownResult=fmtCalc(result,0);
+   const resultDigits=convertDirection==='iqd'&&showCents?2:0;
+   const shownResult=fmtCalc(result,resultDigits);
    calcBreakdown.innerHTML=convertDirection==='usd'
     ? '<b>'+shownAmount+' USD</b> × <b>'+shownRate+' د.ع / 100 USD</b> = <b>'+shownResult+'</b> <span class="unit">د.ع</span>'
     : '<b>'+shownAmount+' د.ع</b> ÷ <b>'+fmtCalc(perDollar,2)+' د.ع / USD</b> = <b>'+shownResult+'</b> <span class="unit">USD</span>';
@@ -479,7 +483,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
    convertedEl.textContent='—';
    return;
   }
-  animateNumber(convertedEl,result,convertDirection==='usd'?' د.ع':'',0,convertDirection==='usd'?'':'USD ');
+  animateNumber(convertedEl,result,convertDirection==='usd'?' د.ع':'',resultDigits,convertDirection==='usd'?'':'USD ');
  }
  function renderProvinceCards(){
   provinceRates.replaceChildren();
@@ -807,6 +811,7 @@ document.getElementById("shareDailyCard").addEventListener("click",()=>{
 
  provinceSelect.addEventListener('change',()=>chooseCity(provinceSelect.value));
  amountEl.addEventListener('input',calculate);
+ if(showCentsToggle){showCentsToggle.addEventListener('change',()=>{showCents=showCentsToggle.checked;try{localStorage.setItem('dolary.showCents',showCents?'1':'0');}catch(_){}calculate();});}
  directionButtons.forEach(button=>button.addEventListener('click',()=>{
   convertDirection=button.dataset.direction==='iqd'?'iqd':'usd';
   directionButtons.forEach(item=>{
