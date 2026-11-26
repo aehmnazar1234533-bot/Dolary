@@ -47,6 +47,7 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.1")
     implementation("com.google.android.gms:play-services-ads:25.5.0")
     implementation("com.google.android.ump:user-messaging-platform:4.0.0")
+    implementation("com.google.firebase:firebase-messaging:25.0.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("androidx.test.ext:junit:1.2.1")
     testImplementation("androidx.test.espresso:espresso-core:3.6.1")
