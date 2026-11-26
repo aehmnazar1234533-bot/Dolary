@@ -173,14 +173,8 @@ class MainActivity : AppCompatActivity() {
                 scheduleBackgroundUpdates()
                 registerFirebasePushToken()
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                    prefs.getBoolean(KEY_NOTIFICATIONS, true) &&
-                    !prefs.getBoolean(KEY_PERMISSION_ASKED, false) &&
-                    checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    prefs.edit().putBoolean(KEY_PERMISSION_ASKED, true).apply()
-                    requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 7001)
-                }
+                // Notification permission is requested after the startup surface is dismissed,
+                // never while the splash is covering the first screen.
             }
         }
 
@@ -336,14 +330,31 @@ class MainActivity : AppCompatActivity() {
                             "window.AndroidBridge && AndroidBridge.setPrivacyOptionsVisible && AndroidBridge.setPrivacyOptionsVisible(" + adMobConsentManager.privacyOptionsRequired() + ");",
                             null
                         )
+                        requestNotificationPermissionAfterStartup()
                     }
                 } catch (_: Exception) {
                     adConsentReady = false
+                    requestNotificationPermissionAfterStartup()
                 }
             }
         } catch (_: Exception) {
             adConsentReady = false
+            requestNotificationPermissionAfterStartup()
         }
+    }
+
+    private fun requestNotificationPermissionAfterStartup() {
+        mainHandler.postDelayed({
+            if (isFinishing || isDestroyed) return@postDelayed
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                prefs.getBoolean(KEY_NOTIFICATIONS, true) &&
+                !prefs.getBoolean(KEY_PERMISSION_ASKED, false) &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ) {
+                prefs.edit().putBoolean(KEY_PERMISSION_ASKED, true).apply()
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 7001)
+            }
+        }, 350L)
     }
 
     private fun loadAdsWhenReady() {
