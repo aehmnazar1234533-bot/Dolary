@@ -395,9 +395,28 @@ async function api(request, env) {
     }
   }
 
+  if (url.pathname === "/admin" && request.method === "GET") {
+    return new Response(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>دولاري | الإشعار العام</title><style>
+      *{box-sizing:border-box}body{margin:0;background:#0b0b0f;color:#f7f7fb;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:grid;place-items:center;padding:20px}
+      .card{width:min(560px,100%);background:#17171d;border:1px solid #2b2b35;border-radius:24px;padding:24px;box-shadow:0 20px 60px #0008}.brand{font-size:26px;font-weight:800;margin-bottom:6px}.sub{color:#a7a7b2;margin-bottom:22px}
+      label{display:block;font-weight:700;margin:14px 0 7px}input,textarea{width:100%;border:1px solid #343440;background:#101016;color:#fff;border-radius:14px;padding:13px;font:inherit;outline:none}textarea{min-height:130px;resize:vertical}
+      button{width:100%;border:0;border-radius:14px;padding:14px;margin-top:18px;background:#fff;color:#111;font-weight:800;font-size:16px;cursor:pointer}.status{margin-top:16px;padding:12px;border-radius:12px;background:#101016;color:#bfc0ca;white-space:pre-wrap}
+      .hint{font-size:12px;color:#888995;margin-top:12px;line-height:1.6}
+    </style></head><body><main class="card"><div class="brand">دولاري</div><div class="sub">لوحة الإشعار العام — Android + iPhone</div>
+    <label>كلمة مرور الإدارة</label><input id="p" type="password" autocomplete="current-password" placeholder="ADMIN_PASSWORD">
+    <label>عنوان الإشعار</label><input id="t" maxlength="120" placeholder="مثلاً: تنبيه مهم">
+    <label>نص الإشعار</label><textarea id="b" maxlength="1000" placeholder="اكتب الرسالة التي تريد إرسالها للمستخدمين..."></textarea>
+    <button id="send">إرسال الإشعار للجميع</button><div id="s" class="status">جاهز للإرسال.</div>
+    <div class="hint">المفتاح لا يُحفظ في الصفحة. الإرسال يتم عبر Worker آمن باستخدام Secret.</div>
+    </main><script>
+      const p=document.getElementById("p"),t=document.getElementById("t"),b=document.getElementById("b"),s=document.getElementById("s");
+      p.value=sessionStorage.getItem("dolary_admin_password")||"";
+      document.getElementById("send").onclick=async()=>{const password=p.value.trim(),title=t.value.trim(),body=b.value.trim();if(!password||!title||!body){s.textContent="أكمل كلمة المرور والعنوان والنص.";return}s.textContent="جاري الإرسال...";try{const r=await fetch("/api/broadcast",{method:"POST",headers:{"Content-Type":"application/json","X-Dolary-Admin-Password":password},body:JSON.stringify({title,body})});const d=await r.json().catch(()=>({}));if(r.status===401){s.textContent="كلمة مرور الإدارة غير صحيحة.";return}if(!r.ok||!d.ok){s.textContent="فشل الإرسال: "+(d.error||r.status);return}sessionStorage.setItem("dolary_admin_password",password);s.textContent="تم الإرسال بنجاح.\nAndroid: "+d.androidSent+"\niPhone/Web Push: "+d.webSent+"\nغير صالحة وحُذفت: "+(d.androidRemoved+d.webRemoved);b.value=""}catch(e){s.textContent="تعذر الاتصال بالـWorker.";}};</script></body></html>`, {headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}});
+  }
+
   if (url.pathname === "/api/broadcast" && request.method === "POST") {
-    const suppliedKey = request.headers.get("X-Dolary-Broadcast-Key") || "";
-    if (!env.BROADCAST_KEY || suppliedKey !== env.BROADCAST_KEY) {
+    const suppliedPassword = request.headers.get("X-Dolary-Admin-Password") || "";
+    if (!env.ADMIN_PASSWORD || suppliedPassword !== env.ADMIN_PASSWORD) {
       return json({ ok: false, error: "broadcast_not_authorized" }, 401, origin, env);
     }
 
