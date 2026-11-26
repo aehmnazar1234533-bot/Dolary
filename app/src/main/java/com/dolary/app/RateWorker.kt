@@ -176,6 +176,7 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
                 put("rate", item.third)
                 put("change", delta)
                 put("time", currentTime())
+                put("timestamp", now)
             })
         }
         val trimmed = JSONArray()
