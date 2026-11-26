@@ -74,6 +74,7 @@
     var reg = await registration();
     var sub = await reg.pushManager.getSubscription();
     var conf = await api("/api/config", null, "GET");
+    if (conf.pushReady !== true) throw new Error("إعدادات خدمة الإشعارات على الخادم لم تكتمل بعد. يحتاج ربط قاعدة التخزين ومفتاح VAPID الخاص.");
     if (!conf.publicKey) throw new Error("مفتاح الإشعارات العام غير مضبوط على الخادم.");
     if (!sub) {
       sub = await reg.pushManager.subscribe({
