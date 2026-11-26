@@ -419,12 +419,39 @@ async function api(request, env) {
     <label>كلمة مرور الإدارة</label><input id="p" type="password" autocomplete="current-password" placeholder="ADMIN_PASSWORD">
     <label>عنوان الإشعار</label><input id="t" maxlength="120" placeholder="مثلاً: تنبيه مهم">
     <label>نص الإشعار</label><textarea id="b" maxlength="1000" placeholder="اكتب الرسالة التي تريد إرسالها للمستخدمين..."></textarea>
-    <button id="send">إرسال الإشعار للجميع</button><div id="s" class="status">جاهز للإرسال.</div>
+    <button id="send" type="button">إرسال الإشعار للجميع</button><div id="s" class="status">جاهز للإرسال.</div>
     <div class="hint">المفتاح لا يُحفظ في الصفحة. الإرسال يتم عبر Worker آمن باستخدام Secret.</div>
     </main><script>
-      const p=document.getElementById("p"),t=document.getElementById("t"),b=document.getElementById("b"),s=document.getElementById("s");
-      p.value=sessionStorage.getItem("dolary_admin_password")||"";
-      document.getElementById("send").onclick=async()=>{const password=p.value.trim(),title=t.value.trim(),body=b.value.trim();if(!password||!title||!body){s.textContent="أكمل كلمة المرور والعنوان والنص.";return}s.textContent="جاري الإرسال...";try{const r=await fetch("/api/broadcast",{method:"POST",headers:{"Content-Type":"application/json","X-Dolary-Admin-Password":password},body:JSON.stringify({title,body})});const d=await r.json().catch(()=>({}));if(r.status===401){s.textContent="كلمة مرور الإدارة غير صحيحة.";return}if(!r.ok||!d.ok){s.textContent="فشل الإرسال: "+(d.error||r.status);return}sessionStorage.setItem("dolary_admin_password",password);s.textContent="تم الإرسال بنجاح.\nAndroid: "+d.androidSent+"\niPhone/Web Push: "+d.webSent+"\nغير صالحة وحُذفت: "+(d.androidRemoved+d.webRemoved);b.value=""}catch(e){s.textContent="تعذر الاتصال بالـWorker.";}};</script></body></html>`, {headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}});
+      (() => {
+        const p=document.getElementById("p"),t=document.getElementById("t"),b=document.getElementById("b");
+        const s=document.getElementById("s"),send=document.getElementById("send");
+        if(!p||!t||!b||!s||!send)return;
+        p.value=sessionStorage.getItem("dolary_admin_password")||"";
+        send.addEventListener("click",async(e)=>{
+          e.preventDefault();
+          send.disabled=true;
+          send.textContent="جاري الإرسال...";
+          s.textContent="جاري الإرسال...";
+          const password=p.value.trim(),title=t.value.trim(),body=b.value.trim();
+          if(!password||!title||!body){
+            s.textContent="أكمل كلمة المرور والعنوان والنص.";
+            send.disabled=false;
+            send.textContent="إرسال الإشعار للجميع";
+            return;
+          }
+          try{
+            const r=await fetch("/api/broadcast",{method:"POST",headers:{"Content-Type":"application/json","X-Dolary-Admin-Password":password},body:JSON.stringify({title,body}),cache:"no-store"});
+            const d=await r.json().catch(()=>({}));
+            if(r.status===401){s.textContent="كلمة مرور الإدارة غير صحيحة.";return}
+            if(!r.ok||!d.ok){s.textContent="فشل الإرسال: "+(d.error||r.status);return}
+            sessionStorage.setItem("dolary_admin_password",password);
+            s.textContent="تم الإرسال بنجاح.\nAndroid: "+d.androidSent+"\niPhone/Web Push: "+d.webSent+"\nغير صالحة وحُذفت: "+(d.androidRemoved+d.webRemoved);
+            b.value="";
+          }catch(e){s.textContent="تعذر الاتصال بالـWorker."}
+          finally{send.disabled=false;send.textContent="إرسال الإشعار للجميع"}
+        });
+      })();
+    </script></body></html>`, {headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}});
   }
 
   if (url.pathname === "/api/broadcast" && request.method === "POST") {
