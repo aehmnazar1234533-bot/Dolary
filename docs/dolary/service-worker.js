@@ -1,19 +1,19 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v29';
+const CACHE_NAME = 'dolary-pwa-v30';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cache.add(new Request(APP_SHELL, { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./manifest.webmanifest?v=14', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./manifest.webmanifest?v=15', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-app.css?v=4', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-app.js?v=5', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push-config.js?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push.js?v=4', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./privacy_policy.html', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./dolary-icon.svg?v=14', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./dolary-icon-192.png?v=15', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
     await self.skipWaiting();
