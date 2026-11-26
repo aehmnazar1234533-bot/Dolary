@@ -148,7 +148,7 @@ async function api(request, env) {
       service: "dolary-push",
       storageReady: Boolean(env.PUSH_STORE),
       vapidReady: Boolean(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY && env.VAPID_SUBJECT),
-      schedule: "every 5 minutes"
+      schedule: "every 10 minutes"
     }, 200, origin, env);
   }
 
