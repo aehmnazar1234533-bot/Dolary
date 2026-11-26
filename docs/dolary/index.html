@@ -994,17 +994,10 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   document.querySelectorAll('[data-close-ios-install]').forEach(function(el){el.addEventListener('click',closeModal);});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal&&modal.classList.contains('open'))closeModal();});
   if(shareBtn)shareBtn.addEventListener('click',function(){
-    /* لا نستعمل navigator.share هنا: هذا يفتح ورقة مشاركة التطبيقات،
-       وليس قائمة مشاركة Safari التي تحتوي «إضافة إلى الشاشة الرئيسية».
-       المطلوب هو توجيه المستخدم إلى زر المشاركة الأصلي في Safari. */
-    shareBtn.innerHTML='<span>↗</span> اضغط زر المشاركة في Safari بالأعلى';
     shareBtn.classList.add('ios-share-guide-active');
     if(window.dolaryTrack)window.dolaryTrack('ios_install_share_guide');
     var steps=document.querySelector('.ios-install-steps');
     if(steps)steps.classList.add('ios-share-highlight');
-    setTimeout(function(){
-      shareBtn.innerHTML='<span>↗</span> اضغط زر المشاركة في Safari بالأعلى';
-    },1800);
   });
   window.addEventListener('pageshow',function(){
     var nowStandalone=window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
