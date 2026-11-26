@@ -53,7 +53,7 @@ class RateWorker(context: Context, params: WorkerParameters) : Worker(context, p
                 .build()
             // UPDATE: picks up a new interval, but leaves the existing schedule alone when nothing changed.
             WorkManager.getInstance(context.applicationContext)
-                .enqueueUniquePeriodicWork(WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, request)
+                .enqueueUniquePeriodicWork(WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request)
         }
 
         fun cancel(context: Context) {
