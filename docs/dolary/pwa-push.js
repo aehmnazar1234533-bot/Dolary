@@ -16,6 +16,7 @@
   var DB_STORE = "events";
   var AUTO_PUSH_ENABLED_KEY = "dolary.pwaAutoPushEnabled.v1";
   var AUTO_PUSH_DISABLED_KEY = "dolary.pwaAutoPushDisabled.v1";
+  var SUBSCRIPTION_KEY = "dolary.pwaSubscription.v1";
 
   function statusText(text) {
     var el = document.getElementById("pwaAlertStatus");
@@ -110,13 +111,23 @@
 
   async function saveSubscription(rule, sendTest) {
     var pair = await getOrCreateSubscription();
+    var current = pair.subscription.toJSON();
+    var previous = null;
+    try { previous = JSON.parse(localStorage.getItem(SUBSCRIPTION_KEY) || "null"); } catch (_) { previous = null; }
+
+    if (previous && previous.endpoint && previous.endpoint !== current.endpoint && apiBase) {
+      try { await api("/api/unsubscribe", { subscription: previous }); } catch (_) {}
+    }
+
     await api("/api/subscribe", {
-      subscription: pair.subscription.toJSON(),
+      subscription: current,
       rule: rule || null,
       preference: localPreference()
     });
+    try { localStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(current)); } catch (_) {}
+
     if (sendTest) {
-      await api("/api/test", { subscription: pair.subscription.toJSON() });
+      await api("/api/test", { subscription: current });
     }
     return pair.subscription;
   }
@@ -169,11 +180,18 @@
       var sub = await reg.pushManager.getSubscription();
       if (isAutoPushDisabledLocally()) return;
       if (sub) {
+        var current = sub.toJSON();
+        var previous = null;
+        try { previous = JSON.parse(localStorage.getItem(SUBSCRIPTION_KEY) || "null"); } catch (_) { previous = null; }
+        if (previous && previous.endpoint && previous.endpoint !== current.endpoint) {
+          try { await api("/api/unsubscribe", { subscription: previous }); } catch (_) {}
+        }
         await api("/api/subscribe", {
-          subscription: sub.toJSON(),
+          subscription: current,
           rule: localRule(),
           preference: localPreference()
         });
+        try { localStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(current)); } catch (_) {}
         permissionText("إشعارات دولاري مفعّلة على هذا الآيفون.");
       }
     } catch (_) {
@@ -269,6 +287,7 @@
             serverRemoved = true;
           }
         }
+        try { localStorage.removeItem(SUBSCRIPTION_KEY); } catch (_) {}
         permissionText("تم إلغاء اشتراك الإشعارات لهذا الجهاز.");
         statusText(serverRemoved ?
           "تم إيقاف التنبيهات وحذف اشتراك هذا الجهاز من خادم دولاري." :
