@@ -56,8 +56,8 @@
 
   function readJson(k,f){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v===null?f:v;}catch(_){return f;}}
   function fmt(n,d){return new Intl.NumberFormat('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}).format(n);}
-  function cityName(c){return c&&(c.name_ar||c.name||c.city_ar||c.slug)||'العراق';}
-  function rateFor(c){var keys=['rate','sell','sell_rate','market_rate','usd_sell','iqd_sell'];for(var i=0;i<keys.length;i++){var n=Number(c&&c[keys[i]]);if(Number.isFinite(n)&&n>0)return n;}return null;}
+  function cityName(c){var n=c&&(c.name_ar||c.city_ar||c.name);if(n&&typeof n==='object')n=n.ar||n.en||n.ku;return n||c&&c.slug||'العراق';}
+  function rateFor(c){var keys=['usd_iqd_per_100','rate','sell','sell_rate','market_rate','usd_sell','iqd_sell'];for(var i=0;i<keys.length;i++){var n=Number(c&&c[keys[i]]);if(Number.isFinite(n)&&n>0)return n;}return null;}
   function history(){var v=readJson(HISTORY_KEY,[]);return Array.isArray(v)?v:[];}
   function unread(){return Math.max(0,Number(localStorage.getItem(UNREAD_KEY)||0));}
   function setUnread(n){try{localStorage.setItem(UNREAD_KEY,String(Math.max(0,n|0)));}catch(_){}}
