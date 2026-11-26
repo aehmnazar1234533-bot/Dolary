@@ -1,0 +1,40 @@
+name: Validate Dolary Web Push
+
+on:
+  push:
+    paths:
+      - "worker/**"
+      - "docs/dolary/pwa-app.js"
+      - "docs/dolary/pwa-push*.js"
+      - "docs/dolary/service-worker.js"
+      - ".github/workflows/validate-dolary-push.yml"
+  pull_request:
+    paths:
+      - "worker/**"
+      - "docs/dolary/pwa-app.js"
+      - "docs/dolary/pwa-push*.js"
+      - "docs/dolary/service-worker.js"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install worker dependencies
+        working-directory: worker
+        run: npm install
+      - name: Check JavaScript syntax
+        run: |
+          node --check worker/src/index.js
+          node --check docs/dolary/pwa-app.js
+          node --check docs/dolary/pwa-push.js
+          node --check docs/dolary/pwa-push-config.js
+          node --check docs/dolary/service-worker.js
+      - name: Build Worker without deploying
+        working-directory: worker
+        run: npm run dry-run
