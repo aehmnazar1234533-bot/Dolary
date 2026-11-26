@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v22';
+const CACHE_NAME = 'dolary-pwa-v23';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
@@ -66,10 +66,13 @@ self.addEventListener('fetch', event => {
 
 function storePushHistory(record) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('dolary-push-history', 1);
+    const request = indexedDB.open('dolary-push-history', 2);
     request.onupgradeneeded = () => {
       if (!request.result.objectStoreNames.contains('events')) {
         request.result.createObjectStore('events', { keyPath: 'id' });
+      }
+      if (!request.result.objectStoreNames.contains('meta')) {
+        request.result.createObjectStore('meta', { keyPath: 'key' });
       }
     };
     request.onsuccess = () => {
@@ -110,6 +113,7 @@ self.addEventListener('push', event => {
     };
 
     await self.registration.showNotification(title, options);
+    await changeBadgeCount(1);
 
     if (data.province && Number.isFinite(Number(data.rate)) && data.at) {
       const record = {
@@ -133,6 +137,7 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil((async () => {
+    await changeBadgeCount(-1);
     let target = new URL('./?pwa-notifications=1#pwa-notifications', self.location.href).href;
     try {
       const requested = event.notification.data && event.notification.data.url;
