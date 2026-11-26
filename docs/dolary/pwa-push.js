@@ -30,6 +30,22 @@
     catch (_) { return null; }
   }
 
+  function localPreference() {
+    try {
+      var slug = String(localStorage.getItem("dolary.pwaSelectedProvince.v1") || "baghdad").trim() || "baghdad";
+      var select = document.getElementById("pwaProvinceSelect");
+      if (select && select.value) slug = String(select.value);
+      var option = select && select.options ? select.options[select.selectedIndex] : null;
+      var province = option && option.textContent ? option.textContent.trim() : "";
+      return {
+        slug: slug.slice(0, 40),
+        province: (province || slug).slice(0, 60)
+      };
+    } catch (_) {
+      return { slug: "baghdad", province: "بغداد" };
+    }
+  }
+
   function b64ToBytes(value) {
     var padding = "=".repeat((4 - value.length % 4) % 4);
     var base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -94,7 +110,8 @@
     var pair = await getOrCreateSubscription();
     await api("/api/subscribe", {
       subscription: pair.subscription.toJSON(),
-      rule: rule || null
+      rule: rule || null,
+      preference: localPreference()
     });
     if (sendTest) {
       await api("/api/test", { subscription: pair.subscription.toJSON() });
@@ -151,7 +168,8 @@
       if (sub) {
         await api("/api/subscribe", {
           subscription: sub.toJSON(),
-          rule: localRule()
+          rule: localRule(),
+          preference: localPreference()
         });
         permissionText("إشعارات دولاري مفعّلة على هذا الآيفون.");
       }
