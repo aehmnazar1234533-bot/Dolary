@@ -97,7 +97,7 @@ function base64UrlEncodeBigInt(value) {
 }
 
 function parsePemPrivateKey(pem) {
-  const body = String(pem || "").replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\\s+/g, "");
+  const body = String(pem || "").replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s+/g, "");
   return Uint8Array.from(atob(body), c => c.charCodeAt(0));
 }
 
