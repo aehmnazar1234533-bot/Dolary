@@ -1,9 +1,10 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "dolary-push",
+  "name": "dolary",
   "main": "src/index.js",
   "compatibility_date": "2026-11-26",
   "workers_dev": true,
+  "preview_urls": false,
   "triggers": {
     "crons": ["*/10 * * * *"]
   },
