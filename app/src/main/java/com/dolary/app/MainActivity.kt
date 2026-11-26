@@ -58,6 +58,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusSpacer: View
     private lateinit var navSpacer: View
     private lateinit var adContainer: FrameLayout
+    private lateinit var splashOverlay: View
+    private lateinit var splashLogo: View
+    private lateinit var splashTitle: View
+    private var splashStartedAt: Long = 0L
     private var adView: AdView? = null
     private var mainPageLoaded = false
     private var adConsentReady = false
@@ -98,6 +102,11 @@ class MainActivity : AppCompatActivity() {
         statusSpacer = findViewById(R.id.statusSpacer)
         navSpacer = findViewById(R.id.navSpacer)
         adContainer = findViewById(R.id.adContainer)
+        splashOverlay = findViewById(R.id.splashOverlay)
+        splashLogo = findViewById(R.id.splashLogo)
+        splashTitle = findViewById(R.id.splashTitle)
+        splashStartedAt = System.currentTimeMillis()
+        startSplashAnimation()
         adMobConsentManager = AdMobConsentManager(this)
         appOpenAdManager = AppOpenAdManager(prefs)
         setupAds()
@@ -152,6 +161,7 @@ class MainActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 progressBar.visibility = View.GONE
                 mainPageLoaded = true
+                finishSplashWhenReady()
                 loadAdsWhenReady()
                 webView.evaluateJavascript("(function(){try{if(window.posthog&&window.posthog.register){window.posthog.register({platform:'android_app',app_name:'dolary'});}}catch(e){}})();", null)
                 webView.evaluateJavascript("(function(){try{var m=document.getElementById('provinceModal');if(m){m.classList.add('hidden');m.classList.remove('closing');m.style.pointerEvents='none';}}catch(e){}})();", null)
@@ -185,6 +195,52 @@ class MainActivity : AppCompatActivity() {
         webView.loadUrl("file:///android_asset/index.html")
     }
 
+
+    private fun startSplashAnimation() {
+        splashOverlay.visibility = View.VISIBLE
+        splashOverlay.alpha = 1f
+
+        splashLogo.alpha = 0f
+        splashLogo.scaleX = 0.94f
+        splashLogo.scaleY = 0.94f
+        splashTitle.alpha = 0f
+        splashTitle.translationY = 8f
+
+        splashLogo.animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(420L)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .start()
+
+        splashTitle.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setStartDelay(140L)
+            .setDuration(360L)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .start()
+    }
+
+    private fun finishSplashWhenReady() {
+        val elapsed = System.currentTimeMillis() - splashStartedAt
+        val remaining = (700L - elapsed).coerceAtLeast(0L)
+        mainHandler.postDelayed({ hideSplash() }, remaining)
+    }
+
+    private fun hideSplash() {
+        if (!::splashOverlay.isInitialized || splashOverlay.visibility != View.VISIBLE) return
+        splashOverlay.animate()
+            .alpha(0f)
+            .setDuration(220L)
+            .setInterpolator(android.view.animation.AccelerateInterpolator())
+            .withEndAction {
+                splashOverlay.visibility = View.GONE
+                splashOverlay.alpha = 1f
+            }
+            .start()
+    }
 
     private fun setupAds() {
         // The banner is created in code: AdView allows its unit ID and size to be set only once,
