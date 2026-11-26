@@ -23,6 +23,7 @@ This service sends background price-target notifications to installed Dolary web
 - `GET /api/config` returns the public VAPID key only.
 - `POST /api/subscribe` stores a browser subscription and optional price rule.
 - `POST /api/remove-rule` removes the price rule but keeps the browser subscription.
+- `POST /api/unsubscribe` deletes the browser subscription and its saved rule from KV.
 - `POST /api/test` sends a one-time test notification to the subscribed device.
 
 The Worker accepts browser push endpoints only over HTTPS and uses an origin allowlist for `https://aehamtech.top`.
