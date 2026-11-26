@@ -5,7 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <!-- PostHog analytics: privacy-first manual events for Dolary -->
 <script>
 !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),e.people=u.people||[],u.people.toString=function(){return e.people.toString},n="capture identify alias people.set people.set_once people.unset people.increment people.append people.remove people.group people.reset people.unregister people.get_group people.get_or_create_group people.update_group people.set_group_config".split(" "),o=0;o<n.length;o++)g(u,n[o]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -15,7 +15,18 @@ window.addEventListener('load',function(){window.dolaryTrack('$pageview',{page:'
 </script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9157735624204920" data-overlays="bottom" crossorigin="anonymous"></script>
 <meta name="theme-color" content="#080d1b">
-<link rel="manifest" href="./manifest.webmanifest?v=13">
+<link rel="stylesheet" href="./pwa-app.css?v=1">
+<script>
+(function(){
+  try{
+    var dm=window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches;
+    var fs=window.matchMedia&&window.matchMedia('(display-mode: fullscreen)').matches;
+    var ios=window.navigator.standalone===true||/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    if(ios&&(dm||fs||window.navigator.standalone===true))document.documentElement.classList.add('pwa-mode');
+  }catch(_){}
+})();
+</script>
+<link rel="manifest" href="./manifest.webmanifest?v=14">
 <link rel="apple-touch-icon" sizes="180x180" href="./dolary-mark.svg">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -872,6 +883,7 @@ document.getElementById("shareDailyCard").addEventListener("click",()=>{
  startRateRefresh();
 })();
 </script>
+<script src="./pwa-app.js?v=1" defer></script>
 <script type="text/javascript">
  var infolinks_pid = 3449927;
  var infolinks_wsid = 0;
