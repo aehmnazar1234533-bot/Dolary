@@ -1,0 +1,17 @@
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:colorAccent">#1769FF</item>
+        <item name="android:windowBackground">#09111E</item>
+        <item name="android:statusBarColor">#09111E</item>
+        <item name="android:navigationBarColor">#09111E</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- Android 12+ startup splash: use the transparent Dolary mark, not the launcher mask. -->
+        <item name="android:windowSplashScreenBackground">#09111E</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/dolary_brand_foreground</item>
+        <item name="android:windowSplashScreenAnimationDuration">450</item>
+    </style>
+</resources>
