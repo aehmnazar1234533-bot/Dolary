@@ -14,6 +14,7 @@
   var ALERT_KEY = "dolary.priceAlert.v1";
   var DB_NAME = "dolary-push-history";
   var DB_STORE = "events";
+  var AUTO_PUSH_ENABLED_KEY = "dolary.pwaAutoPushEnabled.v1";
 
   function statusText(text) {
     var el = document.getElementById("pwaAlertStatus");
@@ -295,9 +296,90 @@
     }, true);
   }
 
+  function isAutoPushEnabledLocally() {
+    try { return localStorage.getItem(AUTO_PUSH_ENABLED_KEY) === "1"; }
+    catch (_) { return false; }
+  }
+
+  function setAutoPushEnabledLocally() {
+    try { localStorage.setItem(AUTO_PUSH_ENABLED_KEY, "1"); } catch (_) {}
+  }
+
+  function buildAutoPermissionPrompt() {
+    if (!standalone || !apiBase || !("Notification" in window) || Notification.permission !== "default") return null;
+    if (isAutoPushEnabledLocally()) return null;
+    var existing = document.getElementById("pwaAutoPushPrompt");
+    if (existing) return existing;
+    var overlay = document.createElement("div");
+    overlay.id = "pwaAutoPushPrompt";
+    overlay.className = "pwa-auto-push-overlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.innerHTML =
+      '<div class="pwa-auto-push-card">' +
+        '<div class="pwa-auto-push-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>' +
+        '<div class="pwa-auto-push-title">فعّل إشعارات دولاري</div>' +
+        '<div class="pwa-auto-push-text">حتى يصلك تنبيه مباشرةً عند ارتفاع أو انخفاض سعر الدولار، حتى لو دولاري مغلق.</div>' +
+        '<button type="button" class="pwa-auto-push-btn" id="pwaAutoPushBtn">تفعيل الإشعارات الآن</button>' +
+        '<div class="pwa-auto-push-note">بعد الضغط سيظهر طلب السماح الرسمي من الآيفون.</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    var button = document.getElementById("pwaAutoPushBtn");
+    if (!button) return overlay;
+    button.addEventListener("click", async function (event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      button.disabled = true;
+      button.textContent = "جارٍ التفعيل…";
+      try {
+        await saveSubscription(localRule(), true);
+        setAutoPushEnabledLocally();
+        permissionText("إشعارات دولاري مفعّلة على هذا الآيفون.");
+        statusText(localRule() ? "تم تفعيل الإشعارات وحفظ تنبيه السعر." : "تم تفعيل الإشعارات. ستوصلك تنبيهات ارتفاع وانخفاض السعر.");
+        overlay.remove();
+      } catch (error) {
+        permissionText(error.message || "تعذر تفعيل الإشعارات.");
+        button.disabled = false;
+        button.textContent = "تفعيل الإشعارات الآن";
+      }
+    }, true);
+    return overlay;
+  }
+
+  async function autoEnableIfAlreadyAllowed() {
+    if (!standalone || !apiBase || !("Notification" in window)) return;
+    if (Notification.permission !== "granted") return;
+    try {
+      setAutoPushEnabledLocally();
+      var reg = await navigator.serviceWorker.ready;
+      var sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        await api("/api/subscribe", { subscription: sub.toJSON(), rule: localRule(), preference: localPreference() });
+        permissionText("إشعارات دولاري مفعّلة على هذا الآيفون.");
+        return;
+      }
+      await saveSubscription(localRule(), false);
+      permissionText("إشعارات دولاري مفعّلة على هذا الآيفون.");
+    } catch (_) {}
+  }
+
+  function initAutomaticPushPrompt() {
+    if (!standalone || !apiBase || !("Notification" in window)) return;
+    if (Notification.permission === "denied") {
+      permissionText("إشعارات دولاري موقوفة من إعدادات الآيفون.");
+      return;
+    }
+    if (Notification.permission === "granted") {
+      autoEnableIfAlreadyAllowed();
+      return;
+    }
+    window.setTimeout(function () { buildAutoPermissionPrompt(); }, 180);
+  }
+
   if (apiBase) {
     statusText("تنبيهات الخلفية متاحة. فعّل الإشعارات واحفظ سعرك المستهدف.");
     syncIfAlreadySubscribed();
+    initAutomaticPushPrompt();
   }
 
   navigator.serviceWorker && navigator.serviceWorker.addEventListener("message", function (event) {
