@@ -10,7 +10,7 @@ self.addEventListener('install', event => {
     await cache.add(new Request('./pwa-app.css?v=4', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-app.js?v=5', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push-config.js?v=2', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./pwa-push.js?v=4', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-push.js?v=5', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./privacy_policy.html', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon-180.png?v=15', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon-192.png?v=15', { cache: 'reload' })).catch(() => {});
