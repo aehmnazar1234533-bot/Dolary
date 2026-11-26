@@ -271,7 +271,7 @@ button:focus-visible,.nav-item:focus-visible{outline:3px solid rgba(23,105,255,.
   .bottom-nav{width:calc(100% - 16px);height:62px;border-radius:21px}
   .nav-item{font-size:9.5px}
   .calculator-card{padding:13px}
-  .calculator-result-card strong{font-size:28px}
+  .calculator-result-card strong{font-size:25px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -382,14 +382,14 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
 .calculator-direction{margin-top:15px}
 .calculator-field-label{display:block;margin:16px 2px 8px;font-size:11px;font-weight:800;color:var(--muted)}
 .calculator-input-wrap{min-height:62px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}
-.calculator-input-wrap input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-family:inherit;font-size:clamp(28px,8vw,34px);font-weight:900;line-height:1.1;text-align:center;direction:ltr;font-variant-numeric:tabular-nums;padding:10px 0}
+.calculator-input-wrap input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-family:inherit;font-size:clamp(25px,7vw,30px);font-weight:900;line-height:1.1;text-align:center;direction:ltr;font-variant-numeric:tabular-nums;padding:10px 0}
 .calculator-input-wrap input::placeholder{color:var(--muted);opacity:.65;font-size:18px;font-weight:600}
 .calculator-input-wrap span{flex:0 0 auto;font-size:11px;font-weight:900;color:var(--primary);letter-spacing:.4px}
 .calculator-input-wrap input::-webkit-outer-spin-button,.calculator-input-wrap input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .calculator-input-wrap input[type=number]{-moz-appearance:textfield}
 .calculator-result-card{margin-top:12px;padding:15px;border:1px solid var(--border);border-radius:18px;background:linear-gradient(180deg,var(--surface-2),var(--surface));text-align:center}
 .calculator-result-card span{display:block;font-size:10.5px;color:var(--muted);font-weight:800}
-.calculator-result-card strong{display:block;margin-top:7px;font-size:clamp(26px,8vw,34px);line-height:1.15;font-weight:900;direction:ltr;unicode-bidi:plaintext;letter-spacing:-.4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.calculator-result-card strong{display:block;margin-top:7px;font-size:clamp(24px,7vw,30px);line-height:1.15;font-weight:900;direction:ltr;unicode-bidi:plaintext;letter-spacing:-.4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .calculator-result-card small{display:block;margin-top:8px;font-size:9.5px;color:var(--muted);line-height:1.85;direction:rtl}
 .calculator-paper-card{margin-top:12px;padding:15px;border:1px solid var(--border);border-radius:18px;background:var(--surface-2)}
 .calculator-paper-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -801,7 +801,7 @@ let sortDescending = true;
 let selectedProvince = localStorage.getItem("selectedDollarProvince") || "بغداد";
 let lastNetworkError = null;
 
-const formatLatinNumber = (n, decimals=0) => { if (n == null || Number.isNaN(Number(n))) return "غير متوفر"; const value = Number(n); return value.toFixed(decimals).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ","); };
+const formatLatinNumber = (n, decimals=0) => { if (n == null || Number.isNaN(Number(n))) return "غير متوفر"; const value = Number(n); return value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ","); };
 const money = n => formatLatinNumber(n, 0);
 const fmtTime = iso => {
   if (!iso) return "غير متوفر";
