@@ -984,11 +984,23 @@ function renderNotifications() {
     return;
   }
   feed.innerHTML = history.map(x => {
+    const safeTime = escapeHtml(x.time || "الآن");
+    if (x.type === "broadcast" || x.title || x.body) {
+      const safeTitle = escapeHtml(x.title || "إشعار من دولاري");
+      const safeBody = escapeHtml(x.body || "");
+      return `
+      <div class="notification-card">
+        <span class="notification-badge up"></span>
+        <div>
+          <strong>${safeTitle}</strong>
+          <p>${safeBody} · ${safeTime}</p>
+        </div>
+      </div>`;
+    }
     const change = Number(x.change);
     const rate = Number(x.rate);
     const validChange = Number.isFinite(change) ? change : 0;
     const safeName = escapeHtml(x.name || "غير معروف");
-    const safeTime = escapeHtml(x.time || "الآن");
     return `
     <div class="notification-card">
       <span class="notification-badge ${validChange >= 0 ? "up":"down"}"></span>
