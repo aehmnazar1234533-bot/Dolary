@@ -495,10 +495,10 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
   }
   const perDollar=ratePer100/100;
   const result=convertDirection==='usd'?amount*perDollar:amount/perDollar;
+  const resultDigits=convertDirection==='iqd'?2:0;
   if(calcBreakdown){
    const shownAmount=fmtCalc(amount,convertDirection==='usd'?2:0);
    const shownRate=fmtCalc(ratePer100,0);
-   const resultDigits=convertDirection==='iqd'?2:0;
    const shownResult=fmtCalc(result,resultDigits);
    calcBreakdown.innerHTML=convertDirection==='usd'
     ? '<b>'+shownAmount+' USD</b> × <b>'+shownRate+' د.ع / 100 USD</b> = <b>'+shownResult+'</b> <span class="unit">د.ع</span>'
