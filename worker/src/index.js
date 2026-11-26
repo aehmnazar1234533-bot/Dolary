@@ -274,10 +274,7 @@ async function checkRates(env) {
   let start = lastKey ? keys.findIndex(key => key > lastKey) : 0;
   if (start < 0) start = 0;
 
-  const batch = [];
-  for (let i = 0; i < Math.min(MAX_SUBSCRIPTIONS_PER_TICK, keys.length); i++) {
-    batch.push(keys[(start + i) % keys.length]);
-  }
+  const batch = keys.slice(start, start + MAX_SUBSCRIPTIONS_PER_TICK);
   await env.PUSH_STORE.put(CURSOR_KEY, batch[batch.length - 1]);
 
   for (const key of batch) {
