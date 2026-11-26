@@ -998,6 +998,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
     if(window.dolaryTrack)window.dolaryTrack('ios_install_share_guide');
     var steps=document.querySelector('.ios-install-steps');
     if(steps)steps.classList.add('ios-share-highlight');
+    showToast('هسه اضغط زر المشاركة الأصلي في Safari حتى تظهر «إضافة إلى الشاشة الرئيسية».');
   });
   window.addEventListener('pageshow',function(){
     var nowStandalone=window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
