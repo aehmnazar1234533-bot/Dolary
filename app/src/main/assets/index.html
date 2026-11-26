@@ -322,6 +322,48 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
 
 /* Preserve the premium layout while reducing GPU work on compact phones. */
 @media (max-width: 480px){.bottom-nav{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--surface)}.hero-glow{filter:none;animation:none}}
+
+/* ===== Calculator screen ===== */
+.calculator-page-title{align-items:center}
+.calculator-title-icon{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:var(--primary-soft);border:1px solid var(--border);color:var(--primary);flex:0 0 auto}
+.calculator-title-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.calculator-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:16px;box-shadow:var(--shadow-sm)}
+.calculator-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.calculator-card-head h3{font-size:16px;font-weight:900}
+.calculator-card-head p{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.7}
+.calculator-rate-badge{flex:0 0 auto;padding:6px 9px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:9px;font-weight:900;white-space:nowrap}
+.calculator-direction{margin-top:15px}
+.calculator-field-label{display:block;margin:16px 2px 8px;font-size:11px;font-weight:800;color:var(--muted)}
+.calculator-input-wrap{min-height:62px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}
+.calculator-input-wrap input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:900 24px/1.2 inherit;text-align:center;direction:ltr;font-variant-numeric:tabular-nums;padding:14px 0}
+.calculator-input-wrap input::placeholder{color:var(--muted);opacity:.65;font-size:17px;font-weight:600}
+.calculator-input-wrap span{flex:0 0 auto;font-size:11px;font-weight:900;color:var(--primary);letter-spacing:.4px}
+.calculator-input-wrap input::-webkit-outer-spin-button,.calculator-input-wrap input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.calculator-input-wrap input[type=number]{-moz-appearance:textfield}
+.calculator-result-card{margin-top:12px;padding:15px;border:1px solid var(--border);border-radius:18px;background:linear-gradient(180deg,var(--surface-2),var(--surface));text-align:center}
+.calculator-result-card span{display:block;font-size:10.5px;color:var(--muted);font-weight:800}
+.calculator-result-card strong{display:block;margin-top:7px;font-size:30px;line-height:1.25;font-weight:950;direction:ltr;unicode-bidi:plaintext;letter-spacing:-.6px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.calculator-result-card small{display:block;margin-top:8px;font-size:9.5px;color:var(--muted);line-height:1.85;direction:rtl}
+.calculator-paper-card{margin-top:12px;padding:15px;border:1px solid var(--border);border-radius:18px;background:var(--surface-2)}
+.calculator-paper-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.calculator-paper-head strong{display:block;font-size:13px;font-weight:900}
+.calculator-paper-head span{display:block;margin-top:4px;font-size:9.5px;color:var(--muted)}
+.calculator-paper-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--primary-soft);color:var(--primary);flex:0 0 auto}
+.calculator-paper-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.calculator-paper-count{display:flex;align-items:baseline;justify-content:center;gap:7px;margin-top:8px;direction:ltr}
+.calculator-paper-count strong{font-size:28px;line-height:1;font-weight:950;color:var(--primary);font-variant-numeric:tabular-nums}
+.calculator-paper-count span{font-size:11px;font-weight:800;color:var(--muted)}
+.calculator-remainder-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.calculator-remainder-grid>div{padding:10px 8px;border:1px solid var(--border);border-radius:13px;background:var(--surface);text-align:center;min-width:0}
+.calculator-remainder-grid small{display:block;font-size:8.8px;color:var(--muted);line-height:1.5}
+.calculator-remainder-grid strong{display:block;margin-top:4px;font-size:13px;font-weight:900;direction:ltr;unicode-bidi:plaintext;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.calculator-remainder-grid>div:last-child strong{color:var(--primary)}
+.calculator-note{font-size:9.5px;color:var(--muted);line-height:1.8;margin-top:10px;text-align:center}
+.settings-notifications-section{margin-top:16px}
+.settings-notifications-section .notifications-page-title{margin-bottom:12px}
+.settings-notifications-section .target-alert-card{margin-top:12px}
+.settings-notifications-section .notifications-feed-heading{margin-top:18px}
+
 </style>
 </head>
 <body>
@@ -413,7 +455,7 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
         </section>
 
 
-<section class="settings-card" style="margin-top:16px;padding:16px" aria-labelledby="converterTitle"><div class="section-head"><div><h2 id="converterTitle" style="font-size:17px">حاسبة تحويل متقدمة</h2><p>حسب سعر المحافظة المختارة حالياً</p></div></div><div class="seg" id="converterDirection" role="group" aria-label="اتجاه التحويل"><button type="button" data-convert="usd" class="active">دولار ← دينار</button><button type="button" data-convert="iqd">دينار ← دولار</button></div><label class="field-label" for="converterAmount" style="display:block;margin-top:12px">المبلغ المراد تحويله</label><input id="converterAmount" type="number" min="0" step="any" inputmode="decimal" value="100" placeholder="اكتب المبلغ" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font:inherit"><div class="mini-box" style="margin-top:12px"><span id="converterResultLabel">القيمة التقريبية بالدينار العراقي</span><strong id="converterResult" style="font-size:22px;direction:ltr;unicode-bidi:plaintext;display:block">—</strong><small id="converterBreakdown" style="display:block;margin-top:7px;color:var(--muted);font-size:10px;line-height:1.7;direction:rtl">أدخل المبلغ حتى تظهر العملية بشكل واضح.</small></div><div class="mini-box" id="paperCalculator" style="margin-top:10px;text-align:center"><strong style="font-size:13px;display:block">حاسبة الورقات</strong><small style="display:block;margin-top:4px;color:var(--muted);font-size:10px">كل 100 دولار = ورقة</small><div style="margin-top:8px;direction:ltr"><strong id="paperCount" style="font-size:22px;color:var(--primary)">—</strong><span style="font-size:11px;margin-right:5px">ورقة</span></div><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:9px"><div style="padding:8px 6px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025)"><small style="display:block;color:var(--muted);font-size:9px">المتبقي بالدولار</small><strong id="paperRemainderUsd" style="display:block;margin-top:3px;font-size:13px;direction:ltr;unicode-bidi:plaintext">— USD</strong></div><div style="padding:8px 6px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025)"><small style="display:block;color:var(--muted);font-size:9px">قيمة المتبقي بالدينار العراقي</small><strong id="paperRemainderIqd" style="display:block;margin-top:3px;font-size:13px;color:var(--primary);direction:ltr;unicode-bidi:plaintext">— د.ع</strong></div></div></div><p id="converterRateNote" style="font-size:10px;color:var(--muted);line-height:1.8;margin-top:9px">السعر استرشادي من مصدر التطبيق، وليس سعراً مضموناً للبيع أو الشراء.</p></section>
+
         <div class="info-card">
           <div class="info-icon">i</div>
           <div>
@@ -432,46 +474,54 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
         <div id="favoritesList" class="rate-list empty-aware"></div>
       </section>
 
-      <section id="notificationsScreen" class="screen">
-        <div class="page-title notifications-page-title">
-          <div><h2>الإشعارات</h2><p>تابع تغيرات سعر الدولار أولاً بأول</p></div>
-          <div class="notifications-title-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></div>
+      <section id="calculatorScreen" class="screen">
+        <div class="page-title calculator-page-title">
+          <div>
+            <h2>الحاسبة</h2>
+            <p>تحويل واضح وسريع للدولار والدينار</p>
+          </div>
+          <div class="calculator-title-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="5" y="2.8" width="14" height="18.4" rx="2.8"/><path d="M8 6.5h8M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18.2h.01M12 18.2h.01M15.5 18.2h.01"/></svg>
+          </div>
         </div>
 
-        <div class="notify-master notifications-master">
-          <div class="notify-icon"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></div>
-          <div class="notify-copy">
-            <strong>إشعارات تغير السعر</strong>
-            <span id="notificationPermissionHint">تنبيه عند ارتفاع أو انخفاض السعر</span>
-            <button type="button" class="notification-settings-btn" id="notificationSettingsBtn">فتح إعدادات الإشعارات</button>
+        <section class="calculator-card" aria-labelledby="converterTitle">
+          <div class="calculator-card-head">
+            <div>
+              <h3 id="converterTitle">حاسبة تحويل الدولار</h3>
+              <p id="calculatorRateSummary">حسب سعر المحافظة المختارة حالياً</p>
+            </div>
+            <span class="calculator-rate-badge">سعر السوق</span>
           </div>
-          <label class="switch"><input type="checkbox" id="notifyToggle" checked /><span></span></label>
-        </div>
-
-        <div class="target-alert-card">
-          <div class="target-alert-heading">
-            <div class="target-alert-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8"/></svg></div>
-            <div><strong>تنبيه عند سعر محدد</strong><span>حدد المحافظة والسعر، وننبهك من يوصل السعر لهدفك</span></div>
+          <div class="seg calculator-direction" id="converterDirection" role="group" aria-label="اتجاه التحويل">
+            <button type="button" data-convert="usd" class="active">دولار ← دينار</button>
+            <button type="button" data-convert="iqd">دينار ← دولار</button>
           </div>
-          <div class="target-field">
-            <label for="targetProvince">المحافظة</label>
-            <select id="targetProvince" class="province-picker target-province-native" aria-hidden="true" tabindex="-1"><option value="بغداد">بغداد</option></select><button type="button" id="targetProvinceOpen" class="target-province-trigger"><span id="targetProvinceLabel">بغداد</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          <label class="calculator-field-label" for="converterAmount">المبلغ</label>
+          <div class="calculator-input-wrap">
+            <input id="converterAmount" type="number" min="0" step="any" inputmode="decimal" value="100" placeholder="اكتب المبلغ" aria-label="المبلغ المراد تحويله">
+            <span id="calculatorInputUnit">USD</span>
           </div>
-          <div class="target-field">
-            <label for="targetRate">السعر المستهدف لكل 100 دولار</label>
-            <div class="target-input-wrap"><input id="targetRate" type="number" min="1" step="1" inputmode="numeric" placeholder="مثلاً 150000"><span>دينار عراقي</span></div>
+          <div class="calculator-result-card">
+            <span id="converterResultLabel">القيمة التقريبية بالدينار العراقي</span>
+            <strong id="converterResult">—</strong>
+            <small id="converterBreakdown">أدخل المبلغ حتى تظهر العملية بشكل واضح.</small>
           </div>
-          <div class="target-direction-label">متى تريد التنبيه؟</div>
-          <div class="seg target-direction" id="targetDirection" role="radiogroup" aria-label="اتجاه التنبيه">
-            <button type="button" data-direction="above">عند الارتفاع</button>
-            <button type="button" data-direction="below">عند الانخفاض</button>
+          <div class="calculator-paper-card" id="paperCalculator">
+            <div class="calculator-paper-head">
+              <div><strong>حاسبة الورق</strong><span>كل 100 دولار = ورقة</span></div>
+              <div class="calculator-paper-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5M8 18h8"/></svg>
+              </div>
+            </div>
+            <div class="calculator-paper-count"><strong id="paperCount">—</strong><span>ورقة</span></div>
+            <div class="calculator-remainder-grid">
+              <div><small>المتبقي بالدولار</small><strong id="paperRemainderUsd">— USD</strong></div>
+              <div><small>قيمة المتبقي بالدينار العراقي</small><strong id="paperRemainderIqd">— د.ع</strong></div>
+            </div>
           </div>
-          <button type="button" class="target-save-btn" id="saveTargetAlert"><span>حفظ التنبيه</span><span aria-hidden="true">←</span></button>
-          <div class="target-alert-status"><span class="target-status-dot"></span><span id="targetAlertStatus">التنبيه غير مضبوط</span></div>
-        </div>
-
-        <div class="notifications-feed-heading"><div><strong>آخر التنبيهات</strong><span>سجل تغيّرات الأسعار التي وصلتك</span></div></div>
-        <div id="notificationFeed" class="notification-feed"></div>
+          <p id="converterRateNote" class="calculator-note">السعر استرشادي من مصدر التطبيق، وليس سعراً مضموناً للبيع أو الشراء.</p>
+        </section>
       </section>
 
       <section id="settingsScreen" class="screen">
@@ -513,6 +563,48 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
             <span style="margin-top:10px">يعمل عند توفر الإنترنت، وقد يتأخر قليلاً حسب توفير البطارية.</span>
           </div>
         </div>
+
+        <section class="settings-notifications-section" aria-labelledby="notificationsSettingsTitle">
+        <div class="page-title notifications-page-title">
+          <div><h2>الإشعارات</h2><p>تابع تغيرات سعر الدولار أولاً بأول</p></div>
+          <div class="notifications-title-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></div>
+        </div>
+
+        <div class="notify-master notifications-master">
+          <div class="notify-icon"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></div>
+          <div class="notify-copy">
+            <strong>إشعارات تغير السعر</strong>
+            <span id="notificationPermissionHint">تنبيه عند ارتفاع أو انخفاض السعر</span>
+            <button type="button" class="notification-settings-btn" id="notificationSettingsBtn">فتح إعدادات الإشعارات</button>
+          </div>
+          <label class="switch"><input type="checkbox" id="notifyToggle" checked /><span></span></label>
+        </div>
+
+        <div class="target-alert-card">
+          <div class="target-alert-heading">
+            <div class="target-alert-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8"/></svg></div>
+            <div><strong>تنبيه عند سعر محدد</strong><span>حدد المحافظة والسعر، وننبهك من يوصل السعر لهدفك</span></div>
+          </div>
+          <div class="target-field">
+            <label for="targetProvince">المحافظة</label>
+            <select id="targetProvince" class="province-picker target-province-native" aria-hidden="true" tabindex="-1"><option value="بغداد">بغداد</option></select><button type="button" id="targetProvinceOpen" class="target-province-trigger"><span id="targetProvinceLabel">بغداد</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          </div>
+          <div class="target-field">
+            <label for="targetRate">السعر المستهدف لكل 100 دولار</label>
+            <div class="target-input-wrap"><input id="targetRate" type="number" min="1" step="1" inputmode="numeric" placeholder="مثلاً 150000"><span>دينار عراقي</span></div>
+          </div>
+          <div class="target-direction-label">متى تريد التنبيه؟</div>
+          <div class="seg target-direction" id="targetDirection" role="radiogroup" aria-label="اتجاه التنبيه">
+            <button type="button" data-direction="above">عند الارتفاع</button>
+            <button type="button" data-direction="below">عند الانخفاض</button>
+          </div>
+          <button type="button" class="target-save-btn" id="saveTargetAlert"><span>حفظ التنبيه</span><span aria-hidden="true">←</span></button>
+          <div class="target-alert-status"><span class="target-status-dot"></span><span id="targetAlertStatus">التنبيه غير مضبوط</span></div>
+        </div>
+
+        <div class="notifications-feed-heading"><div><strong>آخر التنبيهات</strong><span>سجل تغيّرات الأسعار التي وصلتك</span></div></div>
+        <div id="notificationFeed" class="notification-feed"></div>
+        </section>
 
         <div class="about-card" style="cursor:pointer" onclick="window.AndroidBridge && AndroidBridge.openPrivacyPolicy && AndroidBridge.openPrivacyPolicy()">
           <div>
@@ -565,9 +657,9 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
         <svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg>
         <span>المفضلة</span>
       </button>
-      <button class="nav-item" data-screen="notificationsScreen">
-        <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
-        <span>الإشعارات</span>
+      <button class="nav-item" data-screen="calculatorScreen">
+        <svg viewBox="0 0 24 24"><rect x="5" y="2.8" width="14" height="18.4" rx="2.8"/><path d="M8 6.5h8M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18.2h.01M12 18.2h.01M15.5 18.2h.01"/></svg>
+        <span>الحاسبة</span>
       </button>
       <button class="nav-item" data-screen="settingsScreen">
         <svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"/><path d="m19.4 15 .1.1 1.1 1.8-1.7 1.7-1.8-1.1-.1.1c-.5.3-1 .5-1.5.6l-.5 2.1h-2.4l-.5-2.1c-.5-.1-1-.3-1.5-.6l-.1-.1-1.8 1.1-1.7-1.7 1.1-1.8.1-.1c-.3-.5-.5-1-.6-1.5L4 13v-2l2.1-.5c.1-.5.3-1 .6-1.5L6.6 8.9 5.5 7.1 7.2 5.4 9 6.5l.1.1c.5-.3 1-.5 1.5-.6l.5-2.1h2.4l.5 2.1c.5.1 1 .3 1.5.6l.1-.1 1.8-1.1 1.7 1.7-1.1 1.8-.1.1c.3.5.5 1 .6 1.5L20 11v2l-2.1.5c-.1.5-.3 1-.6 1.5Z"/></svg>
@@ -885,7 +977,7 @@ document.getElementById("provinceModal").addEventListener("click", e => {
   }
 });
 
-const SCREEN_ORDER = ["homeScreen","favoritesScreen","notificationsScreen","settingsScreen"];
+const SCREEN_ORDER = ["homeScreen","favoritesScreen","calculatorScreen","settingsScreen"];
 document.querySelectorAll(".nav-item").forEach(btn => {
   btn.addEventListener("click", () => {
     const nextId = btn.dataset.screen;
@@ -900,7 +992,8 @@ document.querySelectorAll(".nav-item").forEach(btn => {
     window.scrollTo(0, 0);
     if (nextId === "homeScreen") { animateRows = true; renderRates(); if (historyChartNeedsRender) renderRateHistory(); }
     if (nextId === "favoritesScreen") { animateRows = true; renderFavorites(); }
-    if (nextId === "notificationsScreen") renderNotifications();
+    if (nextId === "calculatorScreen") updateAdvancedConverter();
+    if (nextId === "settingsScreen") { renderNotifications(); renderTargetAlert(); refreshNotificationPermissionStatus(); }
   });
 });
 
