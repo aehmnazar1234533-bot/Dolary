@@ -5,8 +5,8 @@ This service sends background price-target notifications to installed Dolary web
 ## Cloudflare setup
 
 1. Create a free Cloudflare account and open **Workers & Pages**.
-2. Connect the GitHub repository `aehmnazar1234533-bot/Dolary` to a new Worker build. Set the working directory to `worker`, the deploy command to `npm install && npx wrangler deploy`, and keep the Worker name as `dolary-push`.
-3. After the first deploy, create a Workers KV namespace named `DOLARY_PUSH_STORE`. In the Worker settings, add a KV namespace binding named exactly `PUSH_STORE` and select that namespace.
+2. In Workers & Pages choose **Create application → GitHub**, connect `aehmnazar1234533-bot/Dolary`, and set the root directory to `worker`. Set the build command to `npm install`, the deploy command to `npx wrangler deploy`, and keep the Worker name as `dolary-push`.
+3. After the first deploy, create a Workers KV namespace named `DOLARY_PUSH_STORE`. In **Worker → Settings → Bindings**, add a KV namespace binding named exactly `PUSH_STORE` and select that namespace, then deploy the binding.
 4. In Worker **Settings → Variables and Secrets**, add `VAPID_PRIVATE_KEY` as a **Secret** (never as a plain variable). The VAPID public key and subject are already in `wrangler.jsonc`.
 5. The Worker needs these values:
    - `APP_ORIGIN`: `https://aehamtech.top`
