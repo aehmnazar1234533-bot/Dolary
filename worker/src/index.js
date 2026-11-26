@@ -418,8 +418,8 @@ async function api(request, env) {
     </style></head><body><main class="card"><div class="brand">دولاري</div><div class="sub">لوحة الإشعار العام — Android + iPhone</div>
     <form id="broadcastForm" method="POST" action="/api/broadcast-form"><label>كلمة مرور الإدارة</label><input id="p" name="password" type="password" autocomplete="current-password" placeholder="كلمة مرور الإدارة" required>
     <label>عنوان الإشعار</label><input id="t" name="title" maxlength="120" placeholder="مثلاً: تنبيه مهم" required>
-    <label>نص الإشعار</label><textarea id="b" maxlength="1000" placeholder="اكتب الرسالة التي تريد إرسالها للمستخدمين..."></textarea>
-    <button id="send" type="button">إرسال الإشعار للجميع</button><div id="s" class="status">جاهز للإرسال.</div>
+    <label>نص الإشعار</label><textarea id="b" name="body" maxlength="1000" placeholder="اكتب الرسالة التي تريد إرسالها للمستخدمين..." required></textarea>
+    <button id="send" type="submit">إرسال الإشعار للجميع</button><div id="s" class="status">جاهز للإرسال.</div>
     <div class="hint">المفتاح لا يُحفظ في الصفحة. الإرسال يتم عبر Worker آمن باستخدام Secret.</div>
     </main><script>
       (() => {
