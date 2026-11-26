@@ -1,27 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="دولاري">
-<defs>
- <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#073b8f"/><stop offset="1" stop-color="#06142f"/></linearGradient>
- <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff1a8"/><stop offset=".45" stop-color="#ffc72c"/><stop offset="1" stop-color="#e58a00"/></linearGradient>
- <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#43a5ff"/><stop offset="1" stop-color="#0759db"/></linearGradient>
- <filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-opacity=".35"/></filter>
-</defs>
-<rect width="512" height="512" rx="104" fill="url(#bg)"/>
-<rect x="18" y="18" width="476" height="476" rx="92" fill="none" stroke="url(#gold)" stroke-width="10"/>
-<circle cx="370" cy="145" r="74" fill="#0b5bcf" opacity=".5"/>
-<path d="M328 145c38-42 93-50 133-18M319 165c46-24 91-20 124 7" fill="none" stroke="#6fc2ff" stroke-width="8" stroke-linecap="round" opacity=".8"/>
-<g filter="url(#shadow)">
- <path d="M82 205 L275 130 L340 235 L146 311 Z" fill="#fff"/>
- <path d="M82 205 L146 311 L116 330 L55 226 Z" fill="url(#blue)"/>
- <path d="M275 130 L340 235 L316 258 L249 153 Z" fill="url(#gold)"/>
- <path d="M143 305 L190 287 L224 364 L174 383 Z" fill="url(#blue)" stroke="#fff" stroke-width="8"/>
+<rect width="512" height="512" rx="112" fill="#1677FF"/>
+<g transform="translate(56 56) scale(.78)">
+<path fill="#FFFFFF" d="M139 87C178 118 218 133 270 139c77 9 129 43 148 105c18 60 2 126-45 169c-48 44-113 58-175 36l18-48c45 14 89 3 119-27c30-30 39-73 24-113c-14-37-46-57-97-63c-70-8-123-34-155-79z"/>
+<path fill="#FFFFFF" d="M153 139c34 30 73 42 120 43c39 1 70 11 92 30l-31 39c-15-12-36-18-63-18c-67 0-118-22-151-65z"/>
+<path fill="#FFFFFF" d="M137 350c34 24 75 34 121 30c38-3 68 6 91 27l-31 39c-17-14-40-20-68-18c-62 5-115-10-153-46z"/>
+<path fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" d="M255 115v298"/>
+<path fill="none" stroke="#FFFFFF" stroke-width="29" stroke-linecap="round" d="M196 191c-29 0-50 19-50 46c0 28 21 43 59 51l45 10c40 9 59 28 59 57c0 33-28 57-72 57c-36 0-68-11-94-33"/>
+<path fill="none" stroke="#F5B62E" stroke-width="7" stroke-linecap="round" d="M255 115v298"/>
+<path fill="none" stroke="#F5B62E" stroke-width="9" stroke-linecap="round" d="M140 87c39 31 80 45 130 51c77 9 129 43 148 105"/>
 </g>
-<path d="M349 207c27 10 43 32 47 61M373 187c42 15 67 47 73 91M394 168c57 20 91 61 99 120" fill="none" stroke="url(#gold)" stroke-width="13" stroke-linecap="round"/>
-<g filter="url(#shadow)">
- <path d="M346 310c0-31 18-54 44-66v-12c0-10 8-18 18-18s18 8 18 18v12c26 12 44 35 44 66v17l13 20H333l13-20z" fill="url(#gold)"/>
- <circle cx="408" cy="365" r="16" fill="#e89500"/>
- <circle cx="458" cy="281" r="27" fill="#ef3d2f" stroke="#fff" stroke-width="5"/>
- <text x="458" y="291" text-anchor="middle" font-family="Arial,sans-serif" font-size="25" font-weight="800" fill="#fff">1</text>
-</g>
-<rect x="72" y="392" width="368" height="76" rx="30" fill="#071b49" stroke="url(#gold)" stroke-width="4"/>
-<text x="256" y="438" text-anchor="middle" direction="rtl" font-family="Tahoma,Arial,sans-serif" font-size="48" font-weight="900" fill="#fff">دولاري</text>
 </svg>
