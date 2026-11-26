@@ -8,7 +8,7 @@
   var app=document.createElement('div');
   app.id='pwaApp';
   app.className='pwa-only';
-  app.innerHTML=\`
+  app.innerHTML=`
     <header class="pwa-topbar">
       <div class="pwa-brand"><img src="./dolary-mark.svg" alt="دولاري"><div class="pwa-brand-copy"><small>أسعار السوق</small><strong>دولاري</strong></div></div>
       <div class="pwa-top-actions">
@@ -46,7 +46,7 @@
       <button type="button" class="pwa-nav-item" data-pwa-screen="pwaCalculatorScreen"><svg viewBox="0 0 24 24"><rect x="5" y="2.8" width="14" height="18.4" rx="2.8"></rect><path d="M8 6.5h8M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18.2h.01M12 18.2h.01M15.5 18.2h.01"></path></svg><span>الحاسبة</span></button>
       <button type="button" class="pwa-nav-item" data-pwa-screen="pwaSettingsScreen"><svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"></path><path d="m19.4 15 .1.1 1.1 1.8-1.7 1.7-1.8-1.1-.1-.1c-.3-.5-.5-1-.6-1.5L4 13v-2l2.1-.5c.1-.5.3-1 .6-1.5L6.6 8.9 5.5 7.1 7.2 5.4 9 6.5l.1.1c.5-.3 1-.5 1.5-.6l.5-2.1h2.4l.5 2.1c.1.5.3 1 .6 1.5l.1-.1 1.8-1.1 1.7 1.7-1.1 1.8.1.1c-.3-.5-.5-1-.6-1.5L20 11v2l-2.1.5c-.1-.5-.5-1-.6-1.5Z"></path></svg><span>الإعدادات</span></button>
     </nav>
-  \`;
+  `;
 
   (document.body||document.documentElement).appendChild(app);
 
