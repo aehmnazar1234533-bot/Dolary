@@ -126,7 +126,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
         ViewCompat.requestApplyInsets(root)
-        updateSystemBars()
+        // Keep the startup surface visually unified until the custom splash exits.
+        applySystemBars(true)
 
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
@@ -238,6 +239,7 @@ class MainActivity : AppCompatActivity() {
             .withEndAction {
                 splashOverlay.visibility = View.GONE
                 splashOverlay.alpha = 1f
+                updateSystemBars()
             }
             .start()
     }
