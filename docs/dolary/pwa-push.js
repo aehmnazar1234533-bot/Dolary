@@ -15,6 +15,7 @@
   var DB_NAME = "dolary-push-history";
   var DB_STORE = "events";
   var AUTO_PUSH_ENABLED_KEY = "dolary.pwaAutoPushEnabled.v1";
+  var AUTO_PUSH_DISABLED_KEY = "dolary.pwaAutoPushDisabled.v1";
 
   function statusText(text) {
     var el = document.getElementById("pwaAlertStatus");
@@ -166,6 +167,7 @@
     try {
       var reg = await navigator.serviceWorker.ready;
       var sub = await reg.pushManager.getSubscription();
+      if (isAutoPushDisabledLocally()) return;
       if (sub) {
         await api("/api/subscribe", {
           subscription: sub.toJSON(),
@@ -190,6 +192,7 @@
       try {
         if (!standalone) throw new Error("افتح دولاري من أيقونته على شاشة الآيفون أولاً، ثم فعّل الإشعارات.");
         if (!apiBase) throw new Error("خدمة الإشعارات الخلفية غير مربوطة بالخادم حالياً.");
+        clearAutoPushDisabledLocally();
         await saveSubscription(localRule(), true);
         permissionText("تم تفعيل إشعارات دولاري وإرسال إشعار تجريبي لهذا الجهاز.");
         statusText(localRule() ? "تنبيه السعر محفوظ، وسيُفحص حتى عند إغلاق التطبيق." :
@@ -247,6 +250,7 @@
       disableButton.textContent = "جارٍ إيقاف الإشعارات…";
       try {
         localStorage.removeItem(ALERT_KEY);
+        setAutoPushDisabledLocally();
         var serverRemoved = !apiBase;
         if ("serviceWorker" in navigator && "PushManager" in window) {
           var reg = await navigator.serviceWorker.ready;
@@ -296,6 +300,22 @@
     }, true);
   }
 
+  function isAutoPushDisabledLocally() {
+    try { return localStorage.getItem(AUTO_PUSH_DISABLED_KEY) === "1"; }
+    catch (_) { return false; }
+  }
+
+  function setAutoPushDisabledLocally() {
+    try {
+      localStorage.setItem(AUTO_PUSH_DISABLED_KEY, "1");
+      localStorage.removeItem(AUTO_PUSH_ENABLED_KEY);
+    } catch (_) {}
+  }
+
+  function clearAutoPushDisabledLocally() {
+    try { localStorage.removeItem(AUTO_PUSH_DISABLED_KEY); } catch (_) {}
+  }
+
   function isAutoPushEnabledLocally() {
     try { return localStorage.getItem(AUTO_PUSH_ENABLED_KEY) === "1"; }
     catch (_) { return false; }
@@ -332,6 +352,7 @@
       button.disabled = true;
       button.textContent = "جارٍ التفعيل…";
       try {
+        clearAutoPushDisabledLocally();
         await saveSubscription(localRule(), true);
         setAutoPushEnabledLocally();
         permissionText("إشعارات دولاري مفعّلة على هذا الآيفون.");
@@ -348,6 +369,7 @@
 
   async function autoEnableIfAlreadyAllowed() {
     if (!standalone || !apiBase || !("Notification" in window)) return;
+    if (isAutoPushDisabledLocally()) return;
     if (Notification.permission !== "granted") return;
     try {
       setAutoPushEnabledLocally();
@@ -370,6 +392,10 @@
       return;
     }
     if (Notification.permission === "granted") {
+      if (isAutoPushDisabledLocally()) {
+        permissionText("إشعارات دولاري موقوفة على هذا الجهاز. فعّلها من زر التفعيل عند الحاجة.");
+        return;
+      }
       autoEnableIfAlreadyAllowed();
       return;
     }
