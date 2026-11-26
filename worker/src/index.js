@@ -226,7 +226,9 @@ function crossing(rule, previous, current) {
 async function api(request, env) {
   const origin = request.headers.get("Origin");
   const expectedOrigin = env.APP_ORIGIN || "https://aehamtech.top";
-  if (origin && origin !== expectedOrigin) {
+  const requestOrigin = new URL(request.url).origin;
+  const allowedOrigins = new Set([expectedOrigin, requestOrigin]);
+  if (origin && !allowedOrigins.has(origin)) {
     return json({ ok: false, error: "origin_not_allowed" }, 403);
   }
   if (!origin && request.method !== "GET") {
