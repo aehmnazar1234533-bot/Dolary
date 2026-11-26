@@ -22,6 +22,9 @@ class DolaryFirebaseMessagingService : FirebaseMessagingService() {
     companion object {
         private const val PUSH_API = "https://dolary.aehmnazar-1234533.workers.dev"
         private const val HISTORY_LIMIT = 30
+        private const val PROCESSED_IDS_KEY = "processed_broadcast_ids"
+        private const val PROCESSED_IDS_LIMIT = 200
+        private val PROCESSED_IDS_LOCK = Any()
     }
 
     override fun onNewToken(token: String) {
@@ -35,10 +38,41 @@ class DolaryFirebaseMessagingService : FirebaseMessagingService() {
         val title = message.data["title"]?.takeIf { it.isNotBlank() } ?: "دولاري"
         val body = message.data["body"]?.takeIf { it.isNotBlank() } ?: "لديك إشعار جديد من دولاري."
         val url = message.data["url"] ?: ""
-        val id = message.data["id"] ?: ("android-" + System.currentTimeMillis())
+        val broadcastId = message.data["broadcastId"]
+            ?.takeIf { it.isNotBlank() }
+            ?: message.data["notificationId"]?.takeIf { it.isNotBlank() }
+            ?: message.data["id"]?.takeIf { it.isNotBlank() }
+            ?: message.messageId?.takeIf { it.isNotBlank() }
+            ?: "legacy-" + title.hashCode() + "-" + body.hashCode()
 
-        saveNotification(title, body, url, id)
-        showNotification(title, body, url, id)
+        if (!claimBroadcastId(broadcastId)) return
+
+        saveNotification(title, body, url, broadcastId)
+        showNotification(title, body, url, broadcastId)
+    }
+
+    private fun claimBroadcastId(id: String): Boolean {
+        synchronized(PROCESSED_IDS_LOCK) {
+            val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
+            val existing = try {
+                JSONArray(prefs.getString(PROCESSED_IDS_KEY, "[]") ?: "[]")
+            } catch (_: Exception) {
+                JSONArray()
+            }
+
+            for (i in 0 until existing.length()) {
+                if (existing.optString(i) == id) return false
+            }
+
+            val updated = JSONArray()
+            updated.put(id)
+            val start = maxOf(0, existing.length() - (PROCESSED_IDS_LIMIT - 1))
+            for (i in start until existing.length()) {
+                updated.put(existing.optString(i))
+            }
+            prefs.edit().putString(PROCESSED_IDS_KEY, updated.toString()).apply()
+            return true
+        }
     }
 
     private fun registerToken(token: String) {
@@ -79,6 +113,7 @@ class DolaryFirebaseMessagingService : FirebaseMessagingService() {
             put("body", body)
             put("url", url)
             put("id", id)
+            put("broadcastId", id)
             put("time", java.text.SimpleDateFormat(
                 "yyyy/MM/dd  HH:mm",
                 java.util.Locale.getDefault()
