@@ -1,6 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
-<path android:fillColor="#FFFFFFFF" android:pathData="M6.1,4.1C8,5.6 10.2,6.3 12.9,6.6C16.7,7 19.1,9.2 19.6,12.1C20.1,15 19.2,18 16.9,19.8C14.5,21.7 11.3,22.2 8.3,21.2L9.2,18.8C11.4,19.4 13.6,19.1 15,17.6C16.4,16.2 16.8,14.1 16.1,12.6C15.5,11.2 14,10.4 11.5,10.1C8.1,9.7 5.5,8.5 4,6.4Z"/>
-<path android:fillColor="#FFFFFFFF" android:pathData="M11.9,5.2L11.9,19.9" android:strokeColor="#FFFFFFFF" android:strokeWidth="1.8" android:strokeLineCap="round"/>
-<path android:fillColor="#00000000" android:pathData="M9.1,9.2C7.7,9.2 6.7,10.1 6.7,11.4C6.7,12.7 7.7,13.4 9.5,13.8L11.5,14.3C13.4,14.7 14.3,15.6 14.3,17C14.3,18.5 13,19.5 10.9,19.5C9.2,19.5 7.7,19 6.5,18" android:strokeColor="#FFFFFFFF" android:strokeWidth="1.7" android:strokeLineCap="round"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Exact Dolary PWA/iPhone mark geometry, reduced to the monochrome foreground
+         required by Android Notification Small Icon. Android supplies the dark
+         notification background/tint; no launcher icon is used here. -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="5"
+        android:pathData="M139,87C178,118 218,133 270,139c77,9 129,43 148,105 18,60 2,126-45,169-48,44-113,58-175,36l18,-48c45,14 89,3 119,-27 30,-30 39,-73 24,-113-14,-37-46,-57-97,-63-70,-8-123,-34-155,-79z" />
+
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="9"
+        android:strokeLineCap="round"
+        android:pathData="M140,87c39,31 80,45 130,51 77,9 129,43 148,105" />
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M153,139c34,30 73,42 120,43 39,1 70,11 92,30l-31,39c-15,-12-36,-18-63,-18-67,0-118,-22-151,-65z" />
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M137,350c34,24 75,34 121,30 38,-3 68,6 91,27l-31,39c-17,-14-40,-20-68,-18-62,5-115,-10-153,-46z" />
+
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="30"
+        android:strokeLineCap="round"
+        android:pathData="M255,115v298" />
+
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="29"
+        android:strokeLineCap="round"
+        android:pathData="M196,191c-29,0-50,19-50,46 0,28 21,43 59,51l45,10c40,9 59,28 59,57 0,33-28,57-72,57-36,0-68-11-94-33" />
+
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:alpha="0.85"
+        android:pathData="M255,115v298" />
 </vector>
