@@ -237,12 +237,18 @@ function crossing(rule, previous, current) {
 async function api(request, env) {
   const origin = request.headers.get("Origin");
   const expectedOrigin = env.APP_ORIGIN || "https://aehamtech.top";
-  const requestOrigin = new URL(request.url).origin;
+  const requestUrl = new URL(request.url);
+  const requestOrigin = requestUrl.origin;
   const allowedOrigins = new Set([expectedOrigin, requestOrigin]);
   if (origin && !allowedOrigins.has(origin)) {
     return json({ ok: false, error: "origin_not_allowed" }, 403);
   }
-  if (!origin && request.method !== "GET") {
+  // The protected admin broadcast form may arrive without an Origin header
+  // (for example from a native HTML form or the Worker's internal handoff).
+  // Authentication is still enforced by ADMIN_PASSWORD below.
+  if (!origin && request.method !== "GET" &&
+      requestUrl.pathname !== "/api/broadcast-form" &&
+      requestUrl.pathname !== "/api/broadcast") {
     return json({ ok: false, error: "origin_required" }, 403);
   }
 
