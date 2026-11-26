@@ -216,6 +216,20 @@ async function api(request, env) {
     return json({ ok: true, removed: true }, 200, origin, env);
   }
 
+  if (url.pathname === "/api/unsubscribe" && request.method === "POST") {
+    let body;
+    try {
+      body = await request.json();
+    } catch (_) {
+      return json({ ok: false, error: "invalid_json" }, 400, origin, env);
+    }
+    const subscription = cleanSubscription(body && body.subscription);
+    if (!subscription) return json({ ok: false, error: "invalid_subscription" }, 400, origin, env);
+    const id = await endpointId(subscription.endpoint);
+    await env.PUSH_STORE.delete(SUB_PREFIX + id);
+    return json({ ok: true, removed: true }, 200, origin, env);
+  }
+
   if (url.pathname === "/api/test" && request.method === "POST") {
     let body;
     try {
