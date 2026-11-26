@@ -31,6 +31,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
@@ -169,6 +170,7 @@ class MainActivity : AppCompatActivity() {
                 pushCachedDataToWebView()
                 fetchRates()
                 scheduleBackgroundUpdates()
+                registerFirebasePushToken()
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                     prefs.getBoolean(KEY_NOTIFICATIONS, true) &&
@@ -196,6 +198,41 @@ class MainActivity : AppCompatActivity() {
         webView.loadUrl("file:///android_asset/index.html")
     }
 
+
+    private fun registerFirebasePushToken() {
+        try {
+            FirebaseMessaging.getInstance().token
+                .addOnSuccessListener { token ->
+                    if (token.isNullOrBlank()) return@addOnSuccessListener
+                    Thread {
+                        try {
+                            val connection = (URL("https://dolary.aehmnazar-1234533.workers.dev/api/android/register").openConnection() as HttpURLConnection).apply {
+                                requestMethod = "POST"
+                                connectTimeout = 8000
+                                readTimeout = 8000
+                                doOutput = true
+                                setRequestProperty("Content-Type", "application/json; charset=utf-8")
+                                setRequestProperty("Accept", "application/json")
+                                setRequestProperty("Origin", "https://aehamtech.top")
+                            }
+                            val payload = JSONObject().apply {
+                                put("token", token)
+                                put("app", "dolary-android")
+                            }.toString()
+                            connection.outputStream.use { it.write(payload.toByteArray(StandardCharsets.UTF_8)) }
+                            connection.responseCode
+                            connection.disconnect()
+                        } catch (_: Exception) {
+                        }
+                    }.start()
+                }
+                .addOnFailureListener {
+                    // Firebase is optional until the Android app is connected to its Firebase project.
+                }
+        } catch (_: Exception) {
+            // Keep the existing app fully usable if Firebase is not configured yet.
+        }
+    }
 
     private fun startSplashAnimation() {
         splashOverlay.visibility = View.VISIBLE
