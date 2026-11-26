@@ -52,6 +52,25 @@ h1,h2,p{margin:0}
 .icon-btn:active{transform:scale(.92)}
 .icon-btn svg{width:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .icon-btn.spinning svg{animation:spin .8s linear infinite}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.notification-icon-btn{position:relative}
+.notification-icon-btn svg{width:21px;height:21px}
+.notification-count{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:var(--danger);color:#fff;border:2px solid var(--surface);display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;line-height:1;box-shadow:0 3px 9px rgba(224,71,90,.35)}
+.notification-count.show{display:flex}
+.notification-icon-btn.has-unread svg{animation:bellPulse 1.9s ease-in-out infinite}
+@keyframes bellPulse{0%,100%{transform:rotate(0)}10%{transform:rotate(8deg)}20%{transform:rotate(-7deg)}30%{transform:rotate(5deg)}40%{transform:rotate(0)}}
+.notification-page-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 2px 18px}
+.notification-page-title-copy h2{font-size:22px;font-weight:900}
+.notification-page-title-copy p{font-size:11px;color:var(--muted);margin-top:5px}
+.notification-page-icon{width:50px;height:50px;border-radius:17px;display:grid;place-items:center;background:var(--primary-soft);color:var(--primary);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.notification-page-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.notification-page-head-card{margin-bottom:12px;padding:14px 15px;border-radius:20px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:11px}
+.notification-page-head-card-dot{width:9px;height:9px;border-radius:50%;background:var(--success);box-shadow:0 0 0 5px rgba(64,216,164,.12);flex:0 0 auto}
+.notification-page-head-card strong{font-size:12.5px;font-weight:900}
+.notification-page-head-card span{display:block;color:var(--muted);font-size:10px;margin-top:4px;line-height:1.7}
+.notification-page-empty{padding:38px 16px}
+.notification-page-empty strong{display:block;font-size:14px;color:var(--text);margin-bottom:5px}
+.notification-page-empty span{font-size:11px;color:var(--muted)}
 main{padding:14px 16px}
 .screen{display:none}.screen.active{display:block;animation:fade .25s both}
 
@@ -376,9 +395,15 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           <h1>دولاري</h1>
         </div>
       </div>
-      <button class="icon-btn" id="refreshBtn" aria-label="تحديث">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-14.9-3.9L3 10"/><path d="M3 4v6h6"/><path d="M4 13a8.1 8.1 0 0 0 14.9 3.9L21 14"/><path d="M21 20v-6h-6"/></svg>
-      </button>
+      <div class="topbar-actions">
+        <button class="icon-btn notification-icon-btn" id="notificationBell" aria-label="التنبيهات" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+          <span id="notificationCount" class="notification-count" aria-hidden="true">0</span>
+        </button>
+        <button class="icon-btn" id="refreshBtn" aria-label="تحديث الأسعار">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-14.9-3.9L3 10"/><path d="M3 4v6h6"/><path d="M4 13a8.1 8.1 0 0 0 14.9 3.9L21 14"/><path d="M21 20v-6h-6"/></svg>
+        </button>
+      </div>
     </header>
 
     <main>
@@ -602,8 +627,6 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           <div class="target-alert-status"><span class="target-status-dot"></span><span id="targetAlertStatus">التنبيه غير مضبوط</span></div>
         </div>
 
-        <div class="notifications-feed-heading"><div><strong>آخر التنبيهات</strong><span>سجل تغيّرات الأسعار التي وصلتك</span></div></div>
-        <div id="notificationFeed" class="notification-feed"></div>
         </section>
 
         <div class="about-card" style="cursor:pointer" onclick="window.AndroidBridge && AndroidBridge.openPrivacyPolicy && AndroidBridge.openPrivacyPolicy()">
@@ -646,6 +669,26 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
           <span class="version">v1.6</span>
         </button>
       </section>
+      <section id="notificationsScreen" class="screen">
+        <div class="notification-page-title">
+          <div class="notification-page-title-copy">
+            <h2>التنبيهات</h2>
+            <p>آخر تغيّرات أسعار الدولار التي وصلتك</p>
+          </div>
+          <div class="notification-page-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+          </div>
+        </div>
+        <div class="notification-page-head-card">
+          <span class="notification-page-head-card-dot"></span>
+          <div>
+            <strong>آخر التنبيهات</strong>
+            <span>هنا تظهر تنبيهات تغيّر الأسعار والتنبيهات التي يعمل عليها التطبيق بالخلفية.</span>
+          </div>
+        </div>
+        <div id="notificationFeed" class="notification-feed"></div>
+      </section>
+
     </main>
 
     <nav class="bottom-nav">
@@ -872,26 +915,59 @@ function renderFavorites() {
 }
 document.querySelectorAll("#favoritesSort button").forEach(button => button.addEventListener("click", () => { favoritesSortMode = ["high","low","name"].includes(button.dataset.sort) ? button.dataset.sort : "high"; localStorage.setItem("dolaryFavoritesSort",favoritesSortMode); renderFavorites(); }));
 
-function saveNotificationHistory(items){
-  let old = [];
+function readNotificationHistory(){
   try {
     const value = JSON.parse(localStorage.getItem("dolaryNotificationHistory") || "[]");
-    if (Array.isArray(value)) old = value;
-  } catch (e) {}
-  const next = [...items, ...old].slice(0,20);
+    return Array.isArray(value) ? value.filter(x => x && typeof x === "object") : [];
+  } catch (e) { return []; }
+}
+function notificationKey(item){
+  return [item?.name||"", item?.rate||"", item?.change||"", item?.time||""].join("|");
+}
+function getNotificationUnreadCount(){
+  const history = readNotificationHistory();
+  if (!history.length) return 0;
+  const seenKey = localStorage.getItem("dolaryNotificationLastSeenKey") || "";
+  if (!seenKey) return history.length;
+  const index = history.findIndex(item => notificationKey(item) === seenKey);
+  return index < 0 ? history.length : index;
+}
+function updateNotificationBadge(){
+  const bell = document.getElementById("notificationBell");
+  const badge = document.getElementById("notificationCount");
+  if (!bell || !badge) return;
+  const count = getNotificationUnreadCount();
+  badge.textContent = count > 99 ? "99+" : String(count);
+  badge.classList.toggle("show", count > 0);
+  bell.classList.toggle("has-unread", count > 0);
+  bell.setAttribute("aria-label", count > 0 ? `التنبيهات، ${count} جديدة` : "التنبيهات");
+}
+function markNotificationsAsRead(){
+  const history = readNotificationHistory();
+  if (history.length) {
+    localStorage.setItem("dolaryNotificationLastSeenKey", notificationKey(history[0]));
+  }
+  updateNotificationBadge();
+}
+function saveNotificationHistory(items){
+  let old = readNotificationHistory();
+  const incoming = Array.isArray(items) ? items.filter(x => x && typeof x === "object") : [];
+  const next = [...incoming, ...old].slice(0,20);
   localStorage.setItem("dolaryNotificationHistory", JSON.stringify(next));
+  updateNotificationBadge();
+  renderNotifications();
 }
 
 function renderNotifications() {
   const feed = document.getElementById("notificationFeed");
-  let history;
-  try { history = JSON.parse(localStorage.getItem("dolaryNotificationHistory") || "[]"); }
-  catch (e) { history = []; }
-  if (!Array.isArray(history) || !history.length) {
-    feed.innerHTML = `<div class="empty-state">ماكو تغييرات مسجلة لحد الآن.</div>`;
+  if (!feed) return;
+  const history = readNotificationHistory();
+  if (!history.length) {
+    feed.innerHTML = `<div class="empty-state notification-page-empty"><strong>ماكو تنبيهات حالياً</strong><span>راح تظهر هنا تغيّرات الأسعار أول ما يسجل التطبيق تنبيهاً.</span></div>`;
+    updateNotificationBadge();
     return;
   }
-  feed.innerHTML = history.filter(x => x && typeof x === "object").map(x => {
+  feed.innerHTML = history.map(x => {
     const change = Number(x.change);
     const rate = Number(x.rate);
     const validChange = Number.isFinite(change) ? change : 0;
@@ -906,6 +982,7 @@ function renderNotifications() {
       </div>
     </div>`;
   }).join("");
+  updateNotificationBadge();
 }
 
 function openProvince(name) {
@@ -977,25 +1054,41 @@ document.getElementById("provinceModal").addEventListener("click", e => {
   }
 });
 
-const SCREEN_ORDER = ["homeScreen","favoritesScreen","calculatorScreen","settingsScreen"];
+const SCREEN_ORDER = ["homeScreen","favoritesScreen","calculatorScreen","settingsScreen","notificationsScreen"];
+let previousScreenBeforeNotifications = "homeScreen";
+function activateScreen(nextId, options = {}){
+  const prevEl = document.querySelector(".screen.active");
+  const prevId = prevEl ? prevEl.id : "homeScreen";
+  if (prevId === nextId) { window.scrollTo({top:0, behavior:"smooth"}); return; }
+  const dir = SCREEN_ORDER.indexOf(nextId) >= SCREEN_ORDER.indexOf(prevId) ? "in-fwd" : "in-back";
+  document.querySelectorAll(".screen").forEach(x => x.classList.remove("active","in-fwd","in-back"));
+  const nextEl = document.getElementById(nextId);
+  if (!nextEl) return;
+  nextEl.classList.add("active", dir);
+  document.querySelectorAll(".nav-item").forEach(x => x.classList.toggle("active", x.dataset.screen === nextId && nextId !== "notificationsScreen"));
+  if (options.rememberPrevious) previousScreenBeforeNotifications = prevId;
+  if (nextId === "notificationsScreen") {
+    markNotificationsAsRead();
+    renderNotifications();
+  }
+  if (nextId === "homeScreen") { animateRows = true; renderRates(); if (historyChartNeedsRender) renderRateHistory(); }
+  if (nextId === "favoritesScreen") { animateRows = true; renderFavorites(); }
+  if (nextId === "calculatorScreen") updateAdvancedConverter();
+  if (nextId === "settingsScreen") { renderTargetAlert(); refreshNotificationPermissionStatus(); }
+  window.scrollTo(0, 0);
+}
 document.querySelectorAll(".nav-item").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const nextId = btn.dataset.screen;
-    const prevEl = document.querySelector(".screen.active");
-    if (prevEl && prevEl.id === nextId) { window.scrollTo({top:0, behavior:"smooth"}); return; }
-    const dir = SCREEN_ORDER.indexOf(nextId) >= SCREEN_ORDER.indexOf(prevEl ? prevEl.id : "homeScreen") ? "in-fwd" : "in-back";
-    document.querySelectorAll(".nav-item").forEach(x => x.classList.remove("active"));
-    document.querySelectorAll(".screen").forEach(x => x.classList.remove("active","in-fwd","in-back"));
-    btn.classList.add("active");
-    const nextEl = document.getElementById(nextId);
-    nextEl.classList.add("active", dir);
-    window.scrollTo(0, 0);
-    if (nextId === "homeScreen") { animateRows = true; renderRates(); if (historyChartNeedsRender) renderRateHistory(); }
-    if (nextId === "favoritesScreen") { animateRows = true; renderFavorites(); }
-    if (nextId === "calculatorScreen") updateAdvancedConverter();
-    if (nextId === "settingsScreen") { renderNotifications(); renderTargetAlert(); refreshNotificationPermissionStatus(); }
-  });
+  btn.addEventListener("click", () => activateScreen(btn.dataset.screen));
 });
+document.getElementById("notificationBell").addEventListener("click", () => {
+  const active = document.querySelector(".screen.active");
+  previousScreenBeforeNotifications = active && active.id !== "notificationsScreen" ? active.id : "homeScreen";
+  activateScreen("notificationsScreen", {rememberPrevious:false});
+  document.getElementById("notificationBell").setAttribute("aria-expanded","true");
+  setTimeout(() => document.getElementById("notificationBell").setAttribute("aria-expanded","false"), 250);
+});
+
+
 
 document.getElementById("sortBtn").addEventListener("click", () => {
   sortDescending = !sortDescending;
@@ -1433,6 +1526,12 @@ window.handleBack = function(){
   const modal = document.getElementById("provinceModal");
   if (modal && !modal.classList.contains("hidden")) { closeModal(); return true; }
   const active = document.querySelector(".screen.active");
+  if (active && active.id === "notificationsScreen") {
+    const target = document.querySelector('.nav-item[data-screen="'+previousScreenBeforeNotifications+'"]');
+    if (target) { target.click(); return true; }
+    const home = document.querySelector('.nav-item[data-screen="homeScreen"]');
+    if (home) { home.click(); return true; }
+  }
   if (active && active.id !== "homeScreen") {
     const home = document.querySelector('.nav-item[data-screen="homeScreen"]');
     if (home) { home.click(); return true; }
@@ -1456,6 +1555,7 @@ window.setNativeNotificationHistory = function(jsonText){
     }
     localStorage.setItem("dolaryNotificationHistory", JSON.stringify(unique));
     renderNotifications();
+    updateNotificationBadge();
   } catch(e) {}
 };
 
@@ -1635,6 +1735,7 @@ document.getElementById("mainRate").innerHTML = `جاري جلب السعر <spa
 renderRates();
 renderFavorites();
 renderNotifications();
+updateNotificationBadge();
 renderTargetAlert();
 renderRateHistory();
 
