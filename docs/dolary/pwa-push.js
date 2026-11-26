@@ -250,7 +250,7 @@
       try {
         await saveSubscription(rule, false);
         localStorage.setItem(ALERT_KEY, JSON.stringify(rule));
-        statusText("تم حفظ التنبيه على الخادم. سيُفحص السعر كل خمس دقائق حتى إذا كان دولاري مغلقاً.");
+        statusText("تم حفظ التنبيه على الخادم. سيُفحص السعر كل 10 دقائق حتى إذا كان دولاري مغلقاً.");
       } catch (error) {
         statusText(error.message || "تعذر حفظ التنبيه على الخادم.");
       } finally {
