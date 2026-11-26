@@ -1,12 +1,14 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v18';
+const CACHE_NAME = 'dolary-pwa-v19';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cache.add(new Request(APP_SHELL, { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./manifest.webmanifest', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./manifest.webmanifest?v=14', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-app.css?v=1', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-app.js?v=1', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-notification.png?v=3', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
@@ -63,7 +65,7 @@ self.addEventListener('fetch', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil((async () => {
-    const target = new URL('./#price-alerts', self.location.href).href;
+    const target = new URL('./#pwa-notifications', self.location.href).href;
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const client of windows) {
       if ('focus' in client) {
