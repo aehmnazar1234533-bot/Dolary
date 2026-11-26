@@ -15,7 +15,7 @@ This service sends background price-target notifications to installed Dolary web
    - `VAPID_PUBLIC_KEY`: already configured in `wrangler.jsonc`
    - `VAPID_PRIVATE_KEY`: add the private key as a Cloudflare Secret
 6. Open `docs/dolary/pwa-push-config.js` in GitHub and set `apiBaseUrl` to the Worker URL shown by Cloudflare, for example `https://dolary-push.YOUR-SUBDOMAIN.workers.dev`. Save the file.
-7. Confirm the Worker has the `*/5 * * * *` Cron Trigger. It checks XEIQD every ten minutes and sends notifications only when a saved target is crossed.
+7. Confirm the Worker has the `*/10 * * * *` Cron Trigger. It checks XEIQD every ten minutes and sends notifications only when a saved target is crossed.
 
 ## API and health check
 
