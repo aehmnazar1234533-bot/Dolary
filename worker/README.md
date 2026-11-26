@@ -15,7 +15,7 @@ This service sends background price-target notifications to installed Dolary web
    - `VAPID_PUBLIC_KEY`: already configured in `wrangler.jsonc`
    - `VAPID_PRIVATE_KEY`: add the private key as a Cloudflare Secret
 6. Open `docs/dolary/pwa-push-config.js` in GitHub and set `apiBaseUrl` to the Worker URL shown by Cloudflare, for example `https://dolary-push.YOUR-SUBDOMAIN.workers.dev`. Save the file.
-7. Confirm the Worker has the `*/5 * * * *` Cron Trigger. It checks XEIQD every five minutes and sends notifications only when a saved target is crossed.
+7. Confirm the Worker has the `*/5 * * * *` Cron Trigger. It checks XEIQD every ten minutes and sends notifications only when a saved target is crossed.
 
 ## API and health check
 
@@ -29,4 +29,4 @@ The Worker accepts browser push endpoints only over HTTPS and uses an origin all
 
 ## Free-tier note
 
-Cloudflare's free tier has request, CPU, Cron and KV quotas. The Worker checks four subscriptions per five-minute run to stay conservative on the free CPU/subrequest limits; it rotates through saved subscriptions. Larger audiences may need a higher batch size or a paid plan. Delivery also depends on the phone's iOS version, Home Screen installation, notification permission, Apple push service and network availability.
+Cloudflare's free tier has request, CPU, Cron and KV quotas. The Worker checks four subscriptions per ten-minute run to stay conservative on the free CPU/subrequest limits; it rotates through saved subscriptions. Larger audiences may need a higher batch size or a paid plan. Delivery also depends on the phone's iOS version, Home Screen installation, notification permission, Apple push service and network availability.
