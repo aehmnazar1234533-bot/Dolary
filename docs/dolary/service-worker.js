@@ -12,10 +12,10 @@ self.addEventListener('install', event => {
     await cache.add(new Request('./pwa-push-config.js?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push.js?v=4', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./privacy_policy.html', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./dolary-icon-180.png?v=15', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-icon-192.png?v=15', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./dolary-icon.svg', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./dolary-icon-512.png?v=15', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./dolary-notification.png', { cache: 'reload' })).catch(() => {});
     await self.skipWaiting();
   })());
 });
@@ -148,8 +148,8 @@ self.addEventListener('push', event => {
     const title = data.title || 'دولاري';
     const options = {
       body: data.body || 'لديك تنبيه جديد من دولاري.',
-      icon: './dolary-icon.svg?v=14',
-      badge: './dolary-icon.svg?v=14',
+      icon: './dolary-icon-192.png?v=15',
+      badge: './dolary-notification.png',
       tag: data.id || 'dolary-push',
       renotify: true,
       data: {
