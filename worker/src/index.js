@@ -143,9 +143,19 @@ async function fcmAccessToken(env) {
   return { accessToken: data.access_token, projectId: account.project_id };
 }
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function deliverFcm(token, data, env, auth = null) {
   const resolvedAuth = auth || await fcmAccessToken(env);
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     "https://fcm.googleapis.com/v1/projects/" + encodeURIComponent(resolvedAuth.projectId) + "/messages:send",
     {
       method: "POST",
@@ -159,7 +169,8 @@ async function deliverFcm(token, data, env, auth = null) {
           data: Object.fromEntries(Object.entries(data).map(([key, value]) => [key, String(value ?? "")]))
         }
       })
-    }
+    },
+    8000
   );
   return response;
 }
@@ -200,7 +211,7 @@ async function deliver(subscription, data, env) {
     subscription,
     vapidConfig(env)
   );
-  return fetch(subscription.endpoint, payload);
+  return fetchWithTimeout(subscription.endpoint, payload, 8000);
 }
 
 function currentRate(city) {
