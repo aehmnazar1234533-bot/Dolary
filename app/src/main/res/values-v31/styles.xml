@@ -12,6 +12,7 @@
         <!-- Android 12+ startup splash: use the transparent Dolary mark, not the launcher mask. -->
         <item name="android:windowSplashScreenBackground">#09111E</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/dolary_brand_foreground</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
         <item name="android:windowSplashScreenAnimationDuration">450</item>
     </style>
 </resources>
