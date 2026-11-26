@@ -143,14 +143,14 @@ async function fcmAccessToken(env) {
   return { accessToken: data.access_token, projectId: account.project_id };
 }
 
-async function deliverFcm(token, data, env) {
-  const auth = await fcmAccessToken(env);
+async function deliverFcm(token, data, env, auth = null) {
+  const resolvedAuth = auth || await fcmAccessToken(env);
   const response = await fetch(
-    "https://fcm.googleapis.com/v1/projects/" + encodeURIComponent(auth.projectId) + "/messages:send",
+    "https://fcm.googleapis.com/v1/projects/" + encodeURIComponent(resolvedAuth.projectId) + "/messages:send",
     {
       method: "POST",
       headers: {
-        "Authorization": "Bearer " + auth.accessToken,
+        "Authorization": "Bearer " + resolvedAuth.accessToken,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -456,22 +456,35 @@ async function api(request, env) {
       } catch (_) { failed++; }
     }
 
-    if (env.FCM_SERVICE_ACCOUNT_JSON) {
-      for (const item of androidListed.keys) {
-        const key = item.name;
-        const record = await env.PUSH_STORE.get(key, "json");
-        if (!record || !record.token) continue;
-        try {
-          const result = await deliverFcm(record.token, notification, env);
-          if (result.status === 404 || result.status === 400) {
-            await env.PUSH_STORE.delete(key);
-            androidRemoved++;
-          } else if (result.ok) {
-            androidSent++;
-          } else {
-            failed++;
+    if (env.FCM_SERVICE_ACCOUNT_JSON && androidListed.keys.length) {
+      try {
+        const auth = await fcmAccessToken(env);
+        for (let i = 0; i < androidListed.keys.length; i += 20) {
+          const batch = androidListed.keys.slice(i, i + 20);
+          const results = await Promise.all(batch.map(async (item) => {
+            const key = item.name;
+            const record = await env.PUSH_STORE.get(key, "json");
+            if (!record || !record.token) return { skipped: true };
+            try {
+              const result = await deliverFcm(record.token, notification, env, auth);
+              if (result.status === 404 || result.status === 400) {
+                await env.PUSH_STORE.delete(key);
+                return { removed: true };
+              }
+              if (result.ok) return { sent: true };
+              return { failed: true };
+            } catch (_) {
+              return { failed: true };
+            }
+          }));
+          for (const result of results) {
+            if (result.sent) androidSent++;
+            else if (result.removed) androidRemoved++;
+            else if (result.failed) failed++;
           }
-        } catch (_) { failed++; }
+        }
+      } catch (_) {
+        failed += androidListed.keys.length;
       }
     }
 
