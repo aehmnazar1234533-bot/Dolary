@@ -6,7 +6,7 @@
     window.navigator.standalone === true;
   var apple = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  if (!standalone || !apple) return;
+  if (!apple) return;
 
   var config = window.DOLARY_PUSH_CONFIG || {};
   var apiBase = String(config.apiBaseUrl || "").trim().replace(/\/$/, "");
@@ -161,13 +161,16 @@
   }
 
   var permissionButton = document.getElementById("pwaPermissionBtn");
-  if (permissionButton && apiBase) {
+  if (permissionButton) {
     permissionButton.addEventListener("click", async function (event) {
       event.preventDefault();
       event.stopImmediatePropagation();
       permissionButton.disabled = true;
-      permissionButton.textContent = "جارٍ التفعيل…";
+      var label = permissionButton.querySelector("span");
+      if (label) label.textContent = "جارٍ التفعيل…";
       try {
+        if (!standalone) throw new Error("افتح دولاري من أيقونته على شاشة الآيفون أولاً، ثم فعّل الإشعارات.");
+        if (!apiBase) throw new Error("خدمة الإشعارات الخلفية غير مربوطة بالخادم حالياً.");
         await saveSubscription(localRule(), true);
         permissionText("تم تفعيل إشعارات دولاري وإرسال إشعار تجريبي لهذا الجهاز.");
         statusText(localRule() ? "تنبيه السعر محفوظ، وسيُفحص حتى عند إغلاق التطبيق." :
@@ -177,7 +180,7 @@
         statusText(error.message || "تعذر ربط إشعارات الخلفية.");
       } finally {
         permissionButton.disabled = false;
-        permissionButton.textContent = "تفعيل إشعارات دولاري";
+        if (label) label.textContent = "تفعيل إشعارات دولاري";
       }
     }, true);
   }
