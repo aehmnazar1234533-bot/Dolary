@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dolary-push",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-26",
+  "workers_dev": true,
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  "vars": {
+    "APP_ORIGIN": "https://aehamtech.top",
+    "APP_URL": "https://aehamtech.top/dolary/",
+    "VAPID_SUBJECT": "https://aehamtech.top",
+    "VAPID_PUBLIC_KEY": "BDiCh4Z-SdqQgNNf54f-EmGw72iUCLe93WqYw6Jhg9SgnyQKAKrCiK_MOSUQzGDRGIxKrwHO52akQtGkQCKbfVQ"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
