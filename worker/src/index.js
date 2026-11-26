@@ -426,7 +426,7 @@ async function api(request, env) {
         const p=document.getElementById("p"),t=document.getElementById("t"),b=document.getElementById("b");
         const s=document.getElementById("s"),send=document.getElementById("send");
         if(!p||!t||!b||!s||!send)return;
-        p.value=sessionStorage.getItem("dolary_admin_password")||"";
+        try { p.value=sessionStorage.getItem("dolary_admin_password")||""; } catch (_) { p.value=""; }
         send.addEventListener("click",async(e)=>{
           e.preventDefault();
           send.disabled=true;
@@ -444,7 +444,7 @@ async function api(request, env) {
             const d=await r.json().catch(()=>({}));
             if(r.status===401){s.textContent="كلمة مرور الإدارة غير صحيحة.";return}
             if(!r.ok||!d.ok){s.textContent="فشل الإرسال: "+(d.error||r.status);return}
-            sessionStorage.setItem("dolary_admin_password",password);
+            try { sessionStorage.setItem("dolary_admin_password",password); } catch (_) {}
             s.textContent="تم الإرسال بنجاح.\nAndroid: "+d.androidSent+"\niPhone/Web Push: "+d.webSent+"\nغير صالحة وحُذفت: "+(d.androidRemoved+d.webRemoved);
             b.value="";
           }catch(e){s.textContent="تعذر الاتصال بالـWorker."}
