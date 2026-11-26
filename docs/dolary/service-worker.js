@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v30';
+const CACHE_NAME = 'dolary-pwa-v31';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
@@ -64,6 +64,51 @@ self.addEventListener('fetch', event => {
     }
   })());
 });
+
+function openPushDb() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('dolary-push-history', 3);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('events')) db.createObjectStore('events', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', { keyPath: 'key' });
+      if (!db.objectStoreNames.contains('processed')) db.createObjectStore('processed', { keyPath: 'id' });
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function claimPushId(id) {
+  if (!id) return false;
+  const db = await openPushDb();
+  let claimed = false;
+  await new Promise((resolve) => {
+    try {
+      const tx = db.transaction('processed', 'readwrite');
+      tx.objectStore('processed').add({ id: String(id), at: Date.now() });
+      tx.oncomplete = () => { claimed = true; resolve(); };
+      tx.onerror = () => { resolve(); };
+      tx.onabort = () => { resolve(); };
+    } catch (_) {
+      resolve();
+    }
+  });
+  if (claimed) {
+    try {
+      const cleanup = db.transaction('processed', 'readwrite');
+      const store = cleanup.objectStore('processed');
+      const getAll = store.getAll();
+      getAll.onsuccess = () => {
+        const rows = (getAll.result || []).sort((a, b) => (b.at || 0) - (a.at || 0));
+        for (let i = 200; i < rows.length; i++) store.delete(rows[i].id);
+      };
+      cleanup.oncomplete = () => {};
+    } catch (_) {}
+  }
+  db.close();
+  return claimed;
+}
 
 async function setSystemBadge(count) {
   try {
@@ -146,12 +191,15 @@ self.addEventListener('push', event => {
     }
 
     const title = data.title || 'دولاري';
+    const broadcastId = String(data.broadcastId || data.notificationId || data.id || '');
+    if (!broadcastId || !(await claimPushId(broadcastId))) return;
+
     const options = {
       body: data.body || 'لديك تنبيه جديد من دولاري.',
       icon: './dolary-icon-192.png?v=15',
       badge: './dolary-notification.png',
-      tag: data.id || 'dolary-push',
-      renotify: true,
+      tag: broadcastId,
+      renotify: false,
       data: {
         url: data.url || new URL('./?pwa-notifications=1#pwa-notifications', self.location.href).href
       }
@@ -162,7 +210,7 @@ self.addEventListener('push', event => {
 
     if (data.province && Number.isFinite(Number(data.rate)) && data.at) {
       const record = {
-        id: String(data.id || ('push-' + Date.now())),
+        id: broadcastId,
         province: String(data.province),
         rate: Number(data.rate),
         message: String(data.message || data.body || 'تنبيه سعر من دولاري'),
