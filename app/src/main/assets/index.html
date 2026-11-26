@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <!-- PostHog analytics: privacy-first manual events for Dolary -->
 <script>
 !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),e.people=u.people||[],u.people.toString=function(){return e.people.toString},n="capture identify alias people.set people.set_once people.unset people.increment people.append people.remove people.group people.reset people.unregister people.get_group people.get_or_create_group people.update_group people.set_group_config".split(" "),o=0;o<n.length;o++)g(u,n[o]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -41,7 +41,7 @@ html,body{margin:0;padding:0;min-height:100%;font-family:system-ui,"Noto Sans Ar
 body{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;font-variant-numeric:tabular-nums}
 button{font:inherit;color:inherit}
 h1,h2,p{margin:0}
-.app-shell{width:100%;max-width:520px;min-height:100vh;position:relative;padding-bottom:104px}
+.app-shell{width:100%;max-width:520px;min-height:100vh;position:relative;padding-bottom:calc(88px + env(safe-area-inset-bottom))}
 
 .topbar{height:68px;background:var(--surface);display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;transition:background .25s}
 .brand-head{display:flex;align-items:center;gap:11px}
@@ -55,7 +55,7 @@ h1,h2,p{margin:0}
 .topbar-actions{display:flex;align-items:center;gap:8px}
 .notification-icon-btn{position:relative}
 .notification-icon-btn svg{width:21px;height:21px}
-.notification-count{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:var(--danger);color:#fff;border:2px solid var(--surface);display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;line-height:1;box-shadow:0 3px 9px rgba(224,71,90,.35)}
+.notification-count{position:absolute;top:-4px;inset-inline-end:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:var(--danger);color:#fff;border:2px solid var(--surface);display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;line-height:1;box-shadow:0 3px 9px rgba(224,71,90,.35)}
 .notification-count.show{display:flex}
 .notification-icon-btn.has-unread svg{animation:bellPulse 1.9s ease-in-out infinite}
 @keyframes bellPulse{0%,100%{transform:rotate(0)}10%{transform:rotate(8deg)}20%{transform:rotate(-7deg)}30%{transform:rotate(5deg)}40%{transform:rotate(0)}}
@@ -85,12 +85,12 @@ main{padding:14px 16px}
 .hero-unit{font-size:11px;color:#a9bfdc;font-weight:700}
 .province-banner{margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;z-index:2}
 .province-label{font-size:10px;color:#a8bdd8;margin-bottom:3px;font-weight:700}
-.province-name{font-size:28px;font-weight:900;letter-spacing:-.5px}
+.province-name{font-size:clamp(23px,7.5vw,28px);font-weight:900;letter-spacing:-.5px}
 .province-select-btn{display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.12);color:#fff;border-radius:13px;padding:9px 13px;cursor:pointer;font-weight:800;font-size:12px;transition:transform .15s,background .2s}
 .province-select-btn:active{transform:scale(.95);background:rgba(255,255,255,.2)}
 .province-select-btn svg{width:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .hero-title{font-size:12px;color:#c3d4ea;margin-top:20px;position:relative;z-index:1;font-weight:700}
-.hero-price{font-size:42px;font-weight:900;letter-spacing:-1.5px;margin:4px 0 8px;position:relative;z-index:1;line-height:1.15}
+.hero-price{font-size:clamp(32px,10vw,42px);font-weight:900;letter-spacing:-1.5px;margin:4px 0 8px;position:relative;z-index:1;line-height:1.15}
 .hero-price span{font-size:15px;font-weight:700;letter-spacing:0;color:#b9cae0}
 .hero-meta{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#b9c9dc;position:relative;z-index:1;gap:8px}
 .trend{border-radius:999px;padding:6px 11px;font-weight:900;font-size:12px}
@@ -106,7 +106,7 @@ main{padding:14px 16px}
 .section-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 12px}
 .section-head h2,.page-title h2{font-size:18px;font-weight:900}
 .section-head p,.page-title p{font-size:12px;color:var(--muted);margin-top:4px}
-.chip{border:1px solid var(--border);background:var(--surface);color:var(--primary);font-size:12px;font-weight:800;padding:7px 13px;border-radius:999px;cursor:pointer;box-shadow:var(--shadow-sm);transition:transform .15s}
+.chip{min-height:40px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);color:var(--primary);font-size:12px;font-weight:800;padding:7px 13px;border-radius:999px;cursor:pointer;box-shadow:var(--shadow-sm);transition:transform .15s}
 .chip:active{transform:scale(.94)}
 .page-title{margin:4px 2px 16px}
 
@@ -122,11 +122,11 @@ main{padding:14px 16px}
 .rate-value{font-weight:900;font-size:15px}
 .rate-unit{font-size:9px;color:var(--muted);margin-top:3px}
 .change{font-size:10.5px;font-weight:800;margin-top:4px;min-height:13px}.change.up{color:var(--success)}.change.down{color:var(--danger)}
-.star-btn{width:34px;height:34px;border:0;background:transparent;color:var(--star-off);display:grid;place-items:center;cursor:pointer;flex:0 0 auto;transition:transform .15s}
+.star-btn{width:40px;height:40px;border:0;background:transparent;color:var(--star-off);display:grid;place-items:center;cursor:pointer;flex:0 0 auto;transition:transform .15s}
 .star-btn:active{transform:scale(.8)}
 .star-btn svg{width:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round}
 .star-btn.active{color:#f5ae1f}.star-btn.active svg{fill:currentColor}
-.stale-badge{display:inline-block;margin-right:4px;padding:2px 7px;border-radius:999px;background:var(--warn-bg);color:var(--warn-fg);font-size:8.5px;font-weight:800}
+.stale-badge{display:inline-block;margin-inline-start:4px;padding:2px 7px;border-radius:999px;background:var(--warn-bg);color:var(--warn-fg);font-size:8.5px;font-weight:800}
 
 .skel{pointer-events:none}
 .sk{background:linear-gradient(90deg,var(--skel-a) 25%,var(--skel-b) 50%,var(--skel-a) 75%);background-size:200% 100%;animation:shine 1.3s linear infinite;border-radius:8px}
@@ -152,6 +152,17 @@ main{padding:14px 16px}
 
 .settings-card{overflow:hidden}
 .setting-row{min-height:68px;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);gap:12px}
+.setting-block-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.setting-block-head>div{min-width:0;flex:1}
+.quiet-hours-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}
+.quiet-hours-grid label{font-size:11px;color:var(--muted);font-weight:700}
+.quiet-hours-grid input{display:block;width:100%;min-height:44px;margin-top:5px;padding:9px 11px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font:inherit;font-size:13px;outline:none}
+.setting-action{width:100%;min-height:44px;margin-top:10px;padding:10px 12px;border:0;border-radius:12px;background:var(--primary);color:#07111f;font:inherit;font-weight:900;cursor:pointer;transition:transform .15s,filter .2s}
+.setting-action:active{transform:scale(.985);filter:brightness(.95)}
+.setting-status{display:block;margin-top:8px;font-size:10.5px!important;line-height:1.7}
+.setting-block input:focus-visible,.calculator-input-wrap:focus-within,.province-modal-search:focus-visible,.target-input-wrap:focus-within,.target-province-trigger:focus-visible{border-color:var(--primary);box-shadow:0 0 0 3px rgba(23,105,255,.18)}
+button:focus-visible,.nav-item:focus-visible{outline:3px solid rgba(23,105,255,.35);outline-offset:2px}
+
 .setting-block{padding:14px 16px;border-bottom:1px solid var(--border)}
 .setting-row:last-child,.setting-block:last-child{border-bottom:0}
 .seg{display:flex;background:var(--surface-2);border-radius:14px;padding:4px;gap:4px;margin-top:12px}
@@ -161,7 +172,7 @@ main{padding:14px 16px}
 .about-card{margin-top:12px;padding:15px;display:flex;align-items:center;gap:12px}
 .about-card strong{font-size:14px;display:block}
 .about-card span:not(.version){font-size:10.5px;color:var(--muted);display:block;margin-top:4px}
-.version{margin-right:auto;font-size:10px;color:var(--muted);background:var(--surface-2);padding:4px 9px;border-radius:999px;font-weight:800}
+.version{margin-inline-start:auto;font-size:10px;color:var(--muted);background:var(--surface-2);padding:4px 9px;border-radius:999px;font-weight:800}
 .switch{width:48px;height:28px;position:relative;display:block;flex:0 0 auto}
 .switch input{opacity:0;width:0;height:0}
 .switch span{position:absolute;inset:0;background:var(--skel-b);border-radius:999px;cursor:pointer;transition:.2s}
@@ -183,7 +194,7 @@ main{padding:14px 16px}
 .daily-share-note{display:block;margin-top:8px;text-align:center;font-size:9.5px;color:var(--muted);line-height:1.7}
 
 .bottom-nav{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(496px,calc(100% - 24px));height:64px;background:var(--nav-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:24px;box-shadow:0 12px 32px rgba(18,38,76,.16);display:grid;grid-template-columns:repeat(4,1fr);gap:4px;z-index:30;padding:6px}
-.nav-item{border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:800;cursor:pointer;border-radius:18px;transition:background .2s,color .2s,transform .15s}
+.nav-item{min-height:48px;border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:800;cursor:pointer;border-radius:18px;transition:background .2s,color .2s,transform .15s}
 .nav-item:active{transform:scale(.94)}
 .nav-item svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .nav-item.active{color:var(--primary);background:var(--primary-soft)}
@@ -192,7 +203,7 @@ main{padding:14px 16px}
 .modal-backdrop{position:absolute;inset:0;background:rgba(7,15,28,.55);backdrop-filter:blur(3px);animation:fade .2s both}
 .modal-sheet{position:absolute;z-index:1;left:50%;bottom:0;transform:translateX(-50%);width:min(520px,100%);background:var(--surface);border-radius:28px 28px 0 0;padding:10px 18px calc(28px + env(safe-area-inset-bottom));max-height:84vh;overflow:auto;animation:sheet .3s cubic-bezier(.2,.8,.2,1) both}
 .modal-handle{width:44px;height:4px;border-radius:99px;background:var(--border);margin:2px auto 14px}
-.modal-close{position:absolute;top:12px;left:14px;width:34px;height:34px;border:0;border-radius:11px;background:var(--surface-2);font-size:24px;color:var(--muted);cursor:pointer}
+.modal-close{position:absolute;top:12px;inset-inline-start:14px;width:40px;height:40px;border:0;border-radius:11px;background:var(--surface-2);font-size:22px;color:var(--muted);cursor:pointer}
 .modal-title{font-size:20px;font-weight:900}
 .modal-rate{font-size:34px;font-weight:900;margin-top:10px}.modal-rate small{font-size:13px;color:var(--muted);font-weight:700}
 .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
@@ -249,6 +260,23 @@ main{padding:14px 16px}
 @keyframes shine{from{background-position:200% 0}to{background-position:-200% 0}}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(41,213,149,.18)}50%{box-shadow:0 0 0 7px rgba(41,213,149,.04)}}
 @media (min-width:521px){body{background:#dfe7f0}.theme-dark body{background:#050a12}.app-shell{box-shadow:0 0 50px rgba(20,40,80,.12)}}
+@media (max-width:360px){
+  main{padding-inline:12px}
+  .topbar{padding-inline:12px}
+  .hero-card{padding-inline:16px;border-radius:24px;min-height:224px}
+  .hero-price{font-size:32px}
+  .stats-row{gap:6px}
+  .stat{padding-inline:8px}
+  .stat strong{font-size:13px}
+  .bottom-nav{width:calc(100% - 16px);height:62px;border-radius:21px}
+  .nav-item{font-size:9.5px}
+  .calculator-card{padding:13px}
+  .calculator-result-card strong{font-size:25px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
 
 
 /* Notifications screen – refined Dolary card layout */
@@ -354,14 +382,14 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
 .calculator-direction{margin-top:15px}
 .calculator-field-label{display:block;margin:16px 2px 8px;font-size:11px;font-weight:800;color:var(--muted)}
 .calculator-input-wrap{min-height:62px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}
-.calculator-input-wrap input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-family:inherit;font-size:34px;font-weight:900;line-height:1.1;text-align:center;direction:ltr;font-variant-numeric:tabular-nums;padding:10px 0}
+.calculator-input-wrap input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-family:inherit;font-size:clamp(25px,7vw,30px);font-weight:900;line-height:1.1;text-align:center;direction:ltr;font-variant-numeric:tabular-nums;padding:10px 0}
 .calculator-input-wrap input::placeholder{color:var(--muted);opacity:.65;font-size:18px;font-weight:600}
 .calculator-input-wrap span{flex:0 0 auto;font-size:11px;font-weight:900;color:var(--primary);letter-spacing:.4px}
 .calculator-input-wrap input::-webkit-outer-spin-button,.calculator-input-wrap input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .calculator-input-wrap input[type=number]{-moz-appearance:textfield}
 .calculator-result-card{margin-top:12px;padding:15px;border:1px solid var(--border);border-radius:18px;background:linear-gradient(180deg,var(--surface-2),var(--surface));text-align:center}
 .calculator-result-card span{display:block;font-size:10.5px;color:var(--muted);font-weight:800}
-.calculator-result-card strong{display:block;margin-top:7px;font-size:34px;line-height:1.15;font-weight:900;direction:ltr;unicode-bidi:plaintext;letter-spacing:-.4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.calculator-result-card strong{display:block;margin-top:7px;font-size:clamp(24px,7vw,30px);line-height:1.15;font-weight:900;direction:ltr;unicode-bidi:plaintext;letter-spacing:-.4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .calculator-result-card small{display:block;margin-top:8px;font-size:9.5px;color:var(--muted);line-height:1.85;direction:rtl}
 .calculator-paper-card{margin-top:12px;padding:15px;border:1px solid var(--border);border-radius:18px;background:var(--surface-2)}
 .calculator-paper-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -572,20 +600,42 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
               <span>جلب أحدث الأسعار بشكل دوري</span>
             </div>
             <label class="switch">
-              <input type="checkbox" id="autoUpdateToggle" checked />
+              <input type="checkbox" id="autoUpdateToggle" checked aria-label="تفعيل التحديث التلقائي" />
               <span></span>
             </label>
           </div>
 
-          <div class="setting-block">
-            <div class="setting-block"><strong>أوقات هدوء الإشعارات</strong><span>إيقاف تنبيهات تغيّر السعر خلال الوقت الذي تحدده، مع استمرار تحديث الأسعار</span><label class="switch" style="margin-top:12px"><input type="checkbox" id="quietHoursToggle"><span></span></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><label style="font-size:11px;color:var(--muted)">من <input id="quietStart" type="time" value="22:00" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);color:var(--text)"></label><label style="font-size:11px;color:var(--muted)">إلى <input id="quietEnd" type="time" value="08:00" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);color:var(--text)"></label></div><button type="button" id="saveQuietHours" style="width:100%;margin-top:10px;padding:12px;border:0;border-radius:12px;background:var(--primary);color:#07111f;font:inherit;font-weight:800">حفظ أوقات الهدوء</button><span id="quietHoursStatus" style="display:block;margin-top:8px">الإشعارات تعمل طوال اليوم</span></div><strong>فترة التحديث</strong>
+          <div class="setting-block quiet-hours-block">
+            <div class="setting-block-head">
+              <div>
+                <strong>أوقات هدوء الإشعارات</strong>
+                <span>إيقاف تنبيهات تغيّر السعر خلال الوقت الذي تحدده، مع استمرار تحديث الأسعار.</span>
+              </div>
+              <label class="switch" aria-label="تفعيل أوقات هدوء الإشعارات">
+                <input type="checkbox" id="quietHoursToggle">
+                <span></span>
+              </label>
+            </div>
+            <div class="quiet-hours-grid">
+              <label>من
+                <input id="quietStart" type="time" value="22:00">
+              </label>
+              <label>إلى
+                <input id="quietEnd" type="time" value="08:00">
+              </label>
+            </div>
+            <button type="button" class="setting-action" id="saveQuietHours">حفظ أوقات الهدوء</button>
+            <span class="setting-status" id="quietHoursStatus">الإشعارات تعمل طوال اليوم</span>
+          </div>
+          <div class="setting-block update-interval-block">
+            <strong>فترة التحديث</strong>
             <span id="intervalValue">كل 15 دقيقة</span>
             <div class="seg" id="intervalSeg" role="radiogroup" aria-label="فترة التحديث">
               <button data-min="15">15 دقيقة</button>
               <button data-min="30">30 دقيقة</button>
               <button data-min="60">ساعة</button>
             </div>
-            <span style="margin-top:10px">يعمل عند توفر الإنترنت، وقد يتأخر قليلاً حسب توفير البطارية.</span>
+            <span class="setting-status">يعمل عند توفر الإنترنت، وقد يتأخر قليلاً حسب توفير البطارية.</span>
           </div>
         </div>
 
@@ -602,7 +652,7 @@ html[dir=ltr] .screen.active.in-back{--dx:-1}
             <span id="notificationPermissionHint">تنبيه عند ارتفاع أو انخفاض السعر</span>
             <button type="button" class="notification-settings-btn" id="notificationSettingsBtn">فتح إعدادات الإشعارات</button>
           </div>
-          <label class="switch"><input type="checkbox" id="notifyToggle" checked /><span></span></label>
+          <label class="switch"><input type="checkbox" id="notifyToggle" checked aria-label="تفعيل إشعارات تغير السعر" /><span></span></label>
         </div>
 
         <div class="target-alert-card">
@@ -751,7 +801,7 @@ let sortDescending = true;
 let selectedProvince = localStorage.getItem("selectedDollarProvince") || "بغداد";
 let lastNetworkError = null;
 
-const formatLatinNumber = (n, decimals=0) => { if (n == null || Number.isNaN(Number(n))) return "غير متوفر"; const value = Number(n); return value.toFixed(decimals).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ","); };
+const formatLatinNumber = (n, decimals=0) => { if (n == null || Number.isNaN(Number(n))) return "غير متوفر"; const value = Number(n); return value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ","); };
 const money = n => formatLatinNumber(n, 0);
 const fmtTime = iso => {
   if (!iso) return "غير متوفر";
