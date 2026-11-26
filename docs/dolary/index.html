@@ -479,7 +479,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
    convertedEl.textContent='—';
    return;
   }
-  animateNumber(convertedEl,result,convertDirection==='usd'?' د.ع':'',convertDirection==='usd'?0:2,convertDirection==='usd'?'':'USD ');
+  animateNumber(convertedEl,result,convertDirection==='usd'?' د.ع':'',0,convertDirection==='usd'?'':'USD ');
  }
  function renderProvinceCards(){
   provinceRates.replaceChildren();
