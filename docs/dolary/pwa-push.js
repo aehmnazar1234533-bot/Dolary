@@ -220,16 +220,28 @@
       disableButton.textContent = "جارٍ إيقاف الإشعارات…";
       try {
         localStorage.removeItem(ALERT_KEY);
+        var serverRemoved = !apiBase;
         if ("serviceWorker" in navigator && "PushManager" in window) {
           var reg = await navigator.serviceWorker.ready;
           var sub = await reg.pushManager.getSubscription();
           if (sub) {
-            if (apiBase) await api("/api/unsubscribe", { subscription: sub.toJSON() });
+            if (apiBase) {
+              try {
+                await api("/api/unsubscribe", { subscription: sub.toJSON() });
+                serverRemoved = true;
+              } catch (_) {
+                serverRemoved = false;
+              }
+            }
             await sub.unsubscribe();
+          } else {
+            serverRemoved = true;
           }
         }
         permissionText("تم إلغاء اشتراك الإشعارات لهذا الجهاز.");
-        statusText("تم إيقاف التنبيهات وحذف اشتراك هذا الجهاز من خادم دولاري.");
+        statusText(serverRemoved ?
+          "تم إيقاف التنبيهات وحذف اشتراك هذا الجهاز من خادم دولاري." :
+          "تم إلغاء الإشعارات على هذا الجهاز، لكن تعذر حذف سجل الاشتراك من الخادم. سيُزال عندما يرفض مزود الإشعارات عنوانه.");
       } catch (error) {
         permissionText("تمت محاولة إلغاء الإشعارات. راجع إعدادات Safari إذا بقي الإذن مفعّلاً.");
         statusText("تعذر تأكيد حذف الاشتراك من الخادم. أعد المحاولة عند توفر الاتصال.");
