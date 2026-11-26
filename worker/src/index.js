@@ -2,6 +2,8 @@ import { buildPushPayload } from "@block65/webcrypto-web-push";
 
 const RATE_URL = "https://xeiqd.com/rates.json";
 const SUB_PREFIX = "sub:";
+const ANDROID_PREFIX = "android:";
+const MAX_ANDROID_LIST_SIZE = 1000;
 const CURSOR_KEY = "meta:last-key";
 const MAX_SUBSCRIPTIONS_PER_TICK = 4;
 const MAX_LIST_SIZE = 1000;
@@ -63,6 +65,109 @@ function cleanRule(input) {
   if (!/^[a-z0-9-]{1,40}$/i.test(slug) || !province || !condition ||
       !Number.isFinite(target) || target < 1000 || target > 10000000) return undefined;
   return { slug, province, condition, target: Math.round(target) };
+}
+
+function cleanFcmToken(input) {
+  if (typeof input !== "string") return null;
+  const token = input.trim();
+  if (token.length < 20 || token.length > 4096) return null;
+  if (/[^A-Za-z0-9_:\-.~%]+/.test(token)) return null;
+  return token;
+}
+
+function base64UrlEncodeBytes(bytes) {
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function base64UrlEncodeText(text) {
+  return base64UrlEncodeBytes(new TextEncoder().encode(text));
+}
+
+function base64UrlEncodeBigInt(value) {
+  let hex = value.toString(16);
+  if (hex.length % 2) hex = "0" + hex;
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  return base64UrlEncodeBytes(bytes);
+}
+
+function parsePemPrivateKey(pem) {
+  const body = String(pem || "").replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\\s+/g, "");
+  return Uint8Array.from(atob(body), c => c.charCodeAt(0));
+}
+
+async function fcmAccessToken(env) {
+  if (!env.FCM_SERVICE_ACCOUNT_JSON) throw new Error("FCM service account is not configured");
+  const account = JSON.parse(env.FCM_SERVICE_ACCOUNT_JSON);
+  if (!account.project_id || !account.client_email || !account.private_key) {
+    throw new Error("Invalid FCM service account");
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT" };
+  const claim = {
+    iss: account.client_email,
+    scope: "https://www.googleapis.com/auth/firebase.messaging",
+    aud: "https://oauth2.googleapis.com/token",
+    iat: now,
+    exp: now + 3600
+  };
+  const unsigned = base64UrlEncodeText(JSON.stringify(header)) + "." + base64UrlEncodeText(JSON.stringify(claim));
+  const key = await crypto.subtle.importKey(
+    "pkcs8",
+    parsePemPrivateKey(account.private_key),
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    key,
+    new TextEncoder().encode(unsigned)
+  );
+  const assertion = unsigned + "." + base64UrlEncodeBytes(new Uint8Array(signature));
+
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=" + encodeURIComponent(assertion)
+  });
+  if (!response.ok) throw new Error("Google OAuth token request failed: " + response.status);
+  const data = await response.json();
+  if (!data.access_token) throw new Error("Google OAuth token missing");
+  return { accessToken: data.access_token, projectId: account.project_id };
+}
+
+async function deliverFcm(token, data, env) {
+  const auth = await fcmAccessToken(env);
+  const response = await fetch(
+    "https://fcm.googleapis.com/v1/projects/" + encodeURIComponent(auth.projectId) + "/messages:send",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + auth.accessToken,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: {
+          token,
+          data: Object.fromEntries(Object.entries(data).map(([key, value]) => [key, String(value ?? "")]))
+        }
+      })
+    }
+  );
+  return response;
+}
+
+async function fcmTokenId(token) {
+  const bytes = new TextEncoder().encode(token);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest)).map(v => v.toString(16).padStart(2, "0")).join("");
 }
 
 async function endpointId(endpoint) {
@@ -148,6 +253,7 @@ async function api(request, env) {
       service: "dolary-push",
       storageReady: Boolean(env.PUSH_STORE),
       vapidReady: Boolean(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY && env.VAPID_SUBJECT),
+      androidPushReady: Boolean(env.FCM_SERVICE_ACCOUNT_JSON),
       schedule: "every 10 minutes"
     }, 200, origin, env);
   }
@@ -158,6 +264,32 @@ async function api(request, env) {
       publicKey: env.VAPID_PUBLIC_KEY || "",
       pushReady: Boolean(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY && env.PUSH_STORE)
     }, 200, origin, env);
+  }
+
+  if (url.pathname === "/api/android/register" && request.method === "POST") {
+    let body;
+    try { body = await request.json(); }
+    catch (_) { return json({ ok: false, error: "invalid_json" }, 400, origin, env); }
+    const token = cleanFcmToken(body && body.token);
+    if (!token) return json({ ok: false, error: "invalid_fcm_token" }, 400, origin, env);
+    const id = await fcmTokenId(token);
+    await env.PUSH_STORE.put(ANDROID_PREFIX + id, JSON.stringify({
+      token,
+      app: "dolary-android",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }));
+    return json({ ok: true, registered: true }, 201, origin, env);
+  }
+
+  if (url.pathname === "/api/android/unregister" && request.method === "POST") {
+    let body;
+    try { body = await request.json(); }
+    catch (_) { return json({ ok: false, error: "invalid_json" }, 400, origin, env); }
+    const token = cleanFcmToken(body && body.token);
+    if (!token) return json({ ok: false, error: "invalid_fcm_token" }, 400, origin, env);
+    await env.PUSH_STORE.delete(ANDROID_PREFIX + await fcmTokenId(token));
+    return json({ ok: true, removed: true }, 200, origin, env);
   }
 
   if (!env.PUSH_STORE) {
@@ -261,6 +393,78 @@ async function api(request, env) {
     } catch (error) {
       return json({ ok: false, error: "push_send_failed" }, 500, origin, env);
     }
+  }
+
+  if (url.pathname === "/api/broadcast" && request.method === "POST") {
+    const suppliedKey = request.headers.get("X-Dolary-Broadcast-Key") || "";
+    if (!env.BROADCAST_KEY || suppliedKey !== env.BROADCAST_KEY) {
+      return json({ ok: false, error: "broadcast_not_authorized" }, 401, origin, env);
+    }
+
+    let body;
+    try { body = await request.json(); }
+    catch (_) { return json({ ok: false, error: "invalid_json" }, 400, origin, env); }
+
+    const title = String(body && body.title || "").trim().slice(0, 120);
+    const message = String(body && (body.body ?? body.message) || "").trim().slice(0, 1000);
+    if (!title || !message) return json({ ok: false, error: "title_and_body_required" }, 400, origin, env);
+
+    const notification = {
+      title,
+      body: message,
+      url: (env.APP_URL || "https://aehamtech.top/dolary/") + "?pwa-notifications=1#pwa-notifications",
+      id: "broadcast-" + Date.now()
+    };
+
+    const webListed = await env.PUSH_STORE.list({ prefix: SUB_PREFIX, limit: MAX_LIST_SIZE });
+    const androidListed = await env.PUSH_STORE.list({ prefix: ANDROID_PREFIX, limit: MAX_ANDROID_LIST_SIZE });
+    let webSent = 0, webRemoved = 0, androidSent = 0, androidRemoved = 0, failed = 0;
+
+    for (const item of webListed.keys) {
+      const key = item.name;
+      const record = await env.PUSH_STORE.get(key, "json");
+      if (!record || !record.subscription) continue;
+      try {
+        const result = await deliver(record.subscription, notification, env);
+        if (result.status === 404 || result.status === 410) {
+          await env.PUSH_STORE.delete(key);
+          webRemoved++;
+        } else if (result.ok) {
+          webSent++;
+        } else {
+          failed++;
+        }
+      } catch (_) { failed++; }
+    }
+
+    if (env.FCM_SERVICE_ACCOUNT_JSON) {
+      for (const item of androidListed.keys) {
+        const key = item.name;
+        const record = await env.PUSH_STORE.get(key, "json");
+        if (!record || !record.token) continue;
+        try {
+          const result = await deliverFcm(record.token, notification, env);
+          if (result.status === 404 || result.status === 400) {
+            await env.PUSH_STORE.delete(key);
+            androidRemoved++;
+          } else if (result.ok) {
+            androidSent++;
+          } else {
+            failed++;
+          }
+        } catch (_) { failed++; }
+      }
+    }
+
+    return json({
+      ok: true,
+      webSent,
+      androidSent,
+      webRemoved,
+      androidRemoved,
+      failed,
+      androidPushReady: Boolean(env.FCM_SERVICE_ACCOUNT_JSON)
+    }, 200, origin, env);
   }
 
   return json({ ok: false, error: "not_found" }, 404, origin, env);
