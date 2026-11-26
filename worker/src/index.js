@@ -446,7 +446,7 @@ async function api(request, env) {
       button{width:100%;border:0;border-radius:14px;padding:14px;margin-top:18px;background:#fff;color:#111;font-weight:800;font-size:16px;cursor:pointer}.status{margin-top:16px;padding:12px;border-radius:12px;background:#101016;color:#bfc0ca;white-space:pre-wrap}
       .hint{font-size:12px;color:#888995;margin-top:12px;line-height:1.6}
     </style></head><body><main class="card"><div class="brand">دولاري</div><div class="sub">لوحة الإشعار العام — Android + iPhone</div>
-    <form id="broadcastForm" method="POST" action="/api/broadcast-form"><label>كلمة مرور الإدارة</label><input id="p" name="password" type="password" autocomplete="current-password" placeholder="كلمة مرور الإدارة" required>
+    <form id="broadcastForm" method="POST" action="/api/broadcast-form"><input id="broadcastId" name="broadcastId" type="hidden" value=""><label>كلمة مرور الإدارة</label><input id="p" name="password" type="password" autocomplete="current-password" placeholder="كلمة مرور الإدارة" required>
     <label>عنوان الإشعار</label><input id="t" name="title" maxlength="120" placeholder="مثلاً: تنبيه مهم" required>
     <label>نص الإشعار</label><textarea id="b" name="body" maxlength="1000" placeholder="اكتب الرسالة التي تريد إرسالها للمستخدمين..." required></textarea>
     <button id="send" type="submit">إرسال الإشعار للجميع</button><div id="s" class="status">جاهز للإرسال.</div>
@@ -470,12 +470,21 @@ async function api(request, env) {
             return;
           }
           try{
-            const r=await fetch("/api/broadcast",{method:"POST",headers:{"Content-Type":"application/json","X-Dolary-Admin-Password":password},body:JSON.stringify({title,body}),cache:"no-store"});
+            let pending=null;
+            try { pending=JSON.parse(sessionStorage.getItem("dolary_pending_broadcast")||"null"); } catch (_) {}
+            if(!pending || pending.title!==title || pending.body!==body || !pending.id){
+              pending={id:"broadcast-"+crypto.randomUUID(),title,body};
+              try { sessionStorage.setItem("dolary_pending_broadcast",JSON.stringify(pending)); } catch (_) {}
+            }
+            const r=await fetch("/api/broadcast",{method:"POST",headers:{"Content-Type":"application/json","X-Dolary-Admin-Password":password},body:JSON.stringify({title,body,broadcastId:pending.id}),cache:"no-store"});
             const d=await r.json().catch(()=>({}));
             if(r.status===401){s.textContent="كلمة مرور الإدارة غير صحيحة.";return}
             if(!r.ok||!d.ok){s.textContent="فشل الإرسال: "+(d.error||r.status);return}
-            try { sessionStorage.setItem("dolary_admin_password",password); } catch (_) {}
-            s.textContent="تم الإرسال بنجاح.\nAndroid: "+d.androidSent+"\niPhone/Web Push: "+d.webSent+"\nغير صالحة وحُذفت: "+(d.androidRemoved+d.webRemoved);
+            try {
+              sessionStorage.setItem("dolary_admin_password",password);
+              sessionStorage.removeItem("dolary_pending_broadcast");
+            } catch (_) {}
+            s.textContent="تم الإرسال بنجاح.\nBroadcast ID: "+(d.broadcastId||pending.id)+"\nAndroid: "+d.androidSent+"\niPhone/Web Push: "+d.webSent+"\nغير صالحة وحُذفت: "+(d.androidRemoved+d.webRemoved);
             b.value="";
           }catch(e){s.textContent="تعذر الاتصال بالـWorker."}
           finally{send.disabled=false;send.textContent="إرسال الإشعار للجميع"}
@@ -490,10 +499,11 @@ async function api(request, env) {
     const password = String(form.get("password") || "");
     const title = String(form.get("title") || "");
     const body = String(form.get("body") || "");
+    const broadcastId = cleanBroadcastId(form.get("broadcastId")) || newBroadcastId();
     const internal = new Request(new URL("/api/broadcast", request.url), {
       method:"POST",
       headers:{"Content-Type":"application/json","X-Dolary-Admin-Password":password},
-      body:JSON.stringify({title,body})
+      body:JSON.stringify({title,body,broadcastId})
     });
     const result = await api(internal, env);
     const data = await result.text();
