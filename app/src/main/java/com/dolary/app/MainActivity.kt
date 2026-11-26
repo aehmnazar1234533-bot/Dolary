@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity() {
     private var mainPageLoaded = false
     private var adConsentReady = false
     private var adsRequested = false
+    private var adConsentStarted = false
     private lateinit var adMobConsentManager: AdMobConsentManager
     private lateinit var appOpenAdManager: AppOpenAdManager
     private lateinit var prefs: SharedPreferences
@@ -277,6 +278,7 @@ class MainActivity : AppCompatActivity() {
                 splashOverlay.visibility = View.GONE
                 splashOverlay.alpha = 1f
                 updateSystemBars()
+                startAdConsentAfterStartup()
             }
             .start()
     }
@@ -310,23 +312,37 @@ class MainActivity : AppCompatActivity() {
             adView = banner
             adContainer.visibility = View.GONE
 
+            // Do not show the Google consent dialog over the startup splash.
+            // Consent is started only after the local app UI is visible.
+            adConsentReady = false
+        } catch (_: Exception) {
+            // Ads must never be able to crash the app.
+            adContainer.visibility = View.GONE
+        }
+    }
+
+    private fun startAdConsentAfterStartup() {
+        if (adConsentStarted || isFinishing || isDestroyed) return
+        adConsentStarted = true
+        try {
             adMobConsentManager.gatherConsent {
                 try {
                     adMobConsentManager.initializeAdsIfAllowed()
                     runOnUiThread {
-                        try {
-                            adConsentReady = adMobConsentManager.canRequestAds()
-                            loadAdsWhenReady()
-                            webView.evaluateJavascript("window.AndroidBridge && AndroidBridge.setPrivacyOptionsVisible && AndroidBridge.setPrivacyOptionsVisible(${adMobConsentManager.privacyOptionsRequired()});", null)
-                        } catch (_: Exception) {
-                        }
+                        if (isFinishing || isDestroyed) return@runOnUiThread
+                        adConsentReady = adMobConsentManager.canRequestAds()
+                        loadAdsWhenReady()
+                        webView.evaluateJavascript(
+                            "window.AndroidBridge && AndroidBridge.setPrivacyOptionsVisible && AndroidBridge.setPrivacyOptionsVisible(" + adMobConsentManager.privacyOptionsRequired() + ");",
+                            null
+                        )
                     }
                 } catch (_: Exception) {
+                    adConsentReady = false
                 }
             }
         } catch (_: Exception) {
-            // Ads must never be able to crash the app.
-            adContainer.visibility = View.GONE
+            adConsentReady = false
         }
     }
 
