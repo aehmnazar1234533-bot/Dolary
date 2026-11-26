@@ -44,7 +44,7 @@ java = ["src/test/java", "src/test/kotlin"]
 resources = ["src/test/resources"]
 
 [dependencies]
-implementation = ["androidx.core:core-ktx:1.13.1", "androidx.appcompat:appcompat:1.7.0", "androidx.work:work-runtime-ktx:2.9.1", "com.google.android.gms:play-services-ads:25.5.0", "com.google.android.ump:user-messaging-platform:4.0.0", "com.google.firebase:firebase-bom:35.2.0", "com.google.firebase:firebase-messaging", "kotlin-stdlib"]
+implementation = ["androidx.core:core-ktx:1.13.1", "androidx.appcompat:appcompat:1.7.0", "androidx.work:work-runtime-ktx:2.9.1", "com.google.android.gms:play-services-ads:25.5.0", "com.google.android.ump:user-messaging-platform:4.0.0", "com.google.firebase:firebase-bom:35.2.0", "com.google.firebase:firebase-messaging:26.0.2", "kotlin-stdlib"]
 testImplementation = ["junit:junit:4.13.2", "androidx.test.ext:junit:1.2.1", "androidx.test.espresso:espresso-core:3.6.1"]
 
 [android]
