@@ -64,6 +64,50 @@ self.addEventListener('fetch', event => {
   })());
 });
 
+async function setSystemBadge(count) {
+  try {
+    const registration = self.registration;
+    if (typeof registration.setAppBadge === 'function') {
+      if (count > 0) await registration.setAppBadge(count);
+      else if (typeof registration.clearAppBadge === 'function') await registration.clearAppBadge();
+    }
+  } catch (_) {}
+}
+
+async function changeBadgeCount(delta) {
+  return new Promise((resolve) => {
+    const request = indexedDB.open('dolary-push-history', 2);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('events')) db.createObjectStore('events', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', { keyPath: 'key' });
+    };
+    request.onsuccess = () => {
+      const db = request.result;
+      try {
+        const tx = db.transaction('meta', 'readwrite');
+        const store = tx.objectStore('meta');
+        const get = store.get('unread');
+        get.onsuccess = () => {
+          const current = Math.max(0, Number(get.result && get.result.value) || 0);
+          const next = Math.max(0, current + delta);
+          store.put({ key: 'unread', value: next });
+          tx.oncomplete = () => {
+            db.close();
+            setSystemBadge(next).finally(() => resolve(next));
+          };
+        };
+        get.onerror = () => { db.close(); resolve(0); };
+        tx.onerror = () => { db.close(); resolve(0); };
+      } catch (_) {
+        db.close();
+        resolve(0);
+      }
+    };
+    request.onerror = () => resolve(0);
+  });
+}
+
 function storePushHistory(record) {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('dolary-push-history', 2);
