@@ -60,6 +60,11 @@
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
       throw new Error("هذا الإصدار من Safari لا يدعم Web Push.");
     }
+    try {
+      await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
+    } catch (error) {
+      throw new Error("تعذر تشغيل خدمة إشعارات دولاري على الآيفون. أعد فتح دولاري من الشاشة الرئيسية.");
+    }
     return navigator.serviceWorker.ready;
   }
 
