@@ -433,24 +433,21 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
    <div class="ios-install-step"><span>2</span><div><strong>اختَر «إضافة إلى الشاشة الرئيسية»</strong><small>إذا ما ظهرت، مرّر قائمة المشاركة للأعلى حتى تلقاها.</small></div></div>
    <div class="ios-install-step"><span>3</span><div><strong>اضغط «إضافة»</strong><small>راح تظهر أيقونة دولاري على شاشة الآيفون.</small></div></div>
   </div>
-  <div class="ios-safari-guide" aria-label="شرح إضافة دولاري إلى الشاشة الرئيسية من Safari">
-    <div class="ios-guide-stage">
-      <div class="ios-guide-browser">
-        <div class="ios-guide-top"><span class="ios-guide-dot"></span><span class="ios-guide-url">aehamtech.top/dolary</span><span class="ios-guide-lock">⌁</span></div>
-        <div class="ios-guide-page"><img src="./dolary-mark.svg" alt="" class="ios-guide-logo"><strong>دولاري</strong><small>سعر الدولار اليوم</small></div>
-        <div class="ios-guide-share"><span class="ios-guide-share-icon">↑</span><span>مشاركة</span></div>
-      </div>
-      <div class="ios-guide-pointer"><span>اضغط هنا</span><b>↘</b></div>
-    </div>
-    <div class="ios-guide-caption"><strong>الخطوة 1</strong><span>من Safari اضغط زر <b>المشاركة</b> الأصلي.</span></div>
-    <div class="ios-guide-menu">
-      <div class="ios-guide-menu-title">قائمة المشاركة في Safari</div>
-      <div class="ios-guide-menu-row active"><span class="ios-guide-menu-icon">＋</span><div><strong>إضافة إلى الشاشة الرئيسية</strong><small>ثبّت دولاري كأنه تطبيق على الآيفون</small></div><b>›</b></div>
-      <div class="ios-guide-menu-row"><span class="ios-guide-menu-icon">↗</span><div><strong>مشاركة</strong><small>خيارات المشاركة الأخرى</small></div><b>›</b></div>
-    </div>
-    <div class="ios-guide-caption compact"><strong>الخطوة 2</strong><span>اختَر <b>«إضافة إلى الشاشة الرئيسية»</b>.</span></div>
-    <div class="ios-guide-add"><span class="ios-guide-add-icon">＋</span><div><strong>دولاري</strong><small>إضافة إلى الشاشة الرئيسية</small></div><button type="button" disabled>إضافة</button></div>
-    <div class="ios-guide-caption compact"><strong>الخطوة 3</strong><span>اضغط <b>«إضافة»</b>، وراح تظهر أيقونة دولاري على الشاشة.</span></div>
+  <div class="ios-phone-demo" aria-label="شرح تثبيت دولاري على الآيفون">
+    <div class="ios-phone-frame"><div class="ios-phone-screen">
+      <div class="ios-phone-status"><span>9:41</span><span>● ● ●</span></div>
+      <div class="ios-safari-header"><span>‹</span><div>aehamtech.top</div><b>↗</b></div>
+      <div class="ios-demo-page"><img src="./dolary-mark.svg" alt="دولاري"><strong>دولاري</strong><small>سعر الدولار اليوم</small></div>
+      <div class="ios-safari-toolbar"><span>‹</span><span>□</span><span class="ios-demo-share">↑</span><span>▣</span><span>⋯</span></div>
+      <div class="ios-demo-focus">اضغط مشاركة</div>
+    </div></div>
+    <div class="ios-demo-stepbar"><span class="active">1</span><i></i><span>2</span><i></i><span>3</span></div>
+    <div class="ios-demo-title">أضف دولاري إلى الشاشة الرئيسية</div>
+    <div class="ios-demo-text">افتح الموقع في Safari واضغط زر المشاركة بالأسفل.</div>
+    <div class="ios-demo-next"><span>الخطوة 1</span><strong>مشاركة</strong></div>
+    <div class="ios-demo-menu"><div class="ios-demo-menu-head">مشاركة</div><div class="ios-demo-menu-option active"><span>＋</span><div><strong>إضافة إلى الشاشة الرئيسية</strong><small>أضف دولاري كتطبيق على جهازك</small></div><b>›</b></div></div>
+    <div class="ios-demo-confirm"><img src="./dolary-mark.svg" alt=""><div><strong>دولاري</strong><small>إضافة إلى الشاشة الرئيسية</small></div><button type="button" disabled>إضافة</button></div>
+    <div class="ios-demo-step-notes"><div><span>1</span><b>اضغط مشاركة</b></div><div><span>2</span><b>اختَر إضافة إلى الشاشة الرئيسية</b></div><div><span>3</span><b>اضغط إضافة</b></div></div>
   </div>
   <small class="ios-install-hint">ملاحظة: هذا شرح بصري فقط؛ iOS هو اللي يفتح قائمة المشاركة الأصلية ويكمل التثبيت.</small>
  </section>
@@ -1018,23 +1015,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 </script>
 
 <style>
-.ios-safari-guide{margin:22px auto 6px;max-width:520px;text-align:right}
-.ios-guide-stage{position:relative;padding:12px 12px 30px}
-.ios-guide-browser{border:1px solid rgba(255,255,255,.16);border-radius:24px;background:#0d1425;overflow:hidden;box-shadow:0 20px 45px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.08)}
-.ios-guide-top{height:42px;display:flex;align-items:center;gap:9px;padding:0 13px;background:rgba(255,255,255,.055);color:#aab7cc;font-size:10px}
-.ios-guide-dot{width:7px;height:7px;border-radius:50%;background:#67e8f9;box-shadow:0 0 12px rgba(103,232,249,.65)}
-.ios-guide-url{flex:1;text-align:center;direction:ltr;opacity:.9}.ios-guide-lock{font-size:14px;opacity:.65}
-.ios-guide-page{height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:radial-gradient(circle at 50% 30%,rgba(103,232,249,.12),transparent 48%)}
-.ios-guide-logo{width:46px;height:46px;object-fit:contain}.ios-guide-page strong{font-size:19px}.ios-guide-page small{color:#8f9db5;font-size:10px}
-.ios-guide-share{position:absolute;right:27px;top:54px;display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(103,232,249,.55);border-radius:11px;background:rgba(103,232,249,.11);color:#67e8f9;font-size:11px;font-weight:700;box-shadow:0 0 0 4px rgba(103,232,249,.07);animation:iosGuidePulse 1.8s ease-in-out infinite}
-.ios-guide-share-icon{font-size:18px;line-height:1}.ios-guide-pointer{position:absolute;right:4px;top:88px;display:flex;align-items:center;gap:5px;color:#67e8f9;font-size:12px;font-weight:800;transform:rotate(-8deg)}.ios-guide-pointer b{font-size:28px;line-height:1}
-.ios-guide-caption{display:flex;gap:10px;align-items:flex-start;margin:4px 8px 14px;padding:11px 13px;border:1px solid rgba(103,232,249,.18);border-radius:14px;background:rgba(103,232,249,.055);font-size:12px;line-height:1.8}.ios-guide-caption strong{color:#67e8f9;white-space:nowrap}.ios-guide-caption span{color:#c8d2e3}.ios-guide-caption b{color:#fff}
-.ios-guide-menu{border:1px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(255,255,255,.055);padding:10px;margin:0 8px 10px;box-shadow:0 14px 35px rgba(0,0,0,.2)}.ios-guide-menu-title{font-size:10px;color:#7f8da5;padding:3px 8px 9px}
-.ios-guide-menu-row{display:flex;align-items:center;gap:10px;padding:10px 9px;border-radius:12px;color:#c7d1e2}.ios-guide-menu-row.active{background:rgba(103,232,249,.10);border:1px solid rgba(103,232,249,.35);color:#fff}
-.ios-guide-menu-icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.08);color:#67e8f9;font-size:19px}.ios-guide-menu-row div{flex:1}.ios-guide-menu-row strong{display:block;font-size:12px}.ios-guide-menu-row small{display:block;color:#7f8da5;font-size:9px;margin-top:2px}.ios-guide-menu-row>b{color:#748198;font-size:19px}
-.ios-guide-caption.compact{margin-top:0;margin-bottom:10px}.ios-guide-add{display:flex;align-items:center;gap:10px;margin:0 8px 10px;padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:15px;background:rgba(255,255,255,.045)}
-.ios-guide-add-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:10px;background:rgba(103,232,249,.12);color:#67e8f9;font-size:22px}.ios-guide-add div{flex:1}.ios-guide-add strong{display:block;font-size:12px}.ios-guide-add small{display:block;color:#7f8da5;font-size:9px;margin-top:2px}.ios-guide-add button{border:0;border-radius:10px;padding:8px 13px;background:#67e8f9;color:#07111d;font:inherit;font-size:11px;font-weight:800;opacity:.95}
-@keyframes iosGuidePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}@media(max-width:480px){.ios-guide-stage{padding-left:3px;padding-right:3px}.ios-guide-pointer{right:-2px}.ios-guide-share{right:18px}.ios-guide-caption{font-size:11px}}
+.ios-phone-demo{margin:20px auto 4px;max-width:390px;text-align:center}.ios-phone-frame{width:238px;height:440px;margin:0 auto 15px;padding:8px;border:3px solid #2b3447;border-radius:38px;background:#080d18;box-shadow:0 25px 60px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12);position:relative}.ios-phone-frame:before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:78px;height:20px;border-radius:14px;background:#050812;z-index:5}.ios-phone-screen{height:100%;border-radius:30px;overflow:hidden;background:#f5f7fb;color:#172033;position:relative}.ios-phone-status{height:34px;padding:8px 14px 0;display:flex;justify-content:space-between;font:700 8px Arial;color:#1a2232;direction:ltr}.ios-safari-header{height:42px;margin:0 8px;border-radius:13px;background:#e5e9f1;display:flex;align-items:center;gap:7px;padding:0 9px;font:600 8px Arial;color:#4c566b;direction:ltr}.ios-safari-header div{flex:1;text-align:center}.ios-safari-header b{font-size:13px;color:#147ef5}.ios-demo-page{height:286px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:linear-gradient(145deg,#f9fbff,#eaf3ff)}.ios-demo-page img{width:54px;height:54px;object-fit:contain}.ios-demo-page strong{font:800 22px 'IBM Plex Sans Arabic',sans-serif}.ios-demo-page small{font:10px 'IBM Plex Sans Arabic',sans-serif;color:#758198}.ios-safari-toolbar{height:52px;padding:7px 13px;display:flex;align-items:center;justify-content:space-between;background:#f8f9fc;border-top:1px solid #dfe4ed;font:18px Arial;color:#647087;direction:ltr}.ios-demo-share{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;color:#147ef5;background:#dceeff;box-shadow:0 0 0 3px rgba(20,126,245,.16);animation:iosSharePulse 1.7s infinite}.ios-demo-focus{position:absolute;bottom:61px;right:8px;padding:5px 9px;border-radius:9px;background:#147ef5;color:#fff;font:700 9px 'IBM Plex Sans Arabic',sans-serif;box-shadow:0 7px 18px rgba(20,126,245,.28)}.ios-demo-stepbar{display:flex;align-items:center;justify-content:center;gap:8px;margin:5px 0 13px}.ios-demo-stepbar span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#293348;color:#9da9bd;font:700 11px Arial}.ios-demo-stepbar span.active{background:#67e8f9;color:#07111d}.ios-demo-stepbar i{width:28px;height:1px;background:#445066}.ios-demo-title{font-size:17px;font-weight:800;margin-bottom:5px}.ios-demo-text{font-size:11px;line-height:1.8;color:#94a1b6;margin-bottom:12px}.ios-demo-next{display:flex;justify-content:space-between;align-items:center;padding:10px 13px;margin-bottom:10px;border:1px solid rgba(103,232,249,.25);border-radius:13px;background:rgba(103,232,249,.06);text-align:right}.ios-demo-next span{font-size:10px;color:#67e8f9}.ios-demo-next strong{font-size:12px}.ios-demo-menu{padding:10px;border:1px solid rgba(255,255,255,.13);border-radius:17px;background:rgba(255,255,255,.05);text-align:right}.ios-demo-menu-head{font-size:10px;color:#8996ab;padding:2px 7px 8px}.ios-demo-menu-option{display:flex;align-items:center;gap:9px;padding:10px 7px;border-radius:11px}.ios-demo-menu-option.active{background:rgba(103,232,249,.10);border:1px solid rgba(103,232,249,.35)}.ios-demo-menu-option>span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:rgba(255,255,255,.08);color:#67e8f9;font-size:18px}.ios-demo-menu-option div{flex:1}.ios-demo-menu-option strong{display:block;font-size:11px}.ios-demo-menu-option small{display:block;color:#7f8da5;font-size:8px;margin-top:2px}.ios-demo-menu-option>b{color:#758198;font-size:18px}.ios-demo-confirm{display:flex;align-items:center;gap:9px;margin-top:10px;padding:11px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(255,255,255,.045);text-align:right}.ios-demo-confirm img{width:38px;height:38px}.ios-demo-confirm div{flex:1}.ios-demo-confirm strong{display:block;font-size:11px}.ios-demo-confirm small{display:block;color:#7f8da5;font-size:8px;margin-top:2px}.ios-demo-confirm button{border:0;border-radius:9px;padding:8px 12px;background:#67e8f9;color:#07111d;font:800 10px 'IBM Plex Sans Arabic',sans-serif}.ios-demo-step-notes{display:grid;gap:7px;margin-top:10px;text-align:right}.ios-demo-step-notes div{display:flex;align-items:center;gap:8px;font-size:10px}.ios-demo-step-notes span{width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:rgba(103,232,249,.11);color:#67e8f9;font-weight:800}.ios-install-hint{display:block;margin-top:13px}@keyframes iosSharePulse{0%,100%{box-shadow:0 0 0 3px rgba(20,126,245,.13)}50%{box-shadow:0 0 0 7px rgba(20,126,245,.05)}}
 </style>
 </body>
 </html>
