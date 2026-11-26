@@ -96,14 +96,18 @@ async function claimPushId(id) {
   });
   if (claimed) {
     try {
-      const cleanup = db.transaction('processed', 'readwrite');
-      const store = cleanup.objectStore('processed');
-      const getAll = store.getAll();
-      getAll.onsuccess = () => {
-        const rows = (getAll.result || []).sort((a, b) => (b.at || 0) - (a.at || 0));
-        for (let i = 200; i < rows.length; i++) store.delete(rows[i].id);
-      };
-      cleanup.oncomplete = () => {};
+      await new Promise((resolve) => {
+        const cleanup = db.transaction('processed', 'readwrite');
+        const store = cleanup.objectStore('processed');
+        const getAll = store.getAll();
+        getAll.onsuccess = () => {
+          const rows = (getAll.result || []).sort((a, b) => (b.at || 0) - (a.at || 0));
+          for (let i = 200; i < rows.length; i++) store.delete(rows[i].id);
+        };
+        cleanup.oncomplete = () => resolve();
+        cleanup.onerror = () => resolve();
+        cleanup.onabort = () => resolve();
+      });
     } catch (_) {}
   }
   db.close();
