@@ -3,6 +3,8 @@ import { buildPushPayload } from "@block65/webcrypto-web-push";
 const RATE_URL = "https://xeiqd.com/rates.json";
 const SUB_PREFIX = "sub:";
 const ANDROID_PREFIX = "android:";
+const BROADCAST_PREFIX = "broadcast:";
+const DELIVERY_PREFIX = "delivery:";
 const MAX_ANDROID_LIST_SIZE = 1000;
 const CURSOR_KEY = "meta:last-key";
 const MAX_SUBSCRIPTIONS_PER_TICK = 4;
@@ -67,6 +69,19 @@ function cleanRule(input) {
   return { slug, province, condition, target: Math.round(target) };
 }
 
+function cleanBroadcastId(input) {
+  if (typeof input !== "string") return null;
+  const id = input.trim();
+  if (id.length < 8 || id.length > 120) return null;
+  if (!/^[A-Za-z0-9._:-]+$/.test(id)) return null;
+  return id;
+}
+function newBroadcastId() {
+  return "broadcast-" + crypto.randomUUID();
+}
+function deliveryKey(broadcastId, recipientKey) {
+  return DELIVERY_PREFIX + broadcastId + ":" + recipientKey.replace(/[^A-Za-z0-9._:-]/g, "_");
+}
 function cleanFcmToken(input) {
   if (typeof input !== "string") return null;
   const token = input.trim();
@@ -504,11 +519,26 @@ async function api(request, env) {
     const message = String(body && (body.body ?? body.message) || "").trim().slice(0, 1000);
     if (!title || !message) return json({ ok: false, error: "title_and_body_required" }, 400, origin, env);
 
+    const requestedBroadcastId =
+      cleanBroadcastId(body && (body.broadcastId ?? body.notificationId)) || newBroadcastId();
+    const broadcastKey = BROADCAST_PREFIX + requestedBroadcastId;
+    let broadcastRecord = await env.PUSH_STORE.get(broadcastKey, "json");
+    if (!broadcastRecord) {
+      broadcastRecord = {
+        id: requestedBroadcastId,
+        title,
+        body: message,
+        url: (env.APP_URL || "https://aehamtech.top/dolary/") + "?pwa-notifications=1#pwa-notifications",
+        createdAt: new Date().toISOString()
+      };
+      await env.PUSH_STORE.put(broadcastKey, JSON.stringify(broadcastRecord));
+    }
     const notification = {
-      title,
-      body: message,
-      url: (env.APP_URL || "https://aehamtech.top/dolary/") + "?pwa-notifications=1#pwa-notifications",
-      id: "broadcast-" + Date.now()
+      title: broadcastRecord.title,
+      body: broadcastRecord.body,
+      url: broadcastRecord.url,
+      id: broadcastRecord.id,
+      broadcastId: broadcastRecord.id
     };
 
     const webListed = await env.PUSH_STORE.list({ prefix: SUB_PREFIX, limit: MAX_LIST_SIZE });
@@ -520,11 +550,18 @@ async function api(request, env) {
       const record = await env.PUSH_STORE.get(key, "json");
       if (!record || !record.subscription) continue;
       try {
+        const deliveryMarker = deliveryKey(notification.broadcastId, key);
+        if (await env.PUSH_STORE.get(deliveryMarker)) continue;
         const result = await deliver(record.subscription, notification, env);
         if (result.status === 404 || result.status === 410) {
           await env.PUSH_STORE.delete(key);
           webRemoved++;
         } else if (result.ok) {
+          await env.PUSH_STORE.put(deliveryMarker, JSON.stringify({
+            broadcastId: notification.broadcastId,
+            recipient: key,
+            deliveredAt: new Date().toISOString()
+          }));
           webSent++;
         } else {
           failed++;
@@ -542,12 +579,21 @@ async function api(request, env) {
             const record = await env.PUSH_STORE.get(key, "json");
             if (!record || !record.token) return { skipped: true };
             try {
+              const deliveryMarker = deliveryKey(notification.broadcastId, key);
+              if (await env.PUSH_STORE.get(deliveryMarker)) return { skipped: true };
               const result = await deliverFcm(record.token, notification, env, auth);
               if (result.status === 404 || result.status === 400) {
                 await env.PUSH_STORE.delete(key);
                 return { removed: true };
               }
-              if (result.ok) return { sent: true };
+              if (result.ok) {
+                await env.PUSH_STORE.put(deliveryMarker, JSON.stringify({
+                  broadcastId: notification.broadcastId,
+                  recipient: key,
+                  deliveredAt: new Date().toISOString()
+                }));
+                return { sent: true };
+              }
               return { failed: true };
             } catch (_) {
               return { failed: true };
@@ -571,7 +617,8 @@ async function api(request, env) {
       webRemoved,
       androidRemoved,
       failed,
-      androidPushReady: Boolean(env.FCM_SERVICE_ACCOUNT_JSON)
+      androidPushReady: Boolean(env.FCM_SERVICE_ACCOUNT_JSON),
+      broadcastId: notification.broadcastId
     }, 200, origin, env);
   }
 
@@ -624,7 +671,7 @@ async function checkRates(env) {
           " د.ع لكل 100 دولار\n" + (isAbove ? "تجاوز السعر الحد الذي حددته: " : "انخفض السعر إلى الحد الذي حددته: ") +
           Math.round(record.rule.target).toLocaleString("en-US") + " د.ع",
         url: (env.APP_URL || "https://aehamtech.top/dolary/") + "?pwa-notifications=1#pwa-notifications",
-        id: "rate-" + Date.now() + "-" + key.slice(-10),
+        id: "rate-" + key.slice(-24) + "-" + record.rule.condition + "-" + Math.round(previous) + "-" + Math.round(rate),
         province: record.rule.province,
         rate: Math.round(rate),
         message: (isAbove ? "ارتفاع السعر — الحد المحدد " : "انخفاض السعر — الحد المحدد ") +
