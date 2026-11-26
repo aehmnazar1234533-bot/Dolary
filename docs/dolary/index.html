@@ -245,6 +245,12 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 /* Dolary semantic icon system: each action uses a clear, purpose-built icon while branding stays unified. */
 .logo img{width:100%;height:100%;display:block;object-fit:contain;border-radius:0}
 .quick-access-icon img{width:22px;height:22px}.feature-icon img{width:30px;height:30px}.province-picker-modal-icon img,.price-alert-mark img{width:28px;height:28px}
+
+/* Professional iPhone PWA install experience */
+.ios-install-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:flex-end;justify-content:center;padding:18px;background:rgba(2,7,18,.58);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.ios-install-overlay.open{display:flex;animation:iosInstallFade .22s ease both}.ios-install-backdrop{position:absolute;inset:0}.ios-install-sheet{position:relative;width:min(500px,100%);max-height:min(86vh,720px);overflow:auto;padding:26px 22px calc(24px + env(safe-area-inset-bottom));border:1px solid rgba(255,255,255,.16);border-radius:28px;background:linear-gradient(145deg,rgba(20,31,57,.98),rgba(8,15,30,.99));box-shadow:0 30px 90px rgba(0,0,0,.55);text-align:center;animation:iosInstallSheet .28s cubic-bezier(.2,.8,.2,1) both}.ios-install-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:22px;cursor:pointer}.ios-install-app-icon{width:78px;height:78px;margin:4px auto 14px;border-radius:22px;display:grid;place-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.13);box-shadow:0 14px 35px rgba(60,140,255,.2);overflow:hidden}.ios-install-app-icon img{width:100%;height:100%;object-fit:contain}.ios-install-kicker{font-size:11px;font-weight:800;color:var(--cyan);margin-bottom:7px}.ios-install-sheet h2{margin:0;font-size:25px}.ios-install-sheet>p{margin:9px auto 18px;max-width:420px;color:#aebbd0;font-size:13px;line-height:1.9}.ios-install-steps{display:grid;gap:9px;text-align:right}.ios-install-step{display:flex;align-items:flex-start;gap:11px;padding:13px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.045)}.ios-install-step>span{width:28px;height:28px;flex:0 0 28px;border-radius:10px;display:grid;place-items:center;background:rgba(103,232,249,.11);border:1px solid rgba(103,232,249,.24);color:var(--cyan);font-size:12px;font-weight:900}.ios-install-step strong{display:block;font-size:12px}.ios-install-step small{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.7}.ios-install-share-btn{width:100%;margin-top:15px;border:0;border-radius:15px;padding:13px 16px;background:linear-gradient(110deg,#67e8f9,#a5b4fc);color:#08101e;font:800 13px 'IBM Plex Sans Arabic',Tahoma,sans-serif;cursor:pointer;box-shadow:0 12px 28px rgba(103,232,249,.16)}.ios-install-share-btn span{font-size:17px;margin-left:5px}.ios-install-hint{display:block;margin-top:11px;color:#73839c;font-size:9px;line-height:1.7}.dolary-install-badge{width:max-content;max-width:100%;margin:0 auto 15px;display:inline-flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid rgba(103,232,249,.22);border-radius:14px;background:rgba(103,232,249,.06);text-align:right}.dolary-install-badge-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:rgba(255,255,255,.08);font-size:16px}.dolary-install-badge strong,.dolary-install-badge small{display:block}.dolary-install-badge strong{font-size:11px}.dolary-install-badge small{font-size:9px;color:var(--muted);margin-top:2px}.dolary-install-actions{position:relative;margin-top:13px}.dolary-ios-install-btn{width:100%;display:flex;align-items:center;gap:11px;text-align:right;padding:13px 14px;border:1px solid rgba(103,232,249,.28);border-radius:17px;background:linear-gradient(135deg,rgba(103,232,249,.13),rgba(129,140,248,.12));color:#fff;font:inherit;cursor:pointer;transition:.2s}.dolary-ios-install-btn:hover{transform:translateY(-2px);border-color:rgba(103,232,249,.5);box-shadow:0 12px 28px rgba(0,0,0,.2)}.dolary-ios-install-btn:active{transform:scale(.99)}.dolary-ios-install-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:13px;background:rgba(255,255,255,.08);font-size:20px}.dolary-ios-install-btn strong,.dolary-ios-install-btn small{display:block}.dolary-ios-install-btn strong{font-size:13px}.dolary-ios-install-btn small{font-size:9.5px;color:#9eabc2;margin-top:3px}.dolary-ios-install-btn svg{width:20px;height:20px;margin-right:auto;fill:none;stroke:#67e8f9;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.dolary-ios-installed{display:flex;align-items:center;gap:10px;margin:13px auto 0;padding:12px 14px;border-radius:15px;border:1px solid rgba(94,230,168,.25);background:rgba(94,230,168,.07);text-align:right}.dolary-ios-check{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:rgba(94,230,168,.14);color:#70e7ae;font-weight:900}.dolary-ios-installed strong,.dolary-ios-installed small{display:block}.dolary-ios-installed strong{font-size:11px}.dolary-ios-installed small{font-size:9px;color:var(--muted);margin-top:2px}
+@keyframes iosInstallFade{from{opacity:0}to{opacity:1}}@keyframes iosInstallSheet{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+@media(max-width:560px){.ios-install-overlay{padding:8px}.ios-install-sheet{border-radius:25px;padding-inline:16px}}
 </style>
 </head>
 <body>
@@ -393,14 +399,44 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));m
 </section>
 
 <section class="wrap section" id="download"><div class="glass download">
- <h2>جرّب دولاري</h2><p>خلّ متابعة سعر الصرف والحسابات اليومية أسهل.<br>سيُضاف رابط التحميل هنا عند توفر التطبيق على المتجر.</p>
- <span class="download-status" role="status">التطبيق قريباً على Google Play</span>
- <p class="download-note">سنضيف رابط التحميل هنا بعد نشر التطبيق على المتجر.</p>
+ <div class="dolary-install-badge" id="iosInstallBadge" hidden><span class="dolary-install-badge-icon"></span><span><strong>دولاري للآيفون</strong><small>ثبّته على الشاشة خلال ثوانٍ</small></span></div>
+ <h2>جرّب دولاري</h2>
+ <p>خلّ متابعة سعر الصرف والحسابات اليومية أسهل.<br>واستخدم دولاري على الآيفون كأنه تطبيق مستقل.</p>
+ <div class="dolary-install-actions" id="iosInstallActions" hidden>
+   <button type="button" class="dolary-ios-install-btn" id="iosInstallBtn">
+     <span class="dolary-ios-install-icon" aria-hidden="true"></span>
+     <span><strong>تحميل دولاري للآيفون</strong><small>إضافة إلى الشاشة الرئيسية</small></span>
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+   </button>
+ </div>
+ <div class="dolary-ios-installed" id="iosInstalledState" hidden>
+   <span class="dolary-ios-check">✓</span>
+   <div><strong>دولاري مثبت على جهازك</strong><small>تقدر تفتحه من الشاشة الرئيسية مثل أي تطبيق.</small></div>
+ </div>
+ <span class="download-status" id="downloadStatus" role="status">التطبيق قريباً على Google Play</span>
+ <p class="download-note" id="downloadNote">نسخة الآيفون تعمل كتطبيق ويب سريع (PWA) ويمكن إضافتها إلى الشاشة الرئيسية بدون App Store.</p>
 </div></section>
 </main>
 <footer class="wrap footer"><span>© <span id="year"></span> DOLARY — دولاري</span><span>صُنع ليكون أبسط وأسهل.</span>
 <span class="copyright-owner">حقوق الملكية: أيهم نزار الساعدي</span><a class="privacy-link" href="privacy_policy.html" target="_blank" rel="noopener noreferrer">سياسة الخصوصية</a></footer>
 <div class="toast" id="toast" role="status"></div>
+<div class="ios-install-overlay" id="iosInstallModal" aria-hidden="true">
+ <div class="ios-install-backdrop" data-close-ios-install></div>
+ <section class="ios-install-sheet" role="dialog" aria-modal="true" aria-labelledby="iosInstallTitle">
+  <button type="button" class="ios-install-close" data-close-ios-install aria-label="إغلاق">×</button>
+  <div class="ios-install-app-icon"><img src="./dolary-mark.svg" alt="دولاري"></div>
+  <div class="ios-install-kicker">تثبيت سريع على الآيفون</div>
+  <h2 id="iosInstallTitle">خلّي دولاري على شاشتك</h2>
+  <p>ثبّت دولاري كأنه تطبيق مستقل، وبعدين افتحه مباشرة من أيقونته بدون كتابة الرابط كل مرة.</p>
+  <div class="ios-install-steps">
+   <div class="ios-install-step"><span>1</span><div><strong>اضغط مشاركة</strong><small>من Safari اضغط زر المشاركة <b>↗</b> في شريط المتصفح.</small></div></div>
+   <div class="ios-install-step"><span>2</span><div><strong>اختَر «إضافة إلى الشاشة الرئيسية»</strong><small>إذا ما ظهرت، مرّر قائمة المشاركة للأعلى حتى تلقاها.</small></div></div>
+   <div class="ios-install-step"><span>3</span><div><strong>اضغط «إضافة»</strong><small>راح تظهر أيقونة دولاري على شاشة الآيفون.</small></div></div>
+  </div>
+  <button type="button" class="ios-install-share-btn" id="iosInstallShareBtn"><span>↗</span> فتح قائمة المشاركة</button>
+  <small class="ios-install-hint">ملاحظة: الآيفون هو اللي يكمل التثبيت من قائمة المشاركة، لأن iOS ما يسمح للموقع بتثبيت PWA تلقائياً.</small>
+ </section>
+</div>
 <div class="province-picker-overlay" id="provincePickerModal" aria-hidden="true"><div class="province-picker-backdrop" data-close-province></div><section class="province-picker-sheet" role="dialog" aria-modal="true" aria-labelledby="provincePickerTitle"><div class="province-picker-handle"></div><button type="button" class="province-picker-close" data-close-province aria-label="إغلاق">×</button><div class="province-picker-modal-head"><span class="province-picker-modal-icon"><img src="./dolary-icon.svg?v=14" alt=""></span><div><strong id="provincePickerTitle">اختيار المحافظة</strong><small>اختر المحافظة لعرض سعر الدولار فيها</small></div></div><input id="provincePickerSearch" class="province-picker-search" type="search" placeholder="ابحث عن محافظة..." aria-label="ابحث عن محافظة"><div id="provincePickerOptions" class="province-picker-options"></div></section></div>
 <script>
 (()=>{'use strict';
@@ -921,6 +957,57 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
     if(el.id==='provinceSelect') track('province_changed');
     if(el.id==='alertCondition') track('price_alert_condition_changed');
   }, {passive:true});
+})();
+</script>
+
+<script>
+(function(){
+  'use strict';
+  var ua=navigator.userAgent||'';
+  var isIOS=/iPhone|iPad|iPod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var standalone=window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+  var actions=document.getElementById('iosInstallActions');
+  var badge=document.getElementById('iosInstallBadge');
+  var installed=document.getElementById('iosInstalledState');
+  var status=document.getElementById('downloadStatus');
+  var note=document.getElementById('downloadNote');
+  var modal=document.getElementById('iosInstallModal');
+  var openBtn=document.getElementById('iosInstallBtn');
+  var shareBtn=document.getElementById('iosInstallShareBtn');
+  function show(el,on){if(el)el.hidden=!on;}
+  function openModal(){if(!modal)return;modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';if(window.dolaryTrack)window.dolaryTrack('ios_install_guide_opened');}
+  function closeModal(){if(!modal)return;modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+  function isSafari(){return /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(ua);}
+  if(isIOS){
+    show(badge,true);
+    if(standalone){
+      show(actions,false);show(installed,true);
+      if(status){status.textContent='دولاري مثبت على جهازك';status.classList.add('ios-ready');}
+      if(note)note.textContent='أنت تستخدم نسخة دولاري المثبتة على شاشة الآيفون.';
+    }else{
+      show(actions,true);show(installed,false);
+      if(status)status.textContent='متاح الآن للآيفون عبر الإضافة إلى الشاشة الرئيسية';
+      if(note)note.textContent=isSafari()?'اضغط الزر أعلاه واتبع 3 خطوات فقط لإضافة دولاري إلى شاشة الآيفون.':'لأفضل تجربة افتح دولاري في Safari ثم استخدم إضافة إلى الشاشة الرئيسية.';
+    }
+  }
+  if(openBtn)openBtn.addEventListener('click',function(){openModal();});
+  document.querySelectorAll('[data-close-ios-install]').forEach(function(el){el.addEventListener('click',closeModal);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal&&modal.classList.contains('open'))closeModal();});
+  if(shareBtn)shareBtn.addEventListener('click',async function(){
+    try{
+      if(navigator.share){
+        await navigator.share({title:'دولاري',text:'أضف دولاري إلى شاشة الآيفون من قائمة المشاركة.'});
+        if(window.dolaryTrack)window.dolaryTrack('ios_install_share_opened');
+      }else{
+        if(window.dolaryTrack)window.dolaryTrack('ios_install_share_unavailable');
+        shareBtn.textContent='افتح Safari ثم اضغط زر المشاركة ↗';
+      }
+    }catch(_){ }
+  });
+  window.addEventListener('pageshow',function(){
+    var nowStandalone=window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+    if(isIOS&&nowStandalone){show(actions,false);show(installed,true);if(status)status.textContent='دولاري مثبت على جهازك';if(note)note.textContent='أنت تستخدم نسخة دولاري المثبتة على شاشة الآيفون.';}
+  });
 })();
 </script>
 </body>
