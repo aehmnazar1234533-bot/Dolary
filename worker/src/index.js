@@ -335,6 +335,7 @@ async function developerRoutes(request, env) {
     if (url.pathname === "/api/dev/rollback" && request.method === "POST") {
       const history = await listDevHistory(env), id = String((await request.json()).id || ""), item = history.find(x => x.id === id);
       if (!item?.previousConfig) return json({ ok: false, error: "history_not_found" }, 404);
+      const rollbackPrevious = await env.PUSH_STORE.get("dev:last-published", "json") || DEFAULT_DOLARY_CONFIG;
       const config = sanitizeDolaryConfig(item.previousConfig);
       try {
         const manifest = JSON.stringify({id:(env.APP_URL||"https://aehamtech.top/dolary/"),name:config.pwa.name,short_name:config.pwa.shortName,description:config.pwa.description,lang:"ar-IQ",dir:"rtl",start_url:(env.APP_URL||"https://aehamtech.top/dolary/"),scope:(env.APP_URL||"https://aehamtech.top/dolary/"),display:"standalone",background_color:config.pwa.backgroundColor,theme_color:config.pwa.themeColor,icons:[{src:"./dolary-card-logo-180.png?v=2",sizes:"180x180",type:"image/png",purpose:"any"},{src:"./pwa-icon.svg?v=1",sizes:"any",type:"image/svg+xml",purpose:"any maskable"}]},null,2)+"\n";
