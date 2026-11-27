@@ -4,7 +4,7 @@
   async function loadDevPreviewConfig(){
     if(!devPreviewToken) return null;
     try{
-      var r=await fetch("https://dolary.aehmnazar-1234533.workers.dev/api/dev/preview-config?token="+encodeURIComponent(devPreviewToken),{cache:"no-store",credentials:"omit"});
+      var r=await fetch("https://dolary.aehmnazar-1234533.workers.dev/api/dev/preview-config?token="+encodeURIComponent(devPreviewToken),{cache:"no-store",credentials:"omit",mode:"cors",referrerPolicy:"no-referrer"});
       if(!r.ok) return null;
       var d=await r.json();
       return d&&d.ok&&d.config?d.config:null;
@@ -12,18 +12,12 @@
   }
 
   'use strict';
-  function bootWithConfig(){
-    var token=new URLSearchParams(location.search).get('dolaryDevPreview');
-    if(token){
-      fetch(((window.DOLARY_CONFIG&&window.DOLARY_CONFIG.apiBaseUrl)||'')+'/api/dev/preview-config?token='+encodeURIComponent(token),{cache:'no-store'})
-        .then(function(r){return r.ok?r.json():null})
-        .then(function(d){if(d&&d.config)window.DOLARY_CONFIG=d.config;start();})
-        .catch(function(){start();});
-    }else start();
-  }
+  function bootWithConfig(){ start(); }
   function start(){  var isStandalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||(window.matchMedia&&window.matchMedia('(display-mode: fullscreen)').matches)||window.navigator.standalone===true;
   var isApple=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  var devPreview=Boolean(new URLSearchParams(location.search).get('dolaryDevPreview'));
+  var previewParams=new URLSearchParams(location.search);
+  var devPreview=Boolean(previewParams.get('dolaryDevPreview'));
+  if(devPreview)document.documentElement.dataset.dolaryPreviewDevice=previewParams.get('dolaryDevice')||'generic';
   if(!devPreview&&(!isStandalone||!isApple))return;
 
   var app=document.createElement('div');
