@@ -209,7 +209,7 @@
       var label = permissionButton.querySelector("span");
       if (label) label.textContent = "جارٍ التفعيل…";
       try {
-        if (!standalone) throw new Error("افتح دولاري من أيقونته على شاشة الآيفون أولاً، ثم فعّل الإشعارات.");
+        if (standaloneRequired && !standalone) throw new Error("افتح دولاري من أيقونته على الشاشة الرئيسية أولاً، ثم فعّل الإشعارات.");
         if (!apiBase) throw new Error("خدمة الإشعارات الخلفية غير مربوطة بالخادم حالياً.");
         clearAutoPushDisabledLocally();
         await saveSubscription(localRule(), true);
@@ -294,7 +294,7 @@
           "تم إيقاف التنبيهات وحذف اشتراك هذا الجهاز من خادم دولاري." :
           "تم إلغاء الإشعارات على هذا الجهاز، لكن تعذر حذف سجل الاشتراك من الخادم. سيُزال عندما يرفض مزود الإشعارات عنوانه.");
       } catch (error) {
-        permissionText("تمت محاولة إلغاء الإشعارات. راجع إعدادات Safari إذا بقي الإذن مفعّلاً.");
+        permissionText("تمت محاولة إلغاء الإشعارات. راجع إعدادات الجهاز إذا بقي الإذن مفعّلاً.");
         statusText("تعذر تأكيد حذف الاشتراك من الخادم. أعد المحاولة عند توفر الاتصال.");
       } finally {
         disableButton.disabled = false;
@@ -313,7 +313,7 @@
         var reg = await navigator.serviceWorker.ready;
         var sub = await reg.pushManager.getSubscription();
         if (sub) await api("/api/remove-rule", { subscription: sub.toJSON() });
-        statusText("تم إيقاف تنبيه السعر. تبقى صلاحية الإشعارات مفعّلة حتى تختار إيقافها من إعدادات الآيفون.");
+        statusText("تم إيقاف تنبيه السعر. تبقى صلاحية الإشعارات مفعّلة حتى تختار إيقافها من إعدادات الجهاز.");
       } catch (error) {
         statusText("تم إيقاف التنبيه على الجهاز، لكن تعذر مزامنة الإيقاف مع الخادم.");
       }
@@ -375,7 +375,7 @@
         clearAutoPushDisabledLocally();
         await saveSubscription(localRule(), true);
         setAutoPushEnabledLocally();
-        permissionText("إشعارات دولاري مفعّلة على هذا الآيفون.");
+        permissionText("إشعارات دولاري مفعّلة على هذا الجهاز.");
         statusText(localRule() ? "تم تفعيل الإشعارات وحفظ تنبيه السعر." : "تم تفعيل الإشعارات. ستوصلك تنبيهات ارتفاع وانخفاض السعر.");
         overlay.remove();
       } catch (error) {
@@ -397,11 +397,11 @@
       var sub = await reg.pushManager.getSubscription();
       if (sub) {
         await api("/api/subscribe", { subscription: sub.toJSON(), rule: localRule(), preference: localPreference() });
-        permissionText("إشعارات دولاري مفعّلة على هذا الآيفون.");
+        permissionText("إشعارات دولاري مفعّلة على هذا الجهاز.");
         return;
       }
       await saveSubscription(localRule(), false);
-      permissionText("إشعارات دولاري مفعّلة على هذا الآيفون.");
+      permissionText("إشعارات دولاري مفعّلة على هذا الجهاز.");
     } catch (_) {}
   }
 
