@@ -18,7 +18,7 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "./apple-touch-icon.png?v=7",
+      "src": "./dolary-card-logo-180.png?v=2",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
