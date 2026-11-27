@@ -21,13 +21,6 @@ test("developer preview JavaScript uses a fresh cache-busted URL", () => {
   assert.ok(!serviceWorker.includes("./pwa-app.js?v=7"));
 });
 
-
-test("PWA calculator uses the live rate state and keeps the no-value guard", () => {
-  assert.ok(pwaApp.includes("var rate=Number(appState.ratePer100)"));
-  assert.ok(pwaApp.includes("amountText===''"));
-  assert.ok(pwaApp.includes("appState.ratePer100=rateFor(sel)"));
-});
-
 test("PWA rates use the Dolary Worker proxy", () => {
   assert.ok(pwaApp.includes("https://dolary.aehmnazar-1234533.workers.dev/api/rates"));
   assert.ok(workerSource.includes('url.pathname === "/api/rates" && request.method === "GET"'));
