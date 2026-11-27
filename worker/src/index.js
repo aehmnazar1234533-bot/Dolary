@@ -22,10 +22,16 @@ function json(data, status = 200, origin = null, env = {}) {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store"
   };
-  if (origin && origin === (env.APP_ORIGIN || "https://aehamtech.top")) {
+  const allowedCorsOrigins = new Set([
+    env.APP_ORIGIN || "https://aehamtech.top",
+    "https://aehamtech.top",
+    "https://www.aehamtech.top"
+  ]);
+  if (origin && allowedCorsOrigins.has(origin)) {
     headers["Access-Control-Allow-Origin"] = origin;
     headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
-    headers["Access-Control-Allow-Headers"] = "Content-Type";
+    headers["Access-Control-Allow-Headers"] = "Content-Type, Accept";
+    headers["Access-Control-Max-Age"] = "86400";
     headers["Vary"] = "Origin";
   }
   return new Response(JSON.stringify(data), { status, headers });
@@ -393,12 +399,15 @@ async function api(request, env) {
   }
 
   if (request.method === "OPTIONS") {
+    const corsOrigin = [expectedOrigin, "https://aehamtech.top", "https://www.aehamtech.top"].includes(origin)
+      ? origin
+      : expectedOrigin;
     return new Response(null, {
       status: 204,
       headers: {
-        "Access-Control-Allow-Origin": expectedOrigin,
+        "Access-Control-Allow-Origin": corsOrigin,
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, Accept",
         "Access-Control-Max-Age": "86400",
         "Vary": "Origin"
       }
@@ -427,10 +436,10 @@ async function api(request, env) {
 
   if (url.pathname === "/api/rates" && request.method === "GET") {
     try {
-      const upstream = await fetch(RATE_URL, {
+      const upstream = await fetchWithTimeout(RATE_URL, {
         headers: { "Accept": "application/json" },
         cf: { cacheTtl: 0 }
-      });
+      }, 10000);
       if (!upstream.ok) return json({ ok: false, error: "rates_upstream_" + upstream.status }, 502, origin, env);
       const data = await upstream.json();
       if (!data || !Array.isArray(data.cities)) return json({ ok: false, error: "invalid_rates_response" }, 502, origin, env);
