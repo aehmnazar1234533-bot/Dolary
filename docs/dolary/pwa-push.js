@@ -6,7 +6,8 @@
     window.navigator.standalone === true;
   var apple = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  if (!apple) return;
+  var standaloneRequired = apple;
+  if (standaloneRequired && !standalone) return;
 
   var config = window.DOLARY_PUSH_CONFIG || {};
   var apiBase = String(config.apiBaseUrl || "").trim().replace(/\/$/, "");
@@ -77,12 +78,12 @@
 
   async function registration() {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      throw new Error("هذا الإصدار من Safari لا يدعم Web Push.");
+      throw new Error("هذا المتصفح لا يدعم إشعارات Web Push.");
     }
     try {
       await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
     } catch (error) {
-      throw new Error("تعذر تشغيل خدمة إشعارات دولاري على الآيفون. أعد فتح دولاري من الشاشة الرئيسية.");
+      throw new Error("تعذر تشغيل خدمة إشعارات دولاري. تأكد من فتح دولاري من التطبيق المثبت على الشاشة الرئيسية.");
     }
     return navigator.serviceWorker.ready;
   }
@@ -92,13 +93,13 @@
     if (!("Notification" in window)) throw new Error("إشعارات النظام غير مدعومة على هذا الجهاز.");
     if (Notification.permission !== "granted") {
       var permission = await Notification.requestPermission();
-      if (permission !== "granted") throw new Error("لم يتم السماح بإشعارات دولاري من إعدادات الآيفون.");
+      if (permission !== "granted") throw new Error("لم يتم السماح بإشعارات دولاري من إعدادات الجهاز.");
     }
 
     var reg = await registration();
     var sub = await reg.pushManager.getSubscription();
     var conf = await api("/api/config", null, "GET");
-    if (conf.pushReady !== true) throw new Error("إعدادات خدمة الإشعارات على الخادم لم تكتمل بعد. يحتاج ربط قاعدة التخزين ومفتاح VAPID الخاص.");
+    if (conf.pushReady !== true) throw new Error("إعدادات خدمة الإشعارات على الخادم لم تكتمل بعد.");
     if (!conf.publicKey) throw new Error("مفتاح الإشعارات العام غير مضبوط على الخادم.");
     if (!sub) {
       sub = await reg.pushManager.subscribe({
@@ -192,7 +193,7 @@
           preference: localPreference()
         });
         try { localStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(current)); } catch (_) {}
-        permissionText("إشعارات دولاري مفعّلة على هذا الآيفون.");
+        permissionText("إشعارات دولاري مفعّلة على هذا الجهاز.");
       }
     } catch (_) {
       /* The local app remains usable while the backend is unavailable. */
@@ -345,7 +346,7 @@
   }
 
   function buildAutoPermissionPrompt() {
-    if (!standalone || !apiBase || !("Notification" in window) || Notification.permission !== "default") return null;
+    if ((standaloneRequired && !standalone) || !apiBase || !("Notification" in window) || Notification.permission !== "default") return null;
     if (isAutoPushEnabledLocally()) return null;
     var existing = document.getElementById("pwaAutoPushPrompt");
     if (existing) return existing;
@@ -360,7 +361,7 @@
         '<div class="pwa-auto-push-title">فعّل إشعارات دولاري</div>' +
         '<div class="pwa-auto-push-text">حتى يصلك تنبيه مباشرةً عند ارتفاع أو انخفاض سعر الدولار، حتى لو دولاري مغلق.</div>' +
         '<button type="button" class="pwa-auto-push-btn" id="pwaAutoPushBtn">تفعيل الإشعارات الآن</button>' +
-        '<div class="pwa-auto-push-note">بعد الضغط سيظهر طلب السماح الرسمي من الآيفون.</div>' +
+        '<div class="pwa-auto-push-note">بعد الضغط سيظهر طلب السماح الرسمي من الجهاز.</div>' +
       '</div>';
     document.body.appendChild(overlay);
     var button = document.getElementById("pwaAutoPushBtn");
@@ -387,7 +388,7 @@
   }
 
   async function autoEnableIfAlreadyAllowed() {
-    if (!standalone || !apiBase || !("Notification" in window)) return;
+    if ((standaloneRequired && !standalone) || !apiBase || !("Notification" in window)) return;
     if (isAutoPushDisabledLocally()) return;
     if (Notification.permission !== "granted") return;
     try {
@@ -405,9 +406,9 @@
   }
 
   function initAutomaticPushPrompt() {
-    if (!standalone || !apiBase || !("Notification" in window)) return;
+    if ((standaloneRequired && !standalone) || !apiBase || !("Notification" in window)) return;
     if (Notification.permission === "denied") {
-      permissionText("إشعارات دولاري موقوفة من إعدادات الآيفون.");
+      permissionText("إشعارات دولاري موقوفة من إعدادات الجهاز.");
       return;
     }
     if (Notification.permission === "granted") {
