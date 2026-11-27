@@ -1,0 +1,14 @@
+const VERSION=1;
+const DEFAULT={version:VERSION,branding:{appName:"دولاري",shortName:"دولاري"},theme:{background:"#080d1b",accent:"#67e8f9",gold:"#f6d58b",radius:26,spacing:18},text:{heroTitle:"سعر الدولار اليوم",heroSubtitle:"تابع سعر الدولار مقابل الدينار العراقي في محافظات العراق."},links:[],features:{calculator:true,favorites:true,notifications:true,dailyShare:true},pwa:{name:"دولاري - سعر الدولار في العراق",shortName:"دولاري",description:"تابع سعر الدولار مقابل الدينار العراقي في محافظات العراق.",themeColor:"#080d1b",backgroundColor:"#080d1b"}};
+const HEX=/^#[0-9a-f]{6}$/i;
+const str=(v,f,m)=>{const x=typeof v==="string"?v.trim():"";return(x||f).slice(0,m)};
+const hex=(v,f)=>HEX.test(String(v||""))?String(v):f;
+const num=(v,f,min,max)=>{const n=Number(v);return Number.isFinite(n)?Math.min(max,Math.max(min,n)):f};
+const url=v=>{if(typeof v!=="string"||v.length>500)return null;try{const u=new URL(v);if(!["http:","https:"].includes(u.protocol)||u.username||u.password)return null;return u.href}catch(_){return null}};
+export function sanitizeDolaryConfig(input={}){
+ const x=input&&typeof input==="object"?input:{},b=x.branding||{},t=x.theme||{},tx=x.text||{},p=x.pwa||{};
+ const links=(Array.isArray(x.links)?x.links:[]).slice(0,12).map((i,n)=>{if(!i||typeof i!=="object")return null;const u=url(i.url);if(!u)return null;return{id:str(i.id,"link-"+(n+1),40).replace(/[^a-zA-Z0-9_-]/g,"-"),label:str(i.label,"رابط",60),description:str(i.description,"",120),url:u,enabled:i.enabled!==false,order:num(i.order,n,0,999)}}).filter(Boolean).sort((a,b)=>a.order-b.order);
+ return{version:VERSION,branding:{appName:str(b.appName,DEFAULT.branding.appName,60),shortName:str(b.shortName,DEFAULT.branding.shortName,30)},theme:{background:hex(t.background,DEFAULT.theme.background),accent:hex(t.accent,DEFAULT.theme.accent),gold:hex(t.gold,DEFAULT.theme.gold),radius:num(t.radius,26,12,40),spacing:num(t.spacing,18,8,32)},text:{heroTitle:str(tx.heroTitle,DEFAULT.text.heroTitle,100),heroSubtitle:str(tx.heroSubtitle,DEFAULT.text.heroSubtitle,220)},links,features:{calculator:x.features?.calculator!==false,favorites:x.features?.favorites!==false,notifications:x.features?.notifications!==false,dailyShare:x.features?.dailyShare!==false},pwa:{name:str(p.name,DEFAULT.pwa.name,60),shortName:str(p.shortName,DEFAULT.pwa.shortName,30),description:str(p.description,DEFAULT.pwa.description,180),themeColor:hex(p.themeColor,DEFAULT.pwa.themeColor),backgroundColor:hex(p.backgroundColor,DEFAULT.pwa.backgroundColor)}};
+}
+export function configToJs(config){return"window.DOLARY_CONFIG="+JSON.stringify(sanitizeDolaryConfig(config))+";"}
+export{DEFAULT as DEFAULT_DOLARY_CONFIG};
