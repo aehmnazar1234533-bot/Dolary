@@ -39,4 +39,4 @@ test("PWA keeps a local last-known rate cache for offline fallback", () => {
 test("Main site rates use the same Dolary Worker proxy", () => {
   assert.ok(indexHtml.includes("https://dolary.aehmnazar-1234533.workers.dev/api/rates"));
   assert.ok(!indexHtml.includes("https://xeiqd.com/rates.json"));
-});\n
+});
