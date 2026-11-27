@@ -425,7 +425,19 @@ async function api(request, env) {
   }
 
   if (url.pathname === "/api/admin/stats" && request.method === "POST") {
-    const suppliedPassword = request.headers.get("X-Dolary-Admin-Password") || "";
+    let suppliedPassword = request.headers.get("X-Dolary-Admin-Password") || "";
+    if (!suppliedPassword) {
+      try {
+        const type = request.headers.get("Content-Type") || "";
+        if (type.includes("application/x-www-form-urlencoded")) {
+          const form = await request.formData();
+          suppliedPassword = String(form.get("password") || "");
+        } else if (type.includes("application/json")) {
+          const body = await request.json();
+          suppliedPassword = String(body?.password || "");
+        }
+      } catch (_) {}
+    }
     if (!env.ADMIN_PASSWORD || suppliedPassword !== env.ADMIN_PASSWORD) return json({ ok: false, error: "admin_not_authorized" }, 401, origin, env);
     if (!env.PUSH_STORE) return json({ ok: false, error: "storage_not_configured" }, 503, origin, env);
     const webListed = await env.PUSH_STORE.list({ prefix: SUB_PREFIX, limit: MAX_LIST_SIZE });
@@ -620,7 +632,8 @@ async function api(request, env) {
         async function stats(){
           if(!p.value.trim()) return;
           try{
-            const r=await fetch("/api/admin/stats",{method:"POST",headers:{"X-Dolary-Admin-Password":p.value.trim()},cache:"no-store"});
+            const statsBody=new URLSearchParams({password:p.value.trim()});
+            const r=await fetch("/api/admin/stats",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:statsBody.toString(),cache:"no-store"});
             const d=await r.json().catch(()=>({}));
             if(!r.ok||!d.ok){history.textContent=r.status===401?"كلمة المرور غير صحيحة.":"تعذر قراءة الإحصائيات.";return}
             webCount.textContent=d.webSubscriptions;
@@ -631,7 +644,7 @@ async function api(request, env) {
             history.textContent=x ? "آخر إرسال: "+new Date(x.createdAt).toLocaleString("ar-IQ")+"\nالناجحة: "+((x.webSent||0)+(x.androidSent||0))+" | الفاشلة: "+(x.failed||0)+" | المحذوفة: "+((x.webRemoved||0)+(x.androidRemoved||0)) : "لا توجد عمليات إرسال بعد.";
           }catch(_){history.textContent="تعذر الاتصال بخدمة الإحصائيات."}
         }
-        p.addEventListener("change",stats); p.addEventListener("blur",stats);\n        stats();\n        setInterval(stats,30000);
+        p.addEventListener("change",stats); p.addEventListener("blur",stats); p.addEventListener("input",stats);\n        stats();\n        setInterval(stats,30000);
         test.addEventListener("click",async()=>{
           if(!p.value.trim()){s.textContent="أدخل كلمة مرور الإدارة أولاً.";return}
           test.disabled=true; test.textContent="جاري الاختبار...";
