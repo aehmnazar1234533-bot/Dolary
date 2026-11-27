@@ -3,17 +3,14 @@
   'use strict';
   function bootWithConfig(){
     var token=new URLSearchParams(location.search).get('dolaryDevPreview');
-    if(token){fetch(((window.DOLARY_CONFIG&&window.DOLARY_CONFIG.apiBaseUrl)||'')+'/api/dev/preview-config?token='+encodeURIComponent(token),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.config)window.DOLARY_CONFIG=d.config;start();}).catch(function(){start();});}
-    else start();
-  }
-  function start(){  function bootWithConfig(){
-    var token=new URLSearchParams(location.search).get('dolaryDevPreview');
     if(token){
-      fetch('/api/dev/preview-config?token='+encodeURIComponent(token),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.config)window.DOLARY_CONFIG=d.config;start();}).catch(function(){start();});
+      fetch(((window.DOLARY_CONFIG&&window.DOLARY_CONFIG.apiBaseUrl)||'')+'/api/dev/preview-config?token='+encodeURIComponent(token),{cache:'no-store'})
+        .then(function(r){return r.ok?r.json():null})
+        .then(function(d){if(d&&d.config)window.DOLARY_CONFIG=d.config;start();})
+        .catch(function(){start();});
     }else start();
   }
-  function start(){
-  var isStandalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||(window.matchMedia&&window.matchMedia('(display-mode: fullscreen)').matches)||window.navigator.standalone===true;
+  function start(){  var isStandalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||(window.matchMedia&&window.matchMedia('(display-mode: fullscreen)').matches)||window.navigator.standalone===true;
   var isApple=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   var devPreview=Boolean(new URLSearchParams(location.search).get('dolaryDevPreview'));
   if(!devPreview&&(!isStandalone||!isApple))return;
@@ -81,21 +78,6 @@
     var fav=app.querySelector('[data-pwa-screen="pwaFavoritesScreen"]');if(fav&&cfg.features&&cfg.features.favorites===false)fav.hidden=true;
     var daily=app.querySelector('#pwaDailyCard');if(daily&&cfg.features&&cfg.features.dailyShare===false)daily.hidden=true;
     var style=document.createElement('style');style.textContent=':root{--dolary-dev-accent:'+String(cfg.theme&&cfg.theme.accent||'#67e8f9')+';--dolary-dev-gold:'+String(cfg.theme&&cfg.theme.gold||'#f6d58b');--dolary-dev-radius:'+String(cfg.theme&&cfg.theme.radius||26)+'px}.pwa-hero,.pwa-calc-card,.pwa-settings-card,.pwa-privacy-card{border-radius:var(--dolary-dev-radius)!important}.pwa-rate-value{color:var(--dolary-dev-accent)!important}.pwa-rate-label,.pwa-hero-unit{color:var(--dolary-dev-gold)!important}';document.head.appendChild(style);
-  }catch(_){}
-  var cfg=window.DOLARY_CONFIG||{};
-  try{
-    var root=document.documentElement;
-    root.style.setProperty('--dolary-dev-bg',cfg.theme&&cfg.theme.background||'#080d1b');
-    root.style.setProperty('--dolary-dev-accent',cfg.theme&&cfg.theme.accent||'#67e8f9');
-    root.style.setProperty('--dolary-dev-gold',cfg.theme&&cfg.theme.gold||'#f6d58b');
-    root.style.setProperty('--dolary-dev-radius',String(cfg.theme&&cfg.theme.radius||26)+'px');
-    var brand=app.querySelector('.pwa-brand-copy strong');if(brand)brand.textContent=cfg.branding&&cfg.branding.appName||'دولاري';
-    var title=app.querySelector('.pwa-section-title h2');if(title)title.textContent=cfg.text&&cfg.text.heroTitle||'آخر الأسعار';
-    var sub=app.querySelector('.pwa-section-title p');if(sub)sub.textContent=cfg.text&&cfg.text.heroSubtitle||'المحافظات المتاحة من المصدر';
-    var navCalc=app.querySelector('[data-pwa-screen="pwaCalculatorScreen"]');if(navCalc&&cfg.features&&cfg.features.calculator===false)navCalc.hidden=true;
-    var fav=app.querySelector('[data-pwa-screen="pwaFavoritesScreen"]');if(fav&&cfg.features&&cfg.features.favorites===false)fav.hidden=true;
-    if(cfg.features&&cfg.features.dailyShare===false){var d=app.querySelector('#pwaDailyCard');if(d)d.hidden=true;}
-    var style=document.createElement('style');style.textContent=':root{--dolary-dev-accent:'+String(cfg.theme&&cfg.theme.accent||'#67e8f9')+';--dolary-dev-gold:'+String(cfg.theme&&cfg.theme.gold||'#f6d58b')} .pwa-hero,.pwa-calc-card,.pwa-settings-card,.pwa-privacy-card{border-radius:var(--dolary-dev-radius)!important}.pwa-rate-value{color:var(--dolary-dev-accent)!important}.pwa-rate-label,.pwa-hero-unit{color:var(--dolary-dev-gold)!important}';document.head.appendChild(style);
   }catch(_){}
 
   var pwaSharePriceStyle=document.createElement('style');
@@ -177,8 +159,6 @@
   setInterval(detectNewNotifications,2500);
   setInterval(loadRates,900000);
   permissionStatus();renderNotifications();setBadge();loadRates();
-  }
-  if(!window.DOLARY_CONFIG){var s=document.createElement('script');s.src='./dolary-config.js?v=1';s.onload=bootWithConfig;s.onerror=bootWithConfig;document.head.appendChild(s);}else bootWithConfig();
   }
   if(!window.DOLARY_CONFIG){var s=document.createElement('script');s.src='./dolary-config.js?v=1';s.onload=bootWithConfig;s.onerror=bootWithConfig;document.head.appendChild(s);}else bootWithConfig();
 })();
