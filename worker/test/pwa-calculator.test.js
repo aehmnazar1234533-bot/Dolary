@@ -11,7 +11,7 @@ assert.ok(start >= 0 && end > start, "PWA calculator function must remain presen
 function createCalculator(ratePer100, amount, direction = "usd") {
   const values = {
     pwaCalcAmount: { value: amount },
-    pwaCalcResult: { textContent: "" },
+    pwaCalcResult: { textContent: "", style: {}, dataset: {}, classList: { remove() {}, add() {} } },
     pwaCalcResultLabel: { textContent: "" },
     pwaCalcUnit: { textContent: "" },
     pwaCalcBreakdown: { textContent: "" },
