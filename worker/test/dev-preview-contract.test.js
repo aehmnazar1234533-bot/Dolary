@@ -24,7 +24,7 @@ test("pending icon preview route stays behind developer session authentication",
 test("PWA preview bypasses installed iPhone-only checks when a preview token is supplied", () => {
   assert.ok(pwa.includes("var devPreview=Boolean(previewParams.get('dolaryDevPreview'));"));
   assert.ok(pwa.includes("if(devPreview)document.documentElement.dataset.dolaryPreviewDevice"));
-  assert.ok(pwa.includes("if(!devPreview&&!isStandalone)return;"));
+  assert.ok(pwa.includes("if(!devPreview&&(!isStandalone||!isApple))return"));
   assert.ok(pwa.includes('credentials:"omit",mode:"cors"'));
   assert.ok(pwa.includes("function bootWithConfig(){ start(); }"));
 });
