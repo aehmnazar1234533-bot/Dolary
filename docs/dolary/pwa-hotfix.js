@@ -191,17 +191,11 @@
     }
 
     async function load() {
-      var sources = [
-        "https://dolary.aehmnazar-1234533.workers.dev/api/rates",
-        "https://xeiqd.com/rates.json"
-      ];
-      for (var i = 0; i < sources.length; i++) {
-        try {
-          var data = await fetchJson(sources[i]);
-          apply(data, false);
-          return true;
-        } catch (_) {}
-      }
+      try {
+        var data = await fetchJson("https://dolary.aehmnazar-1234533.workers.dev/api/rates");
+        apply(data, false);
+        return true;
+      } catch (_) {}
 
       try {
         var cached = JSON.parse(localStorage.getItem("dolary.pwaRatesCache.v1") || "null");
