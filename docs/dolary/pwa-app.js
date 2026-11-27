@@ -3,7 +3,7 @@
   'use strict';
   function bootWithConfig(){
     var token=new URLSearchParams(location.search).get('dolaryDevPreview');
-    if(token){fetch('/api/dev/preview-config?token='+encodeURIComponent(token),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.config)window.DOLARY_CONFIG=d.config;start();}).catch(function(){start();});}
+    if(token){fetch(((window.DOLARY_CONFIG&&window.DOLARY_CONFIG.apiBaseUrl)||'')+'/api/dev/preview-config?token='+encodeURIComponent(token),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.config)window.DOLARY_CONFIG=d.config;start();}).catch(function(){start();});}
     else start();
   }
   function start(){  function bootWithConfig(){
