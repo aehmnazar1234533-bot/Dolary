@@ -1,0 +1,31 @@
+name: Fix Dolary PWA icon
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/dolary/pwa-icon.svg'
+      - '.github/workflows/fix-pwa-icon.yml'
+permissions:
+  contents: write
+jobs:
+  build-icon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build 180x180 iPhone icon with ImageMagick
+        run: |
+          magick docs/dolary/pwa-icon.svg -background '#111827' -alpha remove -alpha off -resize 180x180 docs/dolary/apple-touch-icon.png
+      - name: Refresh icon references
+        run: |
+          sed -i 's/apple-touch-icon\.png?v=[0-9]*/apple-touch-icon.png?v=8/g' docs/dolary/index.html
+          sed -i 's/apple-touch-icon\.png?v=[0-9]*/apple-touch-icon.png?v=8/g' docs/dolary/manifest.webmanifest
+          sed -i "s/dolary-pwa-v[0-9]*/dolary-pwa-v40/g" docs/dolary/service-worker.js
+          sed -i 's/manifest\.webmanifest?v=[0-9]*/manifest.webmanifest?v=21/g' docs/dolary/service-worker.js
+          sed -i 's/apple-touch-icon\.png?v=[0-9]*/apple-touch-icon.png?v=8/g' docs/dolary/service-worker.js
+      - name: Commit generated icon
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/dolary/apple-touch-icon.png docs/dolary/index.html docs/dolary/manifest.webmanifest docs/dolary/service-worker.js
+          git diff --cached --quiet || git commit -m "Fix Dolary iPhone PWA icon with ImageMagick"
+          git push
