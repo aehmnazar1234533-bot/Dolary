@@ -2,7 +2,7 @@ import { buildPushPayload } from "@block65/webcrypto-web-push";
 import { publishSocialRate, socialPublishingEnabled, socialImageResponse } from "./social-publisher.js";
 import { checkAdminPassword, createDevSession, verifyDevSession, destroyDevSession } from "./dev-auth.js";
 import { sanitizeDolaryConfig, configToJs, DEFAULT_DOLARY_CONFIG } from "./dev-config.js";
-import { normalizeDevIcon, iconChanges, iconManifest, iconDescriptor } from "./dev-icon.js";
+import { normalizeDevIcon, iconChanges, iconManifest, iconDescriptor, iconPreviewAsset } from "./dev-icon.js";
 import { getDevDraft, putDevDraft, createDevPreviewToken, getDevPreview, listDevHistory, addDevHistory, getDevIcon, putDevIcon, clearDevIcon, getDevPublishedIcon, putDevPublishedIcon } from "./dev-storage.js";
 import { publishFilesAtomically, readBranchHead } from "./dev-github.js";
 import { renderDevLoginPage, renderDevPage } from "./dev-ui.js";
@@ -279,7 +279,7 @@ async function developerRoutes(request, env) {
   }
   if (url.pathname === "/api/dev/preview-config" && request.method === "GET") {
     const config = await getDevPreview(env, url.searchParams.get("token"));
-    return config ? json({ ok: true, config }, 200, null, env) : json({ ok: false, error: "preview_expired" }, 404);
+    return config ? json({ ok: true, config }, 200, requestOriginHeader, env) : json({ ok: false, error: "preview_expired" }, 404, requestOriginHeader, env);
   }
   if (url.pathname.startsWith("/api/dev/")) {
     const session = await verifyDevSession(request, env);
@@ -296,9 +296,22 @@ async function developerRoutes(request, env) {
       try { const config = sanitizeDolaryConfig(body?.config); await putDevDraft(env, config); return json({ ok: true, config }, 200, null, env); }
       catch (_) { return json({ ok: false, error: "invalid_config" }, 400); }
     }
+    if (url.pathname === "/api/dev/icon-preview" && request.method === "GET") {
+      const icon = await getDevIcon(env);
+      if (!icon) return new Response(null, { status: 404, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
+      try {
+        const asset = iconPreviewAsset(icon);
+        return new Response(asset.bytes, { headers: { "Content-Type": asset.mime, "Cache-Control": "no-store, max-age=0", "X-Content-Type-Options": "nosniff" } });
+      } catch (_) {
+        return new Response(null, { status: 404, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
+      }
+    }
     if (url.pathname === "/api/dev/icon" && request.method === "GET") {
       const icon = await getDevIcon(env);
-      return json({ ok: true, pending: Boolean(icon) }, 200, null, env);
+      const published = await getDevPublishedIcon(env);
+      const baseUrl = (env.APP_URL || "https://aehamtech.top/dolary/").replace(/\/?$/, "/");
+      const currentFile = published?.kind === "raw" && published.path ? published.path.split("/").pop() : "pwa-icon-512.png";
+      return json({ ok: true, pending: Boolean(icon), previewUrl: icon ? "/api/dev/icon-preview" : null, currentUrl: baseUrl + currentFile + "?v=1" }, 200, null, env);
     }
     if (url.pathname === "/api/dev/icon" && request.method === "POST") {
       let body; try { body = await request.json(); } catch (_) { return json({ ok: false, error: "invalid_json" }, 400); }
