@@ -6,3 +6,7 @@ export async function getDevPreview(env,token){if(!/^[a-f0-9]{32}$/i.test(String
 export async function listDevHistory(env){const v=await env.PUSH_STORE.get(INDEX,"json");return Array.isArray(v)?v.slice(0,10):[]}
 export async function getDevHistory(env,id){if(!/^[a-zA-Z0-9_-]{1,80}$/.test(String(id||"")))return null;return env.PUSH_STORE.get(PREFIX+id,"json")}
 export async function addDevHistory(env,entry){const id=crypto.randomUUID().replaceAll("-","").slice(0,24),record={id,...entry,createdAt:new Date().toISOString()},old=await listDevHistory(env);await env.PUSH_STORE.put(PREFIX+id,JSON.stringify(record));const next=[record,...old].slice(0,10);await env.PUSH_STORE.put(INDEX,JSON.stringify(next));for(const x of old.slice(9))await env.PUSH_STORE.delete(PREFIX+x.id);return record}
+const ICON_PENDING="dev:icon:pending";
+export async function getDevIcon(env){return env.PUSH_STORE.get(ICON_PENDING,"json")}
+export async function putDevIcon(env,icon){await env.PUSH_STORE.put(ICON_PENDING,JSON.stringify(icon));return icon}
+export async function clearDevIcon(env){await env.PUSH_STORE.delete(ICON_PENDING)}
