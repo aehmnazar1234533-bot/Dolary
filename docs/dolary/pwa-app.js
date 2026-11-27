@@ -185,7 +185,7 @@
     unit.textContent=calcDir==='usd'?'USD $':'IQD د.ع';
     if(amountText===''||!Number.isFinite(amount)||amount<0||!Number.isFinite(rate)||rate<=0){
       out.textContent='—';
-      delete out.dataset.currentValue;
+      if(out.dataset)delete out.dataset.currentValue;
       breakdown.textContent=rate>0&&Number.isFinite(rate)?'أدخل مبلغاً صحيحاً حتى تظهر العملية والنتيجة.':'بانتظار سعر الصرف حتى يظهر الحساب.';
       paperCount.textContent='—';
       remainderUsd.textContent='— USD';
