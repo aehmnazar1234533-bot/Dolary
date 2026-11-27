@@ -200,6 +200,13 @@
     var shownAmount=fmtCalc(amount,calcDir==='usd'?2:0),
         shownRate=fmtCalc(rate,0),
         shownResult=fmtCalc(result,resultDigits);
+    // Always paint the final number first so slow/incomplete animation APIs can never hide the result.
+    out.style.display='block';
+    out.style.visibility='visible';
+    out.style.opacity='1';
+    out.style.direction='ltr';
+    out.style.unicodeBidi='plaintext';
+    out.style.fontVariantNumeric='tabular-nums';
     breakdown.innerHTML=calcDir==='usd'
       ? '<b>'+shownAmount+' USD</b> × <b>'+shownRate+' د.ع / 100 USD</b> = <b>'+shownResult+'</b> <span class="unit">د.ع</span>'
       : '<b>'+shownAmount+' د.ع</b> ÷ <b>'+fmtCalc(perDollar,2)+' د.ع / USD</b> = <b>'+shownResult+'</b> <span class="unit">USD</span>';
