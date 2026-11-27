@@ -644,7 +644,9 @@ async function api(request, env) {
             history.textContent=x ? "آخر إرسال: "+new Date(x.createdAt).toLocaleString("ar-IQ")+"\nالناجحة: "+((x.webSent||0)+(x.androidSent||0))+" | الفاشلة: "+(x.failed||0)+" | المحذوفة: "+((x.webRemoved||0)+(x.androidRemoved||0)) : "لا توجد عمليات إرسال بعد.";
           }catch(_){history.textContent="تعذر الاتصال بخدمة الإحصائيات."}
         }
-        p.addEventListener("change",stats); p.addEventListener("blur",stats); p.addEventListener("input",stats);\n        stats();\n        setInterval(stats,30000);
+        p.addEventListener("change",stats); p.addEventListener("blur",stats); p.addEventListener("input",stats);
+        stats();
+        setInterval(stats,30000);
         test.addEventListener("click",async()=>{
           if(!p.value.trim()){s.textContent="أدخل كلمة مرور الإدارة أولاً.";return}
           test.disabled=true; test.textContent="جاري الاختبار...";
