@@ -14,9 +14,9 @@ test("PWA supports developer config and preview", () => {
 });
 
 test("developer preview JavaScript uses a fresh cache-busted URL", () => {
-  assert.ok(indexHtml.includes("./pwa-app.js?v=8"));
-  assert.ok(serviceWorker.includes("dolary-pwa-v44"));
-  assert.ok(serviceWorker.includes("./pwa-app.js?v=8"));
+  assert.ok(indexHtml.includes("./pwa-app.js?v=9"));
+  assert.ok(serviceWorker.includes("dolary-pwa-v45"));
+  assert.ok(serviceWorker.includes("./pwa-app.js?v=9"));
   assert.ok(!indexHtml.includes("./pwa-app.js?v=7"));
   assert.ok(!serviceWorker.includes("./pwa-app.js?v=7"));
 });
@@ -26,4 +26,12 @@ test("PWA rates use the Dolary Worker proxy", () => {
   assert.ok(workerSource.includes('url.pathname === "/api/rates" && request.method === "GET"'));
   assert.ok(workerSource.includes("const data = await upstream.json();"));
   assert.ok(workerSource.includes('Array.isArray(data.cities)'));
+});
+
+
+test("PWA keeps a local last-known rate cache for offline fallback", () => {
+  assert.ok(pwaApp.includes("RATES_CACHE_KEY='dolary.pwaRatesCache.v1'"));
+  assert.ok(pwaApp.includes("localStorage.setItem(RATES_CACHE_KEY"));
+  assert.ok(pwaApp.includes("var cached=readJson(RATES_CACHE_KEY,null)"));
+  assert.ok(pwaApp.includes("appState.rateError=true"));
 });
