@@ -335,7 +335,9 @@ async function developerRoutes(request, env) {
         await putDevDraft(env,config);
         return json({ ok: true, ...result }, 200, null, env);
       } catch (error) {
-        return json({ ok: false, error: error?.code || "publish_failed" }, 409, null, env);
+        const code = error?.code || "publish_failed";
+        const detail = String(error?.message || "").slice(0, 220);
+        return json({ ok: false, error: code, detail }, 409, null, env);
       }
     }
     if (url.pathname === "/api/dev/rollback" && request.method === "POST") {
