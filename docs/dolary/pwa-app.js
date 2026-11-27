@@ -185,7 +185,7 @@
     unit.textContent=calcDir==='usd'?'USD $':'IQD د.ع';
     if(amountText===''||!Number.isFinite(amount)||amount<0||!Number.isFinite(rate)||rate<=0){
       out.textContent='—';
-      delete out.dataset.currentValue;
+      if(out.dataset)delete out.dataset.currentValue;
       breakdown.textContent=rate>0&&Number.isFinite(rate)?'أدخل مبلغاً صحيحاً حتى تظهر العملية والنتيجة.':'بانتظار سعر الصرف حتى يظهر الحساب.';
       paperCount.textContent='—';
       remainderUsd.textContent='— USD';
@@ -199,12 +199,14 @@
         shownRate=fmtCalc(rate,0),
         shownResult=fmtCalc(result,resultDigits);
     // Always paint the final number first so slow/incomplete animation APIs can never hide the result.
-    out.style.display='block';
-    out.style.visibility='visible';
-    out.style.opacity='1';
-    out.style.direction='ltr';
-    out.style.unicodeBidi='plaintext';
-    out.style.fontVariantNumeric='tabular-nums';
+    if(out.style){
+      out.style.display='block';
+      out.style.visibility='visible';
+      out.style.opacity='1';
+      out.style.direction='ltr';
+      out.style.unicodeBidi='plaintext';
+      out.style.fontVariantNumeric='tabular-nums';
+    }
     breakdown.innerHTML=calcDir==='usd'
       ? '<b>'+shownAmount+' USD</b> × <b>'+shownRate+' د.ع / 100 USD</b> = <b>'+shownResult+'</b> <span class="unit">د.ع</span>'
       : '<b>'+shownAmount+' د.ع</b> ÷ <b>'+fmtCalc(perDollar,2)+' د.ع / USD</b> = <b>'+shownResult+'</b> <span class="unit">USD</span>';
