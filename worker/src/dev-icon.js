@@ -43,3 +43,16 @@ export function iconDescriptor(icon) {
     ? { kind: "raw", path: icon.path, mime: icon.mime }
     : { kind: "generated", path180: "docs/dolary/dolary-card-logo-180.png", path512: "docs/dolary/pwa-icon-512.png" };
 }
+
+export function iconPreviewAsset(icon) {
+  const base64 = icon?.kind === "raw" ? icon.rawBase64 : icon?.icon512Base64;
+  const mime = icon?.kind === "raw" ? icon.mime : "image/png";
+  if (!base64 || !MIME.has(mime) || base64.length > MAX_RAW_BASE64 || !B64.test(base64)) {
+    throw new Error("invalid_icon");
+  }
+  let binary;
+  try { binary = atob(base64); } catch (_) { throw new Error("invalid_icon"); }
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return { bytes, mime };
+}
