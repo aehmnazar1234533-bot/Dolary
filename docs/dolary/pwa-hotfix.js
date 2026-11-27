@@ -129,6 +129,7 @@
       if (!cities.length) throw new Error("empty_rates");
 
       state.cities = cities;
+      try { window.__dolaryRatesData = data; } catch (_) {}
       var selected = cities.find(function (c) { return c.slug === state.slug; }) ||
         cities.find(function (c) { return c.slug === "baghdad"; }) || cities[0];
       state.slug = selected.slug;
