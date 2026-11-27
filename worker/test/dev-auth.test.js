@@ -1,0 +1,5 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {checkAdminPassword,createDevSession,verifyDevSession,destroyDevSession} from "../src/dev-auth.js";
+function store(){const m=new Map();return{async put(k,v,o){m.set(k,{v,o})},async get(k,type){const x=m.get(k);return x?JSON.parse(x.v):null},async delete(k){m.delete(k)}}}
+test("admin password and session lifecycle",async()=>{const env={ADMIN_PASSWORD:"secret",PUSH_STORE:store()};assert.equal(await checkAdminPassword("secret",env),true);assert.equal(await checkAdminPassword("bad",env),false);const s=await createDevSession(env);assert.match(s.setCookie,/HttpOnly/);assert.match(s.setCookie,/Secure/);assert.match(s.setCookie,/SameSite=Strict/);const req=new Request("https://example.com/dev",{headers:{Cookie:s.setCookie.split(";")[0]}});assert.ok(await verifyDevSession(req,env));await destroyDevSession(req,env);assert.equal(await verifyDevSession(req,env),null)});
