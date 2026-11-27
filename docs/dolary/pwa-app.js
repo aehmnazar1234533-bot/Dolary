@@ -14,11 +14,10 @@
   'use strict';
   function bootWithConfig(){ start(); }
   function start(){  var isStandalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||(window.matchMedia&&window.matchMedia('(display-mode: fullscreen)').matches)||window.navigator.standalone===true;
-  var isApple=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   var previewParams=new URLSearchParams(location.search);
   var devPreview=Boolean(previewParams.get('dolaryDevPreview'));
   if(devPreview)document.documentElement.dataset.dolaryPreviewDevice=previewParams.get('dolaryDevice')||'generic';
-  if(!devPreview&&(!isStandalone||!isApple))return;
+  if(!devPreview&&!isStandalone)return;
 
   var app=document.createElement('div');
   app.id='pwaApp';
