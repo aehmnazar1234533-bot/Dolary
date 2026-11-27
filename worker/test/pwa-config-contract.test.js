@@ -16,9 +16,9 @@ test("PWA supports developer config and preview", () => {
 test("developer preview JavaScript uses a fresh cache-busted URL", () => {
   assert.ok(indexHtml.includes("./pwa-app.js?v=14"));
   assert.ok(serviceWorker.includes("dolary-pwa-v50"));
-  assert.ok(serviceWorker.includes("./pwa-app.js?v=9"));
-  assert.ok(!indexHtml.includes("./pwa-app.js?v=7"));
-  assert.ok(!serviceWorker.includes("./pwa-app.js?v=7"));
+  assert.ok(serviceWorker.includes("./pwa-app.js?v=14"));
+  assert.ok(!indexHtml.includes("./pwa-app.js?v=13"));
+  assert.ok(!serviceWorker.includes("./pwa-app.js?v=13"));
 });
 
 test("PWA rates use the Dolary Worker proxy with direct-source fallback", () => {
