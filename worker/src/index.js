@@ -263,7 +263,7 @@ async function developerRoutes(request, env) {
     const session = await verifyDevSession(request, env);
     if (!session) return renderDevLoginPage();
     const draft = await getDevDraft(env);
-    return renderDevPage(draft || DEFAULT_DOLARY_CONFIG, await listDevHistory(env));
+    return renderDevPage(draft || DEFAULT_DOLARY_CONFIG, await listDevHistory(env), env.APP_URL || "https://aehamtech.top/dolary/");
   }
   if (url.pathname === "/api/dev/login" && request.method === "POST") {
     let password = "";
