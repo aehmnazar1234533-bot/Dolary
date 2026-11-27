@@ -14,8 +14,8 @@ test("PWA supports developer config and preview", () => {
 });
 
 test("developer preview JavaScript uses a fresh cache-busted URL", () => {
-  assert.ok(indexHtml.includes("./pwa-app.js?v=10"));
-  assert.ok(serviceWorker.includes("dolary-pwa-v46"));
+  assert.ok(indexHtml.includes("./pwa-app.js?v=11"));
+  assert.ok(serviceWorker.includes("dolary-pwa-v47"));
   assert.ok(serviceWorker.includes("./pwa-app.js?v=9"));
   assert.ok(!indexHtml.includes("./pwa-app.js?v=7"));
   assert.ok(!serviceWorker.includes("./pwa-app.js?v=7"));
