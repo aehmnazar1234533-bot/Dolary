@@ -35,7 +35,7 @@ Do not put tokens in GitHub or frontend files.
 
 For Page photo publishing, use a Page access token for a person with the Page `CREATE_CONTENT` task and the Page permissions Meta documents for publishing: `pages_show_list`, `pages_read_engagement`, and `pages_manage_posts`.
 
-For the Instagram API with Facebook Login, use a Facebook user access token and the permissions approved for that API flow. Current Meta references identify `instagram_basic`, `instagram_manage_contents`, and Page-related access where applicable. Do not mix this with the separate Instagram Login API, which uses different permission names.
+For the Instagram API with Facebook Login, use a Facebook user access token and the permissions approved for that API flow. Current Meta references identify `instagram_basic` and `instagram_content_publish` for the Facebook Login flow. The newer Instagram Login API uses `instagram_business_basic` and `instagram_business_content_publish`; choose one auth flow and do not mix its permissions. Do not mix this with the separate Instagram Login API, which uses different permission names.
 
 ## Testing
 
