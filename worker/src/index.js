@@ -310,7 +310,7 @@ async function developerRoutes(request, env) {
       const icon = await getDevIcon(env);
       const published = await getDevPublishedIcon(env);
       const baseUrl = (env.APP_URL || "https://aehamtech.top/dolary/").replace(/\/?$/, "/");
-      const currentFile = published?.kind === "raw" && published.path ? published.path.split("/").pop() : "pwa-icon-512.png";
+      const currentFile = published?.kind === "raw" && published.path ? published.path.split("/").pop() : published?.kind === "generated" ? "pwa-icon-512.png" : "pwa-icon.svg";
       return json({ ok: true, pending: Boolean(icon), previewUrl: icon ? "/api/dev/icon-preview" : null, currentUrl: baseUrl + currentFile + "?v=1" }, 200, null, env);
     }
     if (url.pathname === "/api/dev/icon" && request.method === "POST") {
