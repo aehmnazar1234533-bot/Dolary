@@ -426,6 +426,18 @@ async function api(request, env) {
     }, 200, origin, env);
   }
 
+  if (url.pathname === "/api/admin/stats" && request.method === "POST") {
+    const suppliedPassword = request.headers.get("X-Dolary-Admin-Password") || "";
+    if (!env.ADMIN_PASSWORD || suppliedPassword !== env.ADMIN_PASSWORD) return json({ ok: false, error: "admin_not_authorized" }, 401, origin, env);
+    if (!env.PUSH_STORE) return json({ ok: false, error: "storage_not_configured" }, 503, origin, env);
+    const webListed = await env.PUSH_STORE.list({ prefix: SUB_PREFIX, limit: MAX_LIST_SIZE });
+    const androidListed = await env.PUSH_STORE.list({ prefix: ANDROID_PREFIX, limit: MAX_ANDROID_LIST_SIZE });
+    const broadcasts = await env.PUSH_STORE.list({ prefix: BROADCAST_PREFIX, limit: 20 });
+    const items = [];
+    for (const item of broadcasts.keys) { const record = await env.PUSH_STORE.get(item.name, "json"); if (record) items.push(record); }
+    items.sort((a,b) => String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+    return json({ ok: true, webSubscriptions: webListed.keys.length, androidSubscriptions: androidListed.keys.length, totalSubscriptions: webListed.keys.length + androidListed.keys.length, lastBroadcast: items[0] || null, recentBroadcasts: items.slice(0, 10) }, 200, origin, env);
+  }
   if (url.pathname === "/api/config" && request.method === "GET") {
     return json({
       ok: true,
@@ -769,13 +781,16 @@ async function api(request, env) {
       }
     }
 
+    broadcastRecord.completedAt = new Date().toISOString();
+    broadcastRecord.webSent = webSent;
+    broadcastRecord.androidSent = androidSent;
+    broadcastRecord.webRemoved = webRemoved;
+    broadcastRecord.failed = failed;
+    await env.PUSH_STORE.put(broadcastKey, JSON.stringify(broadcastRecord));
     return json({
-      ok: true,
-      webSent,
-      androidSent,
-      webRemoved,
-      androidRemoved,
-      failed,
+      ok: true, webSent, androidSent, webRemoved, androidRemoved, failed,
+      totalTargets: webListed.keys.length + androidListed.keys.length,
+      attempted: webSent + androidSent + webRemoved + androidRemoved + failed,
       androidPushReady: Boolean(env.FCM_SERVICE_ACCOUNT_JSON),
       broadcastId: notification.broadcastId
     }, 200, origin, env);
