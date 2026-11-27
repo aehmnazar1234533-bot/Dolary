@@ -16,7 +16,9 @@
     "VAPID_PUBLIC_KEY": "BDiCh4Z-SdqQgNNf54f-EmGw72iUCLe93WqYw6Jhg9SgnyQKAKrCiK_MOSUQzGDRGIxKrwHO52akQtGkQCKbfVQ",
     "SOCIAL_IMAGE_BASE_URL": "https://dolary.aehmnazar-1234533.workers.dev",
     "SOCIAL_RATE_SLUG": "baghdad",
-    "SOCIAL_LOGO_URL": "https://aehamtech.top/dolary/dolary-mark.svg"
+    "SOCIAL_LOGO_URL": "https://aehamtech.top/dolary/dolary-mark.svg",
+    "GITHUB_REPOSITORY": "aehmnazar1234533-bot/Dolary",
+    "GITHUB_BRANCH": "main"
   },
   "kv_namespaces": [
     {

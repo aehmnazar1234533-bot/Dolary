@@ -1,5 +1,10 @@
 import { buildPushPayload } from "@block65/webcrypto-web-push";
 import { publishSocialRate, socialPublishingEnabled, socialImageResponse } from "./social-publisher.js";
+import { checkAdminPassword, createDevSession, verifyDevSession, destroyDevSession } from "./dev-auth.js";
+import { sanitizeDolaryConfig, configToJs, DEFAULT_DOLARY_CONFIG } from "./dev-config.js";
+import { getDevDraft, putDevDraft, createDevPreviewToken, getDevPreview, listDevHistory, addDevHistory } from "./dev-storage.js";
+import { publishFilesAtomically, readBranchHead } from "./dev-github.js";
+import { renderDevLoginPage, renderDevPage } from "./dev-ui.js";
 
 const RATE_URL = "https://xeiqd.com/rates.json";
 const SUB_PREFIX = "sub:";
@@ -250,7 +255,89 @@ function crossing(rule, previous, current) {
   return previous > rule.target && current <= rule.target;
 }
 
+async function developerRoutes(request, env) {
+  const url = new URL(request.url);
+  const requestOriginHeader = request.headers.get("Origin");
+  const sameOrigin = requestOriginHeader === url.origin || requestOriginHeader === (env.APP_ORIGIN || "https://aehamtech.top");
+  if (url.pathname === "/dev" && request.method === "GET") {
+    const session = await verifyDevSession(request, env);
+    if (!session) return renderDevLoginPage();
+    const draft = await getDevDraft(env);
+    return renderDevPage(draft || DEFAULT_DOLARY_CONFIG, await listDevHistory(env), env.APP_URL || "https://aehamtech.top/dolary/");
+  }
+  if (url.pathname === "/api/dev/login" && request.method === "POST") {
+    let password = "";
+    const type = request.headers.get("Content-Type") || "";
+    try {
+      if (type.includes("application/json")) password = String((await request.json()).password || "");
+      else password = String((await request.formData()).get("password") || "");
+    } catch (_) {}
+    if (!await checkAdminPassword(password, env)) return renderDevLoginPage("كلمة المرور غير صحيحة.");
+    const session = await createDevSession(env);
+    return new Response(null, { status: 302, headers: { "Location": "/dev", "Set-Cookie": session.setCookie, "Cache-Control": "no-store" } });
+  }
+  if (url.pathname === "/api/dev/preview-config" && request.method === "GET") {
+    const config = await getDevPreview(env, url.searchParams.get("token"));
+    return config ? json({ ok: true, config }, 200, null, env) : json({ ok: false, error: "preview_expired" }, 404);
+  }
+  if (url.pathname.startsWith("/api/dev/")) {
+    const session = await verifyDevSession(request, env);
+    if (!session) return json({ ok: false, error: "unauthorized" }, 401);
+    if (!sameOrigin && request.method !== "GET") return json({ ok: false, error: "origin_not_allowed" }, 403);
+    if (url.pathname === "/api/dev/logout" && request.method === "POST") {
+      const result = await destroyDevSession(request, env);
+      return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json", "Cache-Control": "no-store", "Set-Cookie": result.cookie } });
+    }
+    if (url.pathname === "/api/dev/session" && request.method === "GET") return json({ ok: true }, 200, null, env);
+    if (url.pathname === "/api/dev/draft" && request.method === "GET") return json({ ok: true, config: (await getDevDraft(env)) || DEFAULT_DOLARY_CONFIG }, 200, null, env);
+    if (url.pathname === "/api/dev/draft" && request.method === "POST") {
+      let body; try { body = await request.json(); } catch (_) { return json({ ok: false, error: "invalid_json" }, 400); }
+      try { const config = sanitizeDolaryConfig(body?.config); await putDevDraft(env, config); return json({ ok: true, config }, 200, null, env); }
+      catch (_) { return json({ ok: false, error: "invalid_config" }, 400); }
+    }
+    if (url.pathname === "/api/dev/preview-token" && request.method === "POST") {
+      const draft = await getDevDraft(env); if (!draft) return json({ ok: false, error: "draft_missing" }, 400);
+      return json({ ok: true, token: await createDevPreviewToken(env, sanitizeDolaryConfig(draft)) }, 200, null, env);
+    }
+    if (url.pathname === "/api/dev/history" && request.method === "GET") return json({ ok: true, history: await listDevHistory(env) }, 200, null, env);
+    if (url.pathname === "/api/dev/publish" && request.method === "POST") {
+      let body; try { body = await request.json(); } catch (_) { return json({ ok: false, error: "invalid_json" }, 400); }
+      let config; try { config = sanitizeDolaryConfig(body?.config || await getDevDraft(env)); } catch (_) { return json({ ok: false, error: "invalid_config" }, 400); }
+      const previous = await env.PUSH_STORE.get("dev:last-published", "json") || DEFAULT_DOLARY_CONFIG;
+      const manifest = JSON.stringify({id:(env.APP_URL||"https://aehamtech.top/dolary/"),name:config.pwa.name,short_name:config.pwa.shortName,description:config.pwa.description,lang:"ar-IQ",dir:"rtl",start_url:(env.APP_URL||"https://aehamtech.top/dolary/"),scope:(env.APP_URL||"https://aehamtech.top/dolary/"),display:"standalone",display_override:["standalone","minimal-ui"],background_color:config.pwa.backgroundColor,theme_color:config.pwa.themeColor,orientation:"portrait-primary",prefer_related_applications:false,icons:[{src:"./dolary-card-logo-180.png?v=2",sizes:"180x180",type:"image/png",purpose:"any"},{src:"./pwa-icon.svg?v=1",sizes:"any",type:"image/svg+xml",purpose:"any maskable"}]},null,2)+"\n";
+      try {
+        const result = await publishFilesAtomically(env,[
+          {path:"docs/dolary/dolary-config.js",content:configToJs(config)},
+          {path:"docs/dolary/manifest.webmanifest",content:manifest}
+        ],String(body?.message||"chore: update Dolary PWA settings").slice(0,120));
+        await env.PUSH_STORE.put("dev:last-published",JSON.stringify(config));
+        await addDevHistory(env,{commitSha:result.commitSha,parentSha:result.parentSha,paths:result.paths,summary:"تحديث إعدادات دولاري",previousConfig:previous});
+        await putDevDraft(env,config);
+        return json({ ok: true, ...result }, 200, null, env);
+      } catch (error) {
+        return json({ ok: false, error: error?.code || "publish_failed" }, 409, null, env);
+      }
+    }
+    if (url.pathname === "/api/dev/rollback" && request.method === "POST") {
+      const history = await listDevHistory(env), id = String((await request.json()).id || ""), item = history.find(x => x.id === id);
+      if (!item?.previousConfig) return json({ ok: false, error: "history_not_found" }, 404);
+      const config = sanitizeDolaryConfig(item.previousConfig);
+      try {
+        const manifest = JSON.stringify({id:(env.APP_URL||"https://aehamtech.top/dolary/"),name:config.pwa.name,short_name:config.pwa.shortName,description:config.pwa.description,lang:"ar-IQ",dir:"rtl",start_url:(env.APP_URL||"https://aehamtech.top/dolary/"),scope:(env.APP_URL||"https://aehamtech.top/dolary/"),display:"standalone",background_color:config.pwa.backgroundColor,theme_color:config.pwa.themeColor,icons:[{src:"./dolary-card-logo-180.png?v=2",sizes:"180x180",type:"image/png",purpose:"any"},{src:"./pwa-icon.svg?v=1",sizes:"any",type:"image/svg+xml",purpose:"any maskable"}]},null,2)+"\n";
+        const result=await publishFilesAtomically(env,[{path:"docs/dolary/dolary-config.js",content:configToJs(config)},{path:"docs/dolary/manifest.webmanifest",content:manifest}],"chore: rollback Dolary developer settings");
+        await env.PUSH_STORE.put("dev:last-published",JSON.stringify(config));
+        await putDevDraft(env,config);
+        await addDevHistory(env,{commitSha:result.commitSha,parentSha:result.parentSha,paths:result.paths,summary:"تراجع عن تحديث سابق",previousConfig:rollbackPrevious});
+        return json({ ok: true, ...result }, 200, null, env);
+      } catch (error) { return json({ ok: false, error: error?.code || "rollback_failed" }, 409, null, env); }
+    }
+  }
+  return null;
+}
+
 async function api(request, env) {
+  const developerResponse = await developerRoutes(request, env);
+  if (developerResponse) return developerResponse;
   const origin = request.headers.get("Origin");
   const expectedOrigin = env.APP_ORIGIN || "https://aehamtech.top";
   const requestUrl = new URL(request.url);
