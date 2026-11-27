@@ -22,11 +22,21 @@ function createCalculator(ratePer100, amount, direction = "usd") {
   const context = {
     appState: { ratePer100 },
     calcDir: direction,
+    calcFrames: new WeakMap(),
     fmt(value, digits) {
-      return new Intl.NumberFormat("en-US", {
+      return new Intl.NumberFormat("ar-IQ", {
         minimumFractionDigits: digits || 0,
         maximumFractionDigits: digits || 0
       }).format(value);
+    },
+    fmtCalc(value, digits) {
+      return new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: digits ? Math.min(digits, 2) : 0,
+        maximumFractionDigits: digits || 0
+      }).format(value);
+    },
+    animateCalcNumber(element, target, suffix, fractionDigits, prefix) {
+      element.textContent = (prefix || "") + context.fmtCalc(Number(target), fractionDigits || 0) + (suffix || "");
     },
     document: {
       getElementById(id) { return values[id]; }
@@ -47,8 +57,8 @@ test("USD to IQD calculation returns the expected formatted amount", () => {
 
 test("IQD to USD calculation returns a whole-dollar result by default", () => {
   const values = createCalculator(169450, "169450", "iqd");
-  assert.equal(values.pwaCalcResult.textContent, "100 USD");
-  assert.match(values.pwaCalcBreakdown.textContent, /169,450/);
+  assert.equal(values.pwaCalcResult.textContent, "USD 100.00");
+  assert.match(values.pwaCalcBreakdown.innerHTML, /169,450/);
 });
 
 test("Blank calculator input never becomes zero", () => {
