@@ -305,6 +305,10 @@ async function developerRoutes(request, env) {
       try { const icon = normalizeDevIcon(body); await putDevIcon(env, icon); return json({ ok: true }, 200, null, env); }
       catch (_) { return json({ ok: false, error: "invalid_icon" }, 400, null, env); }
     }
+    if (url.pathname === "/api/dev/icon" && request.method === "DELETE") {
+      await clearDevIcon(env);
+      return json({ ok: true }, 200, null, env);
+    }
     if (url.pathname === "/api/dev/preview-token" && request.method === "POST") {
       const draft = await getDevDraft(env); if (!draft) return json({ ok: false, error: "draft_missing" }, 400);
       return json({ ok: true, token: await createDevPreviewToken(env, sanitizeDolaryConfig(draft)) }, 200, null, env);
