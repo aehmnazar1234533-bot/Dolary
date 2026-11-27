@@ -218,8 +218,28 @@
   }
   function renderAlertForm(){var sel=document.getElementById('pwaAlertProvince'),target=document.getElementById('pwaAlertTarget'),cond=document.getElementById('pwaAlertCondition'),status=document.getElementById('pwaAlertStatus'),rule=readJson(ALERT_KEY,null);if(!sel)return;sel.replaceChildren();appState.cities.forEach(function(c){var o=document.createElement('option');o.value=c.slug;o.textContent=cityName(c);if(rule&&rule.slug===c.slug)o.selected=true;sel.appendChild(o);});if(rule){target.value=String(rule.target);cond.value=rule.condition;status.textContent='تنبيه مفعّل لمحافظة '+rule.province+'.';}else{target.value='';status.textContent='التنبيه يعمل عند فحص السعر أثناء تشغيل دولاري.';}}
   function permissionStatus(){var el=document.getElementById('pwaPermissionStatus');if(!el)return;el.textContent=('Notification'in window)?(Notification.permission==='granted'?'إشعارات دولاري مفعّلة على هذا الجهاز.':Notification.permission==='denied'?'الإشعارات موقوفة من إعدادات الآيفون.':'اضغط لتفعيل إشعارات دولاري.'):'إشعارات الويب غير مدعومة هنا.';}
-  async function applyRatesData(data,stale){if(!data||!Array.isArray(data.cities))throw new Error('data');var cities=data.cities.filter(function(c){return c&&typeof c.slug==='string'&&rateFor(c)!==null;});if(!cities.length)throw new Error('empty_rates');appState.cities=cities;appState.rateError=Boolean(stale);var saved=localStorage.getItem('dolary.pwaSelectedProvince.v1');appState.selectedSlug=saved||((cities.find(function(c){return c.slug==='baghdad';})||cities[0]||{}).slug||'baghdad');var sel=cities.find(function(c){return c.slug===appState.selectedSlug;})||cities[0];if(sel){appState.selectedSlug=sel.slug;appState.ratePer100=rateFor(sel);appState.updatedAt=sel.updated_at||data.updated_at||null;}renderHome();renderFavorites();calc();renderAlertForm();}
-  async function loadRates(){try{var r=await fetch('https://dolary.aehmnazar-1234533.workers.dev/api/rates',{cache:'no-store',headers:{Accept:'application/json'}});if(!r.ok)throw new Error('rates');var data=await r.json();applyRatesData(data,false);try{localStorage.setItem(RATES_CACHE_KEY,JSON.stringify({data:data,savedAt:new Date().toISOString()}));}catch(_){}return;}catch(_){var cached=readJson(RATES_CACHE_KEY,null);if(cached&&cached.data){try{applyRatesData(cached.data,true);return;}catch(__){}}appState.rateError=true;appState.cities=[];appState.ratePer100=null;appState.updatedAt=null;renderHome();renderFavorites();calc();}}
+  function applyRatesData(data,stale){if(!data||!Array.isArray(data.cities))throw new Error('data');var cities=data.cities.filter(function(c){return c&&typeof c.slug==='string'&&rateFor(c)!==null;});if(!cities.length)throw new Error('empty_rates');appState.cities=cities;appState.rateError=Boolean(stale);var saved=localStorage.getItem('dolary.pwaSelectedProvince.v1');appState.selectedSlug=saved||((cities.find(function(c){return c.slug==='baghdad';})||cities[0]||{}).slug||'baghdad');var sel=cities.find(function(c){return c.slug===appState.selectedSlug;})||cities[0];if(sel){appState.selectedSlug=sel.slug;appState.ratePer100=rateFor(sel);appState.updatedAt=sel.updated_at||data.updated_at||null;}renderHome();renderFavorites();calc();renderAlertForm();}
+  async function loadRates(){
+    var sources=[
+      'https://dolary.aehmnazar-1234533.workers.dev/api/rates',
+      'https://xeiqd.com/rates.json'
+    ];
+    for(var i=0;i<sources.length;i++){
+      try{
+        var r=await fetch(sources[i],{cache:'no-store',headers:{Accept:'application/json'}});
+        if(!r.ok)throw new Error('rates_'+r.status);
+        var data=await r.json();
+        applyRatesData(data,false);
+        try{localStorage.setItem(RATES_CACHE_KEY,JSON.stringify({data:data,savedAt:new Date().toISOString()}));}catch(_){}
+        return;
+      }catch(_){}
+    }
+    var cached=readJson(RATES_CACHE_KEY,null);
+    if(cached&&cached.data){
+      try{applyRatesData(cached.data,true);return;}catch(__){}
+    }
+    appState.rateError=true;appState.cities=[];appState.ratePer100=null;appState.updatedAt=null;renderHome();renderFavorites();calc();
+  }
   document.querySelectorAll('.pwa-nav-item').forEach(function(b){b.addEventListener('click',function(){showScreen(b.getAttribute('data-pwa-screen'));});});
   document.querySelectorAll('[data-pwa-go]').forEach(function(b){b.addEventListener('click',function(){showScreen(b.getAttribute('data-pwa-go'));});});
   document.getElementById('pwaNotificationBell').addEventListener('click',function(){showScreen('pwaNotificationsScreen');});
