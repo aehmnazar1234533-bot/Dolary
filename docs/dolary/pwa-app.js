@@ -77,7 +77,7 @@
     var calc=app.querySelector('[data-pwa-screen="pwaCalculatorScreen"]');if(calc&&cfg.features&&cfg.features.calculator===false)calc.hidden=true;
     var fav=app.querySelector('[data-pwa-screen="pwaFavoritesScreen"]');if(fav&&cfg.features&&cfg.features.favorites===false)fav.hidden=true;
     var daily=app.querySelector('#pwaDailyCard');if(daily&&cfg.features&&cfg.features.dailyShare===false)daily.hidden=true;
-    var style=document.createElement('style');style.textContent=':root{--dolary-dev-accent:'+String(cfg.theme&&cfg.theme.accent||'#67e8f9')+';--dolary-dev-gold:'+String(cfg.theme&&cfg.theme.gold||'#f6d58b');--dolary-dev-radius:'+String(cfg.theme&&cfg.theme.radius||26)+'px}.pwa-hero,.pwa-calc-card,.pwa-settings-card,.pwa-privacy-card{border-radius:var(--dolary-dev-radius)!important}.pwa-rate-value{color:var(--dolary-dev-accent)!important}.pwa-rate-label,.pwa-hero-unit{color:var(--dolary-dev-gold)!important}';document.head.appendChild(style);
+    var style=document.createElement('style');style.textContent=':root{--dolary-dev-accent:'+String(cfg.theme&&cfg.theme.accent||'#67e8f9')+';--dolary-dev-gold:'+String(cfg.theme&&cfg.theme.gold||'#f6d58b')+';--dolary-dev-radius:'+String(cfg.theme&&cfg.theme.radius||26)+'px}.pwa-hero,.pwa-calc-card,.pwa-settings-card,.pwa-privacy-card{border-radius:var(--dolary-dev-radius)!important}.pwa-rate-value{color:var(--dolary-dev-accent)!important}.pwa-rate-label,.pwa-hero-unit{color:var(--dolary-dev-gold)!important}';document.head.appendChild(style);
   }catch(_){}
 
   var pwaSharePriceStyle=document.createElement('style');
