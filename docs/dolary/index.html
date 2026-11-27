@@ -15,14 +15,14 @@ window.addEventListener('load',function(){window.dolaryTrack('$pageview',{page:'
 </script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9157735624204920" data-overlays="bottom" crossorigin="anonymous"></script>
 <meta name="theme-color" content="#080d1b">
-<link rel="stylesheet" href="./pwa-app.css?v=4">
+<link rel="stylesheet" href="./pwa-app.css?v=5">
 <script>
 (function(){
   try{
     var dm=window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches;
     var fs=window.matchMedia&&window.matchMedia('(display-mode: fullscreen)').matches;
-    var ios=window.navigator.standalone===true||/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-    if(ios&&(dm||fs||window.navigator.standalone===true))document.documentElement.classList.add('pwa-mode');
+    var standalone=window.navigator.standalone===true||dm||fs;
+    if(standalone)document.documentElement.classList.add('pwa-mode');
   }catch(_){}
 })();
 </script>
@@ -938,7 +938,7 @@ document.getElementById("shareDailyCard").addEventListener("click",()=>{
  startRateRefresh();
 })();
 </script>
-<script src="./pwa-app.js?v=11" defer></script>
+<script src="./pwa-app.js?v=12" defer></script>
 <script src="./pwa-push-config.js?v=2" defer></script>
 <script src="./pwa-push.js?v=5" defer></script>
 <script>
