@@ -101,13 +101,12 @@
     if(Array.isArray(c.sides)){
       var middle=c.sides.find(function(side){return side&&(side.side===null||typeof side.side==='undefined')&&side.usd_iqd_per_100!=null;});
       if(middle){
-        var middleValue=Number(middle.usd_iqd_per_100);
-        if(Number.isFinite(middleValue)&&middleValue>0)return middleValue;
+        var value=Number(middle.usd_iqd_per_100);
+        if(Number.isFinite(value)&&value>0)return value;
       }
     }
-    var keys=['usd_iqd_per_100','rate','sell','sell_rate','market_rate','usd_sell','iqd_sell'];
-    for(var i=0;i<keys.length;i++){var n=Number(c&&c[keys[i]]);if(Number.isFinite(n)&&n>0)return n;}
-    return null;
+    var fallback=Number(c.usd_iqd_per_100);
+    return Number.isFinite(fallback)&&fallback>0?fallback:null;
   }
   function animateCalcNumber(element,target,suffix,fractionDigits,prefix){
     suffix=suffix||'';fractionDigits=Number.isFinite(fractionDigits)?fractionDigits:0;prefix=prefix||'';
