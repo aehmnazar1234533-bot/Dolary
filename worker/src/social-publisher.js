@@ -14,7 +14,7 @@ export function socialPublishingEnabled(env){
 function imageKey(rate,slug){return IMAGE_PREFIX+slug+":"+socialRateKey(rate);}
 function imageUrl(env,rate,slug){return String(env.SOCIAL_IMAGE_BASE_URL||"").replace(/\/$/,"")+"/api/social-image/"+encodeURIComponent(slug)+"/"+encodeURIComponent(socialRateKey(rate))+".jpg";}
 function historyKey(rate,slug){return PUBLISHED_PREFIX+slug+":"+socialRateKey(rate);}
-function errInfo(data,status){const e=data&&data.error;return {status,code:e&&e.code??null,subcode:e&&e.error_subcode??null,type:e&&e.type??null,message:e&&e.message?String(e.message).slice(0,300):"Meta API request failed"};}
+function errInfo(data,status){const e=data&&data.error;return {status,code:(e&&e.code)??null,subcode:(e&&e.error_subcode)??null,type:(e&&e.type)??null,message:e&&e.message?String(e.message).slice(0,300):"Meta API request failed"};}
 
 async function meta(path,params,token,method="POST"){
   const u=new URL("https://graph.facebook.com/"+GRAPH_VERSION+"/"+path.replace(/^\//,""));
