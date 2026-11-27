@@ -1,5 +1,16 @@
 
 (function(){
+  var devPreviewToken = new URLSearchParams(location.search).get("dolaryDevPreview");
+  async function loadDevPreviewConfig(){
+    if(!devPreviewToken) return null;
+    try{
+      var r=await fetch("https://dolary.aehmnazar-1234533.workers.dev/api/dev/preview-config?token="+encodeURIComponent(devPreviewToken),{cache:"no-store",credentials:"omit"});
+      if(!r.ok) return null;
+      var d=await r.json();
+      return d&&d.ok&&d.config?d.config:null;
+    }catch(_){return null;}
+  }
+
   'use strict';
   function bootWithConfig(){
     var token=new URLSearchParams(location.search).get('dolaryDevPreview');
@@ -160,5 +171,5 @@
   setInterval(loadRates,900000);
   permissionStatus();renderNotifications();setBadge();loadRates();
   }
-  if(!window.DOLARY_CONFIG){var s=document.createElement('script');s.src='./dolary-config.js?v=1';s.onload=bootWithConfig;s.onerror=bootWithConfig;document.head.appendChild(s);}else bootWithConfig();
+  loadDevPreviewConfig().then(function(preview){if(preview){window.DOLARY_CONFIG=preview;bootWithConfig();return;}if(!window.DOLARY_CONFIG){var s=document.createElement('script');s.src='./dolary-config.js?v=1';s.onload=bootWithConfig;s.onerror=bootWithConfig;document.head.appendChild(s);}else bootWithConfig();});
 })();
