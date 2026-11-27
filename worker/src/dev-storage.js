@@ -10,3 +10,7 @@ const ICON_PENDING="dev:icon:pending";
 export async function getDevIcon(env){return env.PUSH_STORE.get(ICON_PENDING,"json")}
 export async function putDevIcon(env,icon){await env.PUSH_STORE.put(ICON_PENDING,JSON.stringify(icon));return icon}
 export async function clearDevIcon(env){await env.PUSH_STORE.delete(ICON_PENDING)}
+
+const ICON_PUBLISHED="dev:icon:published";
+export async function getDevPublishedIcon(env){return env.PUSH_STORE.get(ICON_PUBLISHED,"json")}
+export async function putDevPublishedIcon(env,icon){await env.PUSH_STORE.put(ICON_PUBLISHED,JSON.stringify(icon));return icon}
