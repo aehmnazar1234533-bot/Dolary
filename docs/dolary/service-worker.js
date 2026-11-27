@@ -12,7 +12,7 @@ self.addEventListener('install', event => {
     await cache.add(new Request('./pwa-push-config.js?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push.js?v=5', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./privacy_policy.html', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./dolary-mark.svg?v=2', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./dolary-mark.svg?v=3', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-card-logo-180.png?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-icon.svg?v=1', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-notification.png', { cache: 'reload' })).catch(() => {});
