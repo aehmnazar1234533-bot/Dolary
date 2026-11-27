@@ -2,8 +2,8 @@ import { buildPushPayload } from "@block65/webcrypto-web-push";
 import { publishSocialRate, socialPublishingEnabled, socialImageResponse } from "./social-publisher.js";
 import { checkAdminPassword, createDevSession, verifyDevSession, destroyDevSession } from "./dev-auth.js";
 import { sanitizeDolaryConfig, configToJs, DEFAULT_DOLARY_CONFIG } from "./dev-config.js";
-import { normalizeDevIcon, iconChanges } from "./dev-icon.js";
-import { getDevDraft, putDevDraft, createDevPreviewToken, getDevPreview, listDevHistory, addDevHistory, getDevIcon, putDevIcon, clearDevIcon } from "./dev-storage.js";
+import { normalizeDevIcon, iconChanges, iconManifest, iconDescriptor } from "./dev-icon.js";
+import { getDevDraft, putDevDraft, createDevPreviewToken, getDevPreview, listDevHistory, addDevHistory, getDevIcon, putDevIcon, clearDevIcon, getDevPublishedIcon, putDevPublishedIcon } from "./dev-storage.js";
 import { publishFilesAtomically, readBranchHead } from "./dev-github.js";
 import { renderDevLoginPage, renderDevPage } from "./dev-ui.js";
 
@@ -319,7 +319,9 @@ async function developerRoutes(request, env) {
       let config; try { config = sanitizeDolaryConfig(body?.config || await getDevDraft(env)); } catch (_) { return json({ ok: false, error: "invalid_config" }, 400); }
       const previous = await env.PUSH_STORE.get("dev:last-published", "json") || DEFAULT_DOLARY_CONFIG;
       const pendingIcon = await getDevIcon(env);
-      const manifest = JSON.stringify({id:(env.APP_URL||"https://aehamtech.top/dolary/"),name:config.pwa.name,short_name:config.pwa.shortName,description:config.pwa.description,lang:"ar-IQ",dir:"rtl",start_url:(env.APP_URL||"https://aehamtech.top/dolary/"),scope:(env.APP_URL||"https://aehamtech.top/dolary/"),display:"standalone",display_override:["standalone","minimal-ui"],background_color:config.pwa.backgroundColor,theme_color:config.pwa.themeColor,orientation:"portrait-primary",prefer_related_applications:false,icons:[{src:"./dolary-card-logo-180.png?v=3",sizes:"180x180",type:"image/png",purpose:"any"},{src:"./pwa-icon-512.png?v=1",sizes:"512x512",type:"image/png",purpose:"any maskable"}]},null,2)+"\n";
+      const publishedIcon = await getDevPublishedIcon(env);
+      const activeIcon = pendingIcon || publishedIcon || { kind: "generated" };
+      const manifest = JSON.stringify({id:(env.APP_URL||"https://aehamtech.top/dolary/"),name:config.pwa.name,short_name:config.pwa.shortName,description:config.pwa.description,lang:"ar-IQ",dir:"rtl",start_url:(env.APP_URL||"https://aehamtech.top/dolary/"),scope:(env.APP_URL||"https://aehamtech.top/dolary/"),display:"standalone",display_override:["standalone","minimal-ui"],background_color:config.pwa.backgroundColor,theme_color:config.pwa.themeColor,orientation:"portrait-primary",prefer_related_applications:false,icons:iconManifest(activeIcon)},null,2)+"\n";
       try {
         const changes = [
           {path:"docs/dolary/dolary-config.js",content:configToJs(config)},
@@ -328,7 +330,7 @@ async function developerRoutes(request, env) {
         if (pendingIcon) changes.push(...iconChanges(pendingIcon));
         const result = await publishFilesAtomically(env,changes,String(body?.message||"chore: update Dolary PWA settings").slice(0,120));
         await env.PUSH_STORE.put("dev:last-published",JSON.stringify(config));
-        if (pendingIcon) await clearDevIcon(env);
+        if (pendingIcon) { await putDevPublishedIcon(env, iconDescriptor(pendingIcon)); await clearDevIcon(env); }
         await addDevHistory(env,{commitSha:result.commitSha,parentSha:result.parentSha,paths:result.paths,summary:"تحديث إعدادات دولاري",previousConfig:previous});
         await putDevDraft(env,config);
         return json({ ok: true, ...result }, 200, null, env);
@@ -342,7 +344,8 @@ async function developerRoutes(request, env) {
       const rollbackPrevious = await env.PUSH_STORE.get("dev:last-published", "json") || DEFAULT_DOLARY_CONFIG;
       const config = sanitizeDolaryConfig(item.previousConfig);
       try {
-        const manifest = JSON.stringify({id:(env.APP_URL||"https://aehamtech.top/dolary/"),name:config.pwa.name,short_name:config.pwa.shortName,description:config.pwa.description,lang:"ar-IQ",dir:"rtl",start_url:(env.APP_URL||"https://aehamtech.top/dolary/"),scope:(env.APP_URL||"https://aehamtech.top/dolary/"),display:"standalone",background_color:config.pwa.backgroundColor,theme_color:config.pwa.themeColor,icons:[{src:"./dolary-card-logo-180.png?v=2",sizes:"180x180",type:"image/png",purpose:"any"},{src:"./pwa-icon.svg?v=1",sizes:"any",type:"image/svg+xml",purpose:"any maskable"}]},null,2)+"\n";
+        const publishedIcon = await getDevPublishedIcon(env);
+        const manifest = JSON.stringify({id:(env.APP_URL||"https://aehamtech.top/dolary/"),name:config.pwa.name,short_name:config.pwa.shortName,description:config.pwa.description,lang:"ar-IQ",dir:"rtl",start_url:(env.APP_URL||"https://aehamtech.top/dolary/"),scope:(env.APP_URL||"https://aehamtech.top/dolary/"),display:"standalone",background_color:config.pwa.backgroundColor,theme_color:config.pwa.themeColor,icons:iconManifest(publishedIcon || { kind: "generated" })},null,2)+"\n";
         const result=await publishFilesAtomically(env,[{path:"docs/dolary/dolary-config.js",content:configToJs(config)},{path:"docs/dolary/manifest.webmanifest",content:manifest}],"chore: rollback Dolary developer settings");
         await env.PUSH_STORE.put("dev:last-published",JSON.stringify(config));
         await putDevDraft(env,config);
