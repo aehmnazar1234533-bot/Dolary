@@ -18,6 +18,7 @@
   var AUTO_PUSH_ENABLED_KEY = "dolary.pwaAutoPushEnabled.v1";
   var AUTO_PUSH_DISABLED_KEY = "dolary.pwaAutoPushDisabled.v1";
   var SUBSCRIPTION_KEY = "dolary.pwaSubscription.v1";
+  var VAPID_KEY_STORAGE = "dolary.pwaVapidPublicKey.v1";
 
   function statusText(text) {
     var el = document.getElementById("pwaAlertStatus");
@@ -97,16 +98,28 @@
     }
 
     var reg = await registration();
-    var sub = await reg.pushManager.getSubscription();
     var conf = await api("/api/config", null, "GET");
     if (conf.pushReady !== true) throw new Error("إعدادات خدمة الإشعارات على الخادم لم تكتمل بعد.");
     if (!conf.publicKey) throw new Error("مفتاح الإشعارات العام غير مضبوط على الخادم.");
+
+    var sub = await reg.pushManager.getSubscription();
+    var storedVapid = null;
+    try { storedVapid = localStorage.getItem(VAPID_KEY_STORAGE) || null; } catch (_) { storedVapid = null; }
+
+    if (sub && storedVapid !== conf.publicKey) {
+      try { await api("/api/unsubscribe", { subscription: sub.toJSON() }); } catch (_) {}
+      try { await sub.unsubscribe(); } catch (_) {}
+      sub = null;
+    }
+
     if (!sub) {
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: b64ToBytes(conf.publicKey)
       });
     }
+
+    try { localStorage.setItem(VAPID_KEY_STORAGE, conf.publicKey); } catch (_) {}
     return { reg: reg, subscription: sub };
   }
 
