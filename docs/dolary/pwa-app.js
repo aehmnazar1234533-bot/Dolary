@@ -3,6 +3,11 @@
   'use strict';
   function bootWithConfig(){
     var token=new URLSearchParams(location.search).get('dolaryDevPreview');
+    if(token){fetch('/api/dev/preview-config?token='+encodeURIComponent(token),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.config)window.DOLARY_CONFIG=d.config;start();}).catch(function(){start();});}
+    else start();
+  }
+  function start(){  function bootWithConfig(){
+    var token=new URLSearchParams(location.search).get('dolaryDevPreview');
     if(token){
       fetch('/api/dev/preview-config?token='+encodeURIComponent(token),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.config)window.DOLARY_CONFIG=d.config;start();}).catch(function(){start();});
     }else start();
@@ -67,6 +72,16 @@
   `;
 
   (document.body||document.documentElement).appendChild(app);
+  var cfg=window.DOLARY_CONFIG||{};
+  try{
+    var brand=app.querySelector('.pwa-brand-copy strong');if(brand)brand.textContent=cfg.branding&&cfg.branding.appName||'دولاري';
+    var title=app.querySelector('.pwa-section-title h2');if(title)title.textContent=cfg.text&&cfg.text.heroTitle||'آخر الأسعار';
+    var sub=app.querySelector('.pwa-section-title p');if(sub)sub.textContent=cfg.text&&cfg.text.heroSubtitle||'المحافظات المتاحة من المصدر';
+    var calc=app.querySelector('[data-pwa-screen="pwaCalculatorScreen"]');if(calc&&cfg.features&&cfg.features.calculator===false)calc.hidden=true;
+    var fav=app.querySelector('[data-pwa-screen="pwaFavoritesScreen"]');if(fav&&cfg.features&&cfg.features.favorites===false)fav.hidden=true;
+    var daily=app.querySelector('#pwaDailyCard');if(daily&&cfg.features&&cfg.features.dailyShare===false)daily.hidden=true;
+    var style=document.createElement('style');style.textContent=':root{--dolary-dev-accent:'+String(cfg.theme&&cfg.theme.accent||'#67e8f9')+';--dolary-dev-gold:'+String(cfg.theme&&cfg.theme.gold||'#f6d58b');--dolary-dev-radius:'+String(cfg.theme&&cfg.theme.radius||26)+'px}.pwa-hero,.pwa-calc-card,.pwa-settings-card,.pwa-privacy-card{border-radius:var(--dolary-dev-radius)!important}.pwa-rate-value{color:var(--dolary-dev-accent)!important}.pwa-rate-label,.pwa-hero-unit{color:var(--dolary-dev-gold)!important}';document.head.appendChild(style);
+  }catch(_){}
   var cfg=window.DOLARY_CONFIG||{};
   try{
     var root=document.documentElement;
@@ -162,6 +177,8 @@
   setInterval(detectNewNotifications,2500);
   setInterval(loadRates,900000);
   permissionStatus();renderNotifications();setBadge();loadRates();
+  }
+  if(!window.DOLARY_CONFIG){var s=document.createElement('script');s.src='./dolary-config.js?v=1';s.onload=bootWithConfig;s.onerror=bootWithConfig;document.head.appendChild(s);}else bootWithConfig();
   }
   if(!window.DOLARY_CONFIG){var s=document.createElement('script');s.src='./dolary-config.js?v=1';s.onload=bootWithConfig;s.onerror=bootWithConfig;document.head.appendChild(s);}else bootWithConfig();
 })();
