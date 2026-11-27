@@ -257,7 +257,8 @@ function crossing(rule, previous, current) {
 
 async function developerRoutes(request, env) {
   const url = new URL(request.url);
-  const sameOrigin = !request.headers.get("Origin") || request.headers.get("Origin") === url.origin || request.headers.get("Origin") === (env.APP_ORIGIN || "https://aehamtech.top");
+  const requestOriginHeader = request.headers.get("Origin");
+  const sameOrigin = requestOriginHeader === url.origin || requestOriginHeader === (env.APP_ORIGIN || "https://aehamtech.top");
   if (url.pathname === "/dev" && request.method === "GET") {
     const session = await verifyDevSession(request, env);
     if (!session) return renderDevLoginPage();
@@ -326,7 +327,7 @@ async function developerRoutes(request, env) {
         const result=await publishFilesAtomically(env,[{path:"docs/dolary/dolary-config.js",content:configToJs(config)},{path:"docs/dolary/manifest.webmanifest",content:manifest}],"chore: rollback Dolary developer settings");
         await env.PUSH_STORE.put("dev:last-published",JSON.stringify(config));
         await putDevDraft(env,config);
-        await addDevHistory(env,{commitSha:result.commitSha,parentSha:result.parentSha,paths:result.paths,summary:"تراجع عن تحديث سابق",previousConfig:await env.PUSH_STORE.get("dev:last-published","json")||DEFAULT_DOLARY_CONFIG});
+        await addDevHistory(env,{commitSha:result.commitSha,parentSha:result.parentSha,paths:result.paths,summary:"تراجع عن تحديث سابق",previousConfig:rollbackPrevious});
         return json({ ok: true, ...result }, 200, null, env);
       } catch (error) { return json({ ok: false, error: error?.code || "rollback_failed" }, 409, null, env); }
     }
