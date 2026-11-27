@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizeDevIcon, iconChanges, iconManifest } from "../src/dev-icon.js";
+import { normalizeDevIcon, iconChanges, iconManifest, iconPreviewAsset } from "../src/dev-icon.js";
 
 const tinyPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
@@ -28,4 +28,21 @@ test("developer icon accepts raw JPEG fallback", () => {
   assert.equal(icon.path, "docs/dolary/pwa-icon-uploaded.jpg");
   assert.equal(iconChanges(icon)[0].path, icon.path);
   assert.equal(iconManifest(icon)[0].type, "image/jpeg");
+});
+
+test("developer icon preview returns safe image bytes for generated and raw assets", () => {
+  const generated = normalizeDevIcon({ icon180Base64: tinyPng, icon512Base64: tinyPng });
+  const generatedPreview = iconPreviewAsset(generated);
+  assert.equal(generatedPreview.mime, "image/png");
+  assert.equal(generatedPreview.bytes.byteLength, Buffer.from(tinyPng, "base64").byteLength);
+
+  const raw = normalizeDevIcon({ rawBase64: tinyPng, rawMime: "image/jpeg" });
+  const rawPreview = iconPreviewAsset(raw);
+  assert.equal(rawPreview.mime, "image/jpeg");
+  assert.equal(rawPreview.bytes.byteLength, Buffer.from(tinyPng, "base64").byteLength);
+});
+
+test("developer icon preview rejects missing or malformed image data", () => {
+  assert.throws(() => iconPreviewAsset(null), /invalid_icon/);
+  assert.throws(() => iconPreviewAsset({ kind: "raw", rawBase64: "not base64!", mime: "image/jpeg" }), /invalid_icon/);
 });
