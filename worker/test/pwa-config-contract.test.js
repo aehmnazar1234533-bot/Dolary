@@ -14,15 +14,17 @@ test("PWA supports developer config and preview", () => {
 });
 
 test("developer preview JavaScript uses a fresh cache-busted URL", () => {
-  assert.ok(indexHtml.includes("./pwa-app.js?v=13"));
-  assert.ok(serviceWorker.includes("dolary-pwa-v49"));
+  assert.ok(indexHtml.includes("./pwa-app.js?v=14"));
+  assert.ok(serviceWorker.includes("dolary-pwa-v50"));
   assert.ok(serviceWorker.includes("./pwa-app.js?v=9"));
   assert.ok(!indexHtml.includes("./pwa-app.js?v=7"));
   assert.ok(!serviceWorker.includes("./pwa-app.js?v=7"));
 });
 
-test("PWA rates use the Dolary Worker proxy", () => {
+test("PWA rates use the Dolary Worker proxy with direct-source fallback", () => {
   assert.ok(pwaApp.includes("https://dolary.aehmnazar-1234533.workers.dev/api/rates"));
+  assert.ok(pwaApp.includes("https://xeiqd.com/rates.json"));
+  assert.ok(pwaApp.includes("var sources=["));
   assert.ok(workerSource.includes('url.pathname === "/api/rates" && request.method === "GET"'));
   assert.ok(workerSource.includes("const data = await upstream.json();"));
   assert.ok(workerSource.includes('Array.isArray(data.cities)'));
