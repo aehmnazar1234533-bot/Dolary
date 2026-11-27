@@ -30,7 +30,7 @@ function json(data, status = 200, origin = null, env = {}) {
   if (origin && allowedCorsOrigins.has(origin)) {
     headers["Access-Control-Allow-Origin"] = origin;
     headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
-    headers["Access-Control-Allow-Headers"] = "Content-Type, Accept";
+    headers["Access-Control-Allow-Headers"] = "Content-Type, Accept, X-Dolary-Admin-Password";
     headers["Access-Control-Max-Age"] = "86400";
     headers["Vary"] = "Origin";
   }
@@ -399,9 +399,7 @@ async function api(request, env) {
   }
 
   if (request.method === "OPTIONS") {
-    const corsOrigin = [expectedOrigin, "https://aehamtech.top", "https://www.aehamtech.top"].includes(origin)
-      ? origin
-      : expectedOrigin;
+    const corsOrigin = origin && allowedOrigins.has(origin) ? origin : expectedOrigin;
     return new Response(null, {
       status: 204,
       headers: {
