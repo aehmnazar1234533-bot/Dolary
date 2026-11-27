@@ -407,7 +407,7 @@ async function api(request, env) {
       headers: {
         "Access-Control-Allow-Origin": corsOrigin,
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Accept",
+        "Access-Control-Allow-Headers": "Content-Type, Accept, X-Dolary-Admin-Password",
         "Access-Control-Max-Age": "86400",
         "Vary": "Origin"
       }
