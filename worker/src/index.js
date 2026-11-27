@@ -605,12 +605,12 @@ async function api(request, env) {
       .card{width:min(560px,100%);background:#17171d;border:1px solid #2b2b35;border-radius:24px;padding:24px;box-shadow:0 20px 60px #0008}.brand{font-size:26px;font-weight:800;margin-bottom:6px}.sub{color:#a7a7b2;margin-bottom:22px}
       label{display:block;font-weight:700;margin:14px 0 7px}input,textarea{width:100%;border:1px solid #343440;background:#101016;color:#fff;border-radius:14px;padding:13px;font:inherit;outline:none}textarea{min-height:130px;resize:vertical}
       button{width:100%;border:0;border-radius:14px;padding:14px;margin-top:18px;background:#fff;color:#111;font-weight:800;font-size:16px;cursor:pointer}.status{margin-top:16px;padding:12px;border-radius:12px;background:#101016;color:#bfc0ca;white-space:pre-wrap}
-      .hint{font-size:12px;color:#888995;margin-top:12px;line-height:1.6}
+      .hint{font-size:12px;color:#888995;margin-top:12px;line-height:1.6}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0}.stat{background:#101016;border:1px solid #292934;border-radius:14px;padding:12px}.stat b{display:block;font-size:22px;margin-top:4px}.stat span{font-size:12px;color:#9999a5}.row{display:flex;gap:10px}.row button{flex:1}.test{background:#27365f;color:#fff}.history{margin-top:12px;font-size:12px;color:#bfc0ca;white-space:pre-wrap}
     </style></head><body><main class="card"><div class="brand">دولاري</div><div class="sub">لوحة الإشعار العام — Android + iPhone</div>
     <form id="broadcastForm" method="POST" action="/api/broadcast-form"><input id="broadcastId" name="broadcastId" type="hidden" value=""><label>كلمة مرور الإدارة</label><input id="p" name="password" type="password" autocomplete="current-password" placeholder="كلمة مرور الإدارة" required>
     <label>عنوان الإشعار</label><input id="t" name="title" maxlength="120" placeholder="مثلاً: تنبيه مهم" required>
     <label>نص الإشعار</label><textarea id="b" name="body" maxlength="1000" placeholder="اكتب الرسالة التي تريد إرسالها للمستخدمين..." required></textarea>
-    <button id="send" type="submit">إرسال الإشعار للجميع</button><div id="s" class="status">جاهز للإرسال.</div>
+    <div class="stats"><div class="stat"><span>أجهزة PWA المسجلة</span><b id="webCount">—</b></div><div class="stat"><span>أجهزة Android المسجلة</span><b id="androidCount">—</b></div><div class="stat"><span>آخر إرسال ناجح</span><b id="lastSent">—</b></div><div class="stat"><span>آخر فشل</span><b id="lastFailed">—</b></div></div><div class="row"><button id="send" type="submit">إرسال الإشعار للجميع</button><button id="test" type="button" class="test">إرسال تجريبي</button></div><div id="s" class="status">جاهز للإرسال.</div><div id="history" class="history">جاري قراءة حالة الأجهزة...</div>
     <div class="hint">المفتاح لا يُحفظ في الصفحة. الإرسال يتم عبر Worker آمن باستخدام Secret.</div>
     </main><script>
       (() => {
@@ -618,7 +618,35 @@ async function api(request, env) {
         const s=document.getElementById("s"),send=document.getElementById("send");
         if(!p||!t||!b||!s||!send)return;
         try { p.value=sessionStorage.getItem("dolary_admin_password")||""; } catch (_) { p.value=""; }
-        send.addEventListener("click",async(e)=>{
+        const test=document.getElementById("test"),webCount=document.getElementById("webCount"),androidCount=document.getElementById("androidCount"),lastSent=document.getElementById("lastSent"),lastFailed=document.getElementById("lastFailed"),history=document.getElementById("history");
+        async function stats(){
+          if(!p.value.trim()) return;
+          try{
+            const r=await fetch("/api/admin/stats",{method:"POST",headers:{"X-Dolary-Admin-Password":p.value.trim()},cache:"no-store"});
+            const d=await r.json().catch(()=>({}));
+            if(!r.ok||!d.ok){history.textContent=r.status===401?"كلمة المرور غير صحيحة.":"تعذر قراءة الإحصائيات.";return}
+            webCount.textContent=d.webSubscriptions;
+            androidCount.textContent=d.androidSubscriptions;
+            const x=d.lastBroadcast;
+            lastSent.textContent=x ? ((x.webSent||0)+(x.androidSent||0)) : "—";
+            lastFailed.textContent=x ? (x.failed||0) : "—";
+            history.textContent=x ? "آخر إرسال: "+new Date(x.createdAt).toLocaleString("ar-IQ")+"\nالناجحة: "+((x.webSent||0)+(x.androidSent||0))+" | الفاشلة: "+(x.failed||0)+" | المحذوفة: "+((x.webRemoved||0)+(x.androidRemoved||0)) : "لا توجد عمليات إرسال بعد.";
+          }catch(_){history.textContent="تعذر الاتصال بخدمة الإحصائيات."}
+        }
+        p.addEventListener("change",stats); p.addEventListener("blur",stats);
+        test.addEventListener("click",async()=>{
+          if(!p.value.trim()){s.textContent="أدخل كلمة مرور الإدارة أولاً.";return}
+          test.disabled=true; test.textContent="جاري الاختبار...";
+          try{
+            const id="broadcast-test-"+crypto.randomUUID();
+            const r=await fetch("/api/broadcast",{method:"POST",headers:{"Content-Type":"application/json","X-Dolary-Admin-Password":p.value.trim()},body:JSON.stringify({title:"اختبار دولاري",body:"هذا إشعار تجريبي للتأكد من عمل نظام الإشعارات.",broadcastId:id}),cache:"no-store"});
+            const d=await r.json().catch(()=>({}));
+            s.textContent=r.ok&&d.ok ? "تم الاختبار. Android: "+d.androidSent+" | PWA: "+d.webSent+" | فشل: "+d.failed : "فشل الاختبار: "+(d.error||r.status);
+            await stats();
+          }catch(_){s.textContent="تعذر الاتصال بخدمة الإرسال."}
+          finally{test.disabled=false;test.textContent="إرسال تجريبي"}
+        });
+                send.addEventListener("click",async(e)=>{
           e.preventDefault();
           send.disabled=true;
           send.textContent="جاري الإرسال...";
