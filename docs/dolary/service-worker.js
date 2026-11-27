@@ -6,14 +6,14 @@ self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cache.add(new Request(APP_SHELL, { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./manifest.webmanifest?v=19', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./manifest.webmanifest?v=20', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-app.css?v=4', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-app.js?v=5', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push-config.js?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push.js?v=5', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./privacy_policy.html', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-mark.svg?v=2', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./apple-touch-icon.png?v=7', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./dolary-card-logo-180.png?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-icon.svg?v=1', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-notification.png', { cache: 'reload' })).catch(() => {});
     await self.skipWaiting();
@@ -200,7 +200,7 @@ self.addEventListener('push', event => {
 
     const options = {
       body: data.body || 'لديك تنبيه جديد من دولاري.',
-      icon: './apple-touch-icon.png?v=7',
+      icon: './dolary-card-logo-180.png?v=2',
       badge: './dolary-notification.png',
       tag: broadcastId,
       renotify: false,
