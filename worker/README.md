@@ -31,3 +31,14 @@ The Worker accepts browser push endpoints only over HTTPS and uses an origin all
 ## Free-tier note
 
 Cloudflare's free tier has request, CPU, Cron and KV quotas. The Worker checks four subscriptions per ten-minute run to stay conservative on the free CPU/subrequest limits; it rotates through saved subscriptions. Larger audiences may need a higher batch size or a paid plan. Delivery also depends on the phone's iOS version, Home Screen installation, notification permission, Apple push service and network availability.
+
+
+## Automatic Facebook + Instagram publishing
+
+The Worker now monitors the canonical Baghdad rate every 10 minutes and publishes a Dolary-branded 1080×1350 JPEG to Facebook and Instagram only when that rate has not previously been published. It reuses the existing KV namespace for state and the existing daily-card visual template. Facebook and Instagram states are independent, and recent-post marker checks protect against duplicates after interrupted requests.
+
+Required Cloudflare secrets: `META_PAGE_ID`, `META_PAGE_ACCESS_TOKEN`, `META_INSTAGRAM_BUSINESS_ACCOUNT_ID`, `META_USER_ACCESS_TOKEN`.
+
+The Worker also requires the `BROWSER` Browser Run binding. The public image endpoint is `/api/social-image/<slug>/<rate>.jpg` so Meta can fetch the generated JPEG.
+
+Meta Page publishing uses a Page access token and the Page publishing permissions documented by Meta. Instagram publishing through Facebook Login uses a Facebook user access token and the permissions approved for that API flow. Never put these tokens in the repository or frontend.
