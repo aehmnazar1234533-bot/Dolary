@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v56';
+const CACHE_NAME = 'dolary-pwa-v57';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
@@ -11,7 +11,7 @@ self.addEventListener('install', event => {
     await cache.add(new Request('./pwa-app.js?v=19', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-hotfix.js?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push-config.js?v=2', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./pwa-push.js?v=5', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-push.js?v=6', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./privacy_policy.html', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-mark.svg?v=3', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-card-logo-180.png?v=2', { cache: 'reload' })).catch(() => {});
