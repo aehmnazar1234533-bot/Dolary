@@ -9,6 +9,10 @@ test("developer preview config returns CORS only through the configured app orig
   assert.ok(worker.includes("json({ ok: true, config }, 200, requestOriginHeader, env)"));
 });
 
+test("current developer icon preview follows the active published icon format", () => {
+  assert.ok(worker.includes('published?.kind === "generated" ? "pwa-icon-512.png" : "pwa-icon.svg"'));
+});
+
 test("pending icon preview route stays behind developer session authentication", () => {
   const gate = worker.indexOf("const session = await verifyDevSession(request, env);");
   const route = worker.indexOf("/api/dev/icon-preview");
