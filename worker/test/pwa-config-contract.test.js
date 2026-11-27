@@ -5,7 +5,6 @@ import fs from "node:fs";
 const pwaApp = fs.readFileSync(new URL("../../docs/dolary/pwa-app.js", import.meta.url), "utf8");
 const indexHtml = fs.readFileSync(new URL("../../docs/dolary/index.html", import.meta.url), "utf8");
 const serviceWorker = fs.readFileSync(new URL("../../docs/dolary/service-worker.js", import.meta.url), "utf8");
-const pwaApp = fs.readFileSync(new URL("../../docs/dolary/pwa-app.js", import.meta.url), "utf8");
 const workerSource = fs.readFileSync(new URL("../src/index.js", import.meta.url), "utf8");
 
 test("PWA supports developer config and preview", () => {
