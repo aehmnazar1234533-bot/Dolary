@@ -42,7 +42,7 @@ async function renderImage(env,rate,province,slug){
 
 async function findFacebook(env,marker){
   try{
-    const d=await meta(env.META_PAGE_ID+"/posts",{fields:"id,message,created_time",limit:25},env.META_PAGE_ACCESS_TOKEN,"GET");
+    const d=await meta(env.META_PAGE_ID+"/feed",{fields:"id,message,created_time",limit:25},env.META_PAGE_ACCESS_TOKEN,"GET");
     return (d.data||[]).find(x=>typeof x.message==="string"&&x.message.includes(marker))?.id||null;
   }catch(e){console.warn("Facebook duplicate check failed:",e.message);return null;}
 }
