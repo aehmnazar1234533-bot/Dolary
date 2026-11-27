@@ -4,6 +4,7 @@
   "main": "src/index.js",
   "compatibility_date": "2026-11-26",
   "workers_dev": true,
+  "browser": { "binding": "BROWSER" },
   "preview_urls": false,
   "triggers": {
     "crons": ["*/10 * * * *"]
@@ -12,7 +13,10 @@
     "APP_ORIGIN": "https://aehamtech.top",
     "APP_URL": "https://aehamtech.top/dolary/",
     "VAPID_SUBJECT": "https://aehamtech.top",
-    "VAPID_PUBLIC_KEY": "BDiCh4Z-SdqQgNNf54f-EmGw72iUCLe93WqYw6Jhg9SgnyQKAKrCiK_MOSUQzGDRGIxKrwHO52akQtGkQCKbfVQ"
+    "VAPID_PUBLIC_KEY": "BDiCh4Z-SdqQgNNf54f-EmGw72iUCLe93WqYw6Jhg9SgnyQKAKrCiK_MOSUQzGDRGIxKrwHO52akQtGkQCKbfVQ",
+    "SOCIAL_IMAGE_BASE_URL": "https://dolary.aehmnazar-1234533.workers.dev",
+    "SOCIAL_RATE_SLUG": "baghdad",
+    "SOCIAL_LOGO_URL": "https://aehamtech.top/dolary/dolary-mark.svg"
   },
   "kv_namespaces": [
     {
