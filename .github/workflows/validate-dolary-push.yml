@@ -28,6 +28,9 @@ jobs:
       - name: Install worker dependencies
         working-directory: worker
         run: npm install
+      - name: Run worker tests
+        working-directory: worker
+        run: npm test
       - name: Check JavaScript syntax
         run: |
           node --check worker/src/index.js
