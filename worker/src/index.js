@@ -1,4 +1,5 @@
 import { buildPushPayload } from "@block65/webcrypto-web-push";
+import { publishSocialRate, socialPublishingEnabled, socialImageResponse } from "./social-publisher.js";
 
 const RATE_URL = "https://xeiqd.com/rates.json";
 const SUB_PREFIX = "sub:";
@@ -636,11 +637,9 @@ async function api(request, env) {
 }
 
 async function checkRates(env) {
-  if (!env.PUSH_STORE || !env.VAPID_PRIVATE_KEY || !env.VAPID_PUBLIC_KEY) return;
-
-  const listed = await env.PUSH_STORE.list({ prefix: SUB_PREFIX, limit: MAX_LIST_SIZE });
-  const keys = listed.keys.map(item => item.name).sort();
-  if (!keys.length) return;
+  const pushReady = Boolean(env.PUSH_STORE && env.VAPID_PRIVATE_KEY && env.VAPID_PUBLIC_KEY);
+  const socialReady = socialPublishingEnabled(env);
+  if (!pushReady && !socialReady) return;
 
   const response = await fetch(RATE_URL, {
     headers: { "Accept": "application/json" },
@@ -649,6 +648,23 @@ async function checkRates(env) {
   if (!response.ok) throw new Error("XEIQD returned " + response.status);
   const data = await response.json();
   if (!data || !Array.isArray(data.cities)) throw new Error("Invalid XEIQD rates response");
+
+  if (socialReady) {
+    const slug = env.SOCIAL_RATE_SLUG || "baghdad";
+    const city = data.cities.find(item => item && item.slug === slug);
+    const rate = city ? currentRate(city) : null;
+    if (Number.isFinite(rate)) {
+      await publishSocialRate(env, city, rate);
+    } else {
+      console.warn("Dolary social publishing skipped: canonical rate unavailable");
+    }
+  }
+
+  if (!pushReady) return;
+
+  const listed = await env.PUSH_STORE.list({ prefix: SUB_PREFIX, limit: MAX_LIST_SIZE });
+  const keys = listed.keys.map(item => item.name).sort();
+  if (!keys.length) return;
 
   const lastKey = await env.PUSH_STORE.get(CURSOR_KEY);
   let start = lastKey ? keys.findIndex(key => key > lastKey) : 0;
@@ -713,6 +729,8 @@ async function checkRates(env) {
 
 export default {
   async fetch(request, env) {
+    const image = await socialImageResponse(request, env);
+    if (image) return image;
     return api(request, env);
   },
 
