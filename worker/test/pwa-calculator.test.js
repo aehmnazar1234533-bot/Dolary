@@ -68,7 +68,7 @@ test("IQD to USD calculation returns a whole-dollar result by default", () => {
 test("Blank calculator input never becomes zero", () => {
   const values = createCalculator(169450, "", "usd");
   assert.equal(values.pwaCalcResult.textContent, "—");
-  assert.equal(values.pwaCalcBreakdown.textContent, "أدخل مبلغاً صحيحاً حتى تظهر النتيجة.");
+  assert.equal(values.pwaCalcBreakdown.textContent, "أدخل مبلغاً صحيحاً حتى تظهر العملية والنتيجة.");
 });
 
 test("Calculator waits for a valid rate", () => {
