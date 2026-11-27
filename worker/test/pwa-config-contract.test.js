@@ -14,8 +14,8 @@ test("PWA supports developer config and preview", () => {
 });
 
 test("developer preview JavaScript uses a fresh cache-busted URL", () => {
-  assert.ok(indexHtml.includes("./pwa-app.js?v=9"));
-  assert.ok(serviceWorker.includes("dolary-pwa-v45"));
+  assert.ok(indexHtml.includes("./pwa-app.js?v=10"));
+  assert.ok(serviceWorker.includes("dolary-pwa-v46"));
   assert.ok(serviceWorker.includes("./pwa-app.js?v=9"));
   assert.ok(!indexHtml.includes("./pwa-app.js?v=7"));
   assert.ok(!serviceWorker.includes("./pwa-app.js?v=7"));
@@ -39,4 +39,11 @@ test("PWA keeps a local last-known rate cache for offline fallback", () => {
 test("Main site rates use the same Dolary Worker proxy", () => {
   assert.ok(indexHtml.includes("https://dolary.aehmnazar-1234533.workers.dev/api/rates"));
   assert.ok(!indexHtml.includes("https://xeiqd.com/rates.json"));
+});
+
+
+test("PWA uses the same nested-side rate shape as the main calculator", () => {
+  assert.ok(pwaApp.includes("Array.isArray(c.sides)"));
+  assert.ok(pwaApp.includes("side.side===null"));
+  assert.ok(pwaApp.includes("side.usd_iqd_per_100!=null"));
 });
