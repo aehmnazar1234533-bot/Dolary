@@ -22,6 +22,10 @@ function createCalculator(ratePer100, amount, direction = "usd") {
   const context = {
     appState: { ratePer100 },
     calcDir: direction,
+    window: { matchMedia() { return { matches: false }; } },
+    performance: { now() { return 0; } },
+    cancelAnimationFrame() {},
+    requestAnimationFrame() {},
     calcFrames: new WeakMap(),
     fmt(value, digits) {
       return new Intl.NumberFormat("ar-IQ", {
