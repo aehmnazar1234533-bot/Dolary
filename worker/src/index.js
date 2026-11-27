@@ -425,6 +425,21 @@ async function api(request, env) {
     }, 200, origin, env);
   }
 
+  if (url.pathname === "/api/rates" && request.method === "GET") {
+    try {
+      const upstream = await fetch(RATE_URL, {
+        headers: { "Accept": "application/json" },
+        cf: { cacheTtl: 0 }
+      });
+      if (!upstream.ok) return json({ ok: false, error: "rates_upstream_" + upstream.status }, 502, origin, env);
+      const data = await upstream.json();
+      if (!data || !Array.isArray(data.cities)) return json({ ok: false, error: "invalid_rates_response" }, 502, origin, env);
+      return json(data, 200, origin, env);
+    } catch (_) {
+      return json({ ok: false, error: "rates_unavailable" }, 502, origin, env);
+    }
+  }
+
   if (url.pathname === "/api/android/register" && request.method === "POST") {
     let body;
     try { body = await request.json(); }
