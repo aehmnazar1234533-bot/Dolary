@@ -1,17 +1,17 @@
 'use strict';
-const CACHE_NAME = 'dolary-pwa-v57';
+const CACHE_NAME = 'dolary-pwa-v58';
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cache.add(new Request(APP_SHELL, { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./manifest.webmanifest?v=22', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./pwa-app.css?v=6', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./pwa-app.js?v=19', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./manifest.webmanifest?v=23', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-app.css?v=7', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-app.js?v=20', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-hotfix.js?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push-config.js?v=2', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./pwa-push.js?v=6', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-push.js?v=8', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./privacy_policy.html', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-mark.svg?v=3', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./dolary-card-logo-180.png?v=2', { cache: 'reload' })).catch(() => {});
@@ -213,29 +213,42 @@ self.addEventListener('push', event => {
     await self.registration.showNotification(title, options);
     await changeBadgeCount(1);
 
-    if (data.province && Number.isFinite(Number(data.rate)) && data.at) {
-      const record = {
-        id: broadcastId,
-        province: String(data.province),
-        rate: Number(data.rate),
-        message: String(data.message || data.body || 'تنبيه سعر من دولاري'),
-        at: String(data.at)
-      };
-      try {
-        await storePushHistory(record);
-        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-        for (const client of clients) {
-          client.postMessage({ type: 'DOLARY_PUSH_RECEIVED', record });
-        }
-      } catch (_) {}
-    }
+    const record = {
+      id: broadcastId,
+      title: String(data.title || title),
+      body: String(data.body || 'لديك تنبيه جديد من دولاري.'),
+      province: data.province ? String(data.province) : '',
+      rate: Number.isFinite(Number(data.rate)) ? Number(data.rate) : null,
+      message: String(data.message || data.body || 'تنبيه جديد من دولاري'),
+      at: String(data.at || new Date().toISOString()),
+      url: options.data.url
+    };
+    try {
+      await storePushHistory(record);
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const client of clients) {
+        client.postMessage({ type: 'DOLARY_PUSH_RECEIVED', record });
+      }
+    } catch (_) {}
   })());
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'DOLARY_MARK_ALL_READ') {
+    event.waitUntil((async () => {
+      const count = await changeBadgeCount(-999999);
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const client of clients) client.postMessage({ type: 'DOLARY_BADGE_CHANGED', count });
+    })());
+  }
 });
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil((async () => {
-    await changeBadgeCount(-1);
+    const nextUnread = await changeBadgeCount(-1);
+    const windowsForBadge = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of windowsForBadge) client.postMessage({ type: 'DOLARY_BADGE_CHANGED', count: nextUnread });
     let target = new URL('./?pwa-notifications=1#pwa-notifications', self.location.href).href;
     try {
       const requested = event.notification.data && event.notification.data.url;
