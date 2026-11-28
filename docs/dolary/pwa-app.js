@@ -157,6 +157,7 @@
   }
   async function ensureCalculatorRate(){
     if(Number.isFinite(Number(appState.ratePer100))&&Number(appState.ratePer100)>0)return true;
+    try{if(window.__dolaryRatesData&&setCalculatorRateFromData(window.__dolaryRatesData))return true;}catch(_){}
     if(calculatorRateRequest)return calculatorRateRequest;
     calculatorRateRequest=(async function(){
       try{
