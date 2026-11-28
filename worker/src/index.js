@@ -642,7 +642,7 @@ async function api(request, env) {
           try{
             const r=await fetch("/api/admin/stats",{
               method:"POST",
-              headers:{"Content-Type":"application/json","Accept":"application/json"},
+              headers:{"Content-Type":"application/json","Accept":"application/json","X-Dolary-Admin-Password":password},
               body:JSON.stringify({password}),
               cache:"no-store"
             });
@@ -653,7 +653,7 @@ async function api(request, env) {
               return;
             }
             if(!r.ok||!d.ok){
-              history.textContent="تعذر قراءة الإحصائيات: "+(d.error||r.status);
+              history.textContent="تعذر قراءة الإحصائيات ("+r.status+"): "+(d.error||"خطأ غير معروف");
               return;
             }
             webCount.textContent=String(d.webSubscriptions ?? 0);
