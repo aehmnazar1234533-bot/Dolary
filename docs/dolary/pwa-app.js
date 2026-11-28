@@ -82,7 +82,9 @@
       if(!d||typeof d!=='object')return NaN;
       var slug=(document.getElementById('pwaProvinceSelect')||{}).value||'baghdad';
       var a=Array.isArray(d.cities)?d.cities.find(function(x){return x&&x.slug===slug;}):null;
+      var middle=a&&Array.isArray(a.sides)?a.sides.find(function(side){return side&&(side.side===null||typeof side.side==='undefined')&&side.usd_iqd_per_100!=null;}):null;
       var vals=[
+        middle&&middle.usd_iqd_per_100,
         a&&a.usd_iqd_per_100,
         a&&a.usd_iqd_per_1!=null?Number(a.usd_iqd_per_1)*100:null,
         d.usd_iqd_per_100,
@@ -211,15 +213,12 @@
       Do not interpret generic "rate"/"sell_rate" fields here because
       their unit is not guaranteed to be per-100-USD.
     */
+    var middle=Array.isArray(city.sides)?city.sides.find(function(side){return side&&(side.side===null||typeof side.side==='undefined')&&side.usd_iqd_per_100!=null;}):null;
     var candidates=[
+      middle&&middle.usd_iqd_per_100,
       city.usd_iqd_per_100,
       city.usd_iqd_per_1!=null?Number(city.usd_iqd_per_1)*100:null
     ];
-    if(Array.isArray(city.sides))city.sides.forEach(function(side){
-      if(!side)return;
-      candidates.push(side.usd_iqd_per_100);
-      if(side.usd_iqd_per_1!=null)candidates.push(Number(side.usd_iqd_per_1)*100);
-    });
     for(var i=0;i<candidates.length;i++){
       var value=Number(candidates[i]);
       if(Number.isFinite(value)&&value>0)return value;
