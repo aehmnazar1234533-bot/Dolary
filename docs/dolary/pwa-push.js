@@ -435,25 +435,7 @@
     return overlay;
   }
 
-  async function autoEnableIfAlreadyAllowed() {
-    if ((standaloneRequired && !standalone) || !apiBase || !("Notification" in window)) return;
-    if (isAutoPushDisabledLocally()) return;
-    if (Notification.permission !== "granted") return;
-    try {
-      setAutoPushEnabledLocally();
-      var reg = await navigator.serviceWorker.ready;
-      var sub = await reg.pushManager.getSubscription();
-      if (sub) {
-        await api("/api/subscribe", { subscription: sub.toJSON(), rule: localRule(), preference: localPreference() });
-        permissionText("إشعارات دولاري مفعّلة على هذا الجهاز.");
-        return;
-      }
-      await saveSubscription(localRule(), false);
-      permissionText("إشعارات دولاري مفعّلة على هذا الجهاز.");
-    } catch (_) {}
-  }
-
-  function initAutomaticPushPrompt() {
+    function initAutomaticPushPrompt() {
     if ((standaloneRequired && !standalone) || !apiBase || !("Notification" in window)) return;
     if (Notification.permission === "denied") {
       permissionText("إشعارات دولاري موقوفة من إعدادات الجهاز.");
@@ -464,7 +446,8 @@
         permissionText("إشعارات دولاري موقوفة على هذا الجهاز. فعّلها من زر التفعيل عند الحاجة.");
         return;
       }
-      autoEnableIfAlreadyAllowed();
+      // لا ننشئ Push Subscription تلقائياً عند فتح التطبيق.
+      // إذا كان الاشتراك موجوداً مسبقاً فـ syncIfAlreadySubscribed() يتكفّل بالمزامنة.
       return;
     }
     window.setTimeout(function () { buildAutoPermissionPrompt(); }, 180);
