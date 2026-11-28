@@ -243,7 +243,7 @@
   document.getElementById('pwaSaveAlert').addEventListener('click',async function(){var slug=document.getElementById('pwaAlertProvince').value,target=Number(document.getElementById('pwaAlertTarget').value),condition=document.getElementById('pwaAlertCondition').value,city=appState.cities.find(function(c){return c.slug===slug;}),status=document.getElementById('pwaAlertStatus');if(!city||!Number.isFinite(target)||target<=0){status.textContent='اكتب سعراً مستهدفاً صحيحاً أولاً.';return;}if('Notification'in window&&Notification.permission!=='granted'){try{await Notification.requestPermission();}catch(_){}}var rule={slug:slug,province:cityName(city),condition:condition,target:target};try{localStorage.setItem(ALERT_KEY,JSON.stringify(rule));status.textContent='تم تفعيل التنبيه لمحافظة '+rule.province+'.';}catch(_){status.textContent='تعذر حفظ التنبيه على هذا الجهاز.';}});
   document.getElementById('pwaRemoveAlert').addEventListener('click',function(){try{localStorage.removeItem(ALERT_KEY);}catch(_){}renderAlertForm();});
   window.addEventListener('storage',function(e){if(e.key===HISTORY_KEY||e.key===UNREAD_KEY){detectNewNotifications();renderNotifications();}if(e.key===ALERT_KEY)renderAlertForm();});
-  window.addEventListener('dolary-push-history-updated',function(){detectNewNotifications();renderNotifications();setBadge();});
+  window.addEventListener('dolary-push-history-updated',function(){renderNotifications();setBadge();});
   document.addEventListener('visibilitychange',function(){if(!document.hidden){detectNewNotifications();renderNotifications();loadRates();}});
   setInterval(detectNewNotifications,2500);
   setInterval(loadRates,900000);
