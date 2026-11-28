@@ -8,7 +8,7 @@ self.addEventListener('install', event => {
     await cache.add(new Request(APP_SHELL, { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./manifest.webmanifest?v=23', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-app.css?v=9', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./pwa-app.js?v=35', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-app.js?v=36', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-hotfix.js?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push-config.js?v=3', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push.js?v=11', { cache: 'reload' })).catch(() => {});
