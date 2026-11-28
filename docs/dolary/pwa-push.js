@@ -15,6 +15,7 @@
   var ALERT_KEY = "dolary.priceAlert.v1";
   var DB_NAME = "dolary-push-history";
   var DB_STORE = "events";
+  var UNREAD_KEY = "dolary.pwaUnread.v1";
   var AUTO_PUSH_ENABLED_KEY = "dolary.pwaAutoPushEnabled.v1";
   var AUTO_PUSH_DISABLED_KEY = "dolary.pwaAutoPushDisabled.v1";
   var SUBSCRIPTION_KEY = "dolary.pwaSubscription.v1";
@@ -149,10 +150,17 @@
   async function importPushHistory() {
     if (!("indexedDB" in window)) return;
     var db = await new Promise(function (resolve, reject) {
-      var req = indexedDB.open(DB_NAME, 1);
+      var req = indexedDB.open(DB_NAME, 3);
       req.onupgradeneeded = function () {
-        if (!req.result.objectStoreNames.contains(DB_STORE)) {
-          req.result.createObjectStore(DB_STORE, { keyPath: "id" });
+        var database = req.result;
+        if (!database.objectStoreNames.contains(DB_STORE)) {
+          database.createObjectStore(DB_STORE, { keyPath: "id" });
+        }
+        if (!database.objectStoreNames.contains("meta")) {
+          database.createObjectStore("meta", { keyPath: "key" });
+        }
+        if (!database.objectStoreNames.contains("processed")) {
+          database.createObjectStore("processed", { keyPath: "id" });
         }
       };
       req.onsuccess = function () { resolve(req.result); };
@@ -168,8 +176,16 @@
         req.onerror = function () { resolve([]); };
       } catch (_) { resolve([]); }
     });
+
+    var unreadCount = await new Promise(function (resolve) {
+      try {
+        var tx = db.transaction("meta", "readonly");
+        var req = tx.objectStore("meta").get("unread");
+        req.onsuccess = function () { resolve(Math.max(0, Number(req.result && req.result.value) || 0)); };
+        req.onerror = function () { resolve(null); };
+      } catch (_) { resolve(null); }
+    });
     db.close();
-    if (!events.length) return;
 
     var existing;
     try {
@@ -177,14 +193,28 @@
       if (!Array.isArray(existing)) existing = [];
     } catch (_) { existing = []; }
 
-    var seen = new Set(existing.map(function (item) { return item && item.id; }).filter(Boolean));
-    var added = events.filter(function (item) { return item && item.id && !seen.has(item.id); });
-    if (!added.length) return;
+    var byId = new Map();
+    existing.forEach(function (item) {
+      if (item && item.id) byId.set(String(item.id), item);
+    });
+    events.forEach(function (item) {
+      if (item && item.id) byId.set(String(item.id), item);
+    });
 
-    var combined = existing.concat(added).sort(function (a, b) {
+    var combined = Array.from(byId.values()).sort(function (a, b) {
       return new Date(b.at || 0).getTime() - new Date(a.at || 0).getTime();
-    }).slice(0, 30);
+    }).slice(0, 50);
     try { localStorage.setItem(HISTORY_KEY, JSON.stringify(combined)); } catch (_) {}
+
+    if (unreadCount !== null) {
+      try { localStorage.setItem(UNREAD_KEY, String(unreadCount)); } catch (_) {}
+    }
+
+    try {
+      window.dispatchEvent(new CustomEvent("dolary-push-history-updated", {
+        detail: { unread: unreadCount === null ? null : unreadCount }
+      }));
+    } catch (_) {}
   }
 
   async function syncIfAlreadySubscribed() {
@@ -444,6 +474,11 @@
   navigator.serviceWorker && navigator.serviceWorker.addEventListener("message", function (event) {
     if (event.data && event.data.type === "DOLARY_PUSH_RECEIVED") {
       importPushHistory();
+    }
+    if (event.data && event.data.type === "DOLARY_BADGE_CHANGED") {
+      var count = Math.max(0, Number(event.data.count) || 0);
+      try { localStorage.setItem(UNREAD_KEY, String(count)); } catch (_) {}
+      try { window.dispatchEvent(new CustomEvent("dolary-push-history-updated", { detail: { unread: count } })); } catch (_) {}
     }
   });
 
