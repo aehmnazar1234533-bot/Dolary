@@ -185,9 +185,9 @@
   function calc(){
     var amountInput=document.getElementById('pwaCalcAmount'),
         amountText=amountInput?String(amountInput.value||'').trim():'',
-        nativeAmount=amountInput&&Number.isFinite(amountInput.valueAsNumber)?amountInput.valueAsNumber:NaN,
-        amount=Number.isFinite(nativeAmount)?nativeAmount:parseCalcNumber(amountText),
-        rate=Number(appState.ratePer100),
+        amount=amountInput&&Number.isFinite(amountInput.valueAsNumber)?amountInput.valueAsNumber:parseCalcNumber(amountText),
+        selectedCity=appState.cities.find(function(c){return c.slug===appState.selectedSlug;}),
+        rate=selectedCity?Number(rateFor(selectedCity)):Number(appState.ratePer100),
         perDollar=rate/100,
         out=document.getElementById('pwaCalcResult'),
         label=document.getElementById('pwaCalcResultLabel'),
@@ -196,38 +196,51 @@
         paperCount=document.getElementById('pwaPaperCount'),
         remainderUsd=document.getElementById('pwaRemainderUsd'),
         remainderIqd=document.getElementById('pwaRemainderIqd');
+
     label.textContent=calcDir==='usd'?'القيمة التقريبية بالدينار العراقي':'القيمة التقريبية بالدولار الأمريكي';
     unit.textContent=calcDir==='usd'?'USD $':'IQD د.ع';
+
     if(amountText===''||!Number.isFinite(amount)||amount<0||!Number.isFinite(rate)||rate<=0){
       out.textContent='—';
-      if(out.dataset)delete out.dataset.currentValue;
-      breakdown.textContent=rate>0&&Number.isFinite(rate)?'أدخل مبلغاً صحيحاً حتى تظهر العملية والنتيجة.':'بانتظار سعر الصرف حتى يظهر الحساب.';
+      out.dataset.currentValue='';
+      breakdown.textContent=Number.isFinite(rate)&&rate>0?'أدخل مبلغاً صحيحاً حتى تظهر العملية والنتيجة.':'بانتظار سعر الصرف حتى يظهر الحساب.';
       paperCount.textContent='—';
       remainderUsd.textContent='— USD';
       remainderIqd.textContent='— د.ع';
       return;
     }
-    var result=calcDir==='usd'?amount*perDollar:amount/perDollar,
-        resultDigits=calcDir==='iqd'?2:0;
-    if(resultDigits===2) result=Math.round((result+Number.EPSILON)*100)/100;
-    if(!Number.isFinite(result)){out.textContent='—';return;}
+
+    var result=calcDir==='usd'?amount*perDollar:amount/perDollar;
+    if(calcDir==='iqd')result=Math.round((result+Number.EPSILON)*100)/100;
+
+    if(!Number.isFinite(result)){
+      out.textContent='—';
+      return;
+    }
+
     var shownAmount=fmtCalc(amount,calcDir==='usd'?2:0),
         shownRate=fmtCalc(rate,0),
+        resultDigits=calcDir==='iqd'?2:0,
         shownResult=fmtCalc(result,resultDigits);
-    // Always paint the final number first so slow/incomplete animation APIs can never hide the result.
+
+    // الحاسبة تعرض النتيجة مباشرة بدون أنميشن حتى لا تختفي النتيجة على بعض أجهزة iPhone/PWA.
     out.style.display='block';
     out.style.visibility='visible';
     out.style.opacity='1';
     out.style.direction='ltr';
     out.style.unicodeBidi='plaintext';
     out.style.fontVariantNumeric='tabular-nums';
+    out.textContent=calcDir==='usd'?shownResult+' د.ع':'USD '+shownResult;
+    out.dataset.currentValue=String(result);
+
     breakdown.innerHTML=calcDir==='usd'
       ? '<b>'+shownAmount+' USD</b> × <b>'+shownRate+' د.ع / 100 USD</b> = <b>'+shownResult+'</b> <span class="unit">د.ع</span>'
       : '<b>'+shownAmount+' د.ع</b> ÷ <b>'+fmtCalc(perDollar,2)+' د.ع / USD</b> = <b>'+shownResult+'</b> <span class="unit">USD</span>';
-    animateCalcNumber(out,result,calcDir==='usd'?' د.ع':'',resultDigits,calcDir==='usd'?'':'USD ');
+
     var usd=calcDir==='usd'?amount:result,
         papers=Math.floor((usd+1e-9)/100),
         rem=Math.max(0,usd-papers*100);
+
     paperCount.textContent=fmtCalc(papers,0);
     remainderUsd.textContent=fmtCalc(rem,2)+' USD';
     remainderIqd.textContent=fmtCalc(rem*perDollar,0)+' د.ع';
