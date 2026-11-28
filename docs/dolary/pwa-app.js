@@ -170,6 +170,28 @@
     return Number.isFinite(n)&&n>=0?n:NaN;
   }
 
+  function calculatorRateFromCity(city){
+    if(!city||typeof city!=='object')return NaN;
+    var candidates=[
+      city.usd_iqd_per_100,
+      city.usd_iqd_per_1!=null?Number(city.usd_iqd_per_1)*100:null,
+      city.rate,
+      city.sell_rate,
+      city.market_rate
+    ];
+    if(Array.isArray(city.sides)){
+      city.sides.forEach(function(side){
+        if(side&&side.usd_iqd_per_100!=null)candidates.push(side.usd_iqd_per_100);
+        if(side&&side.usd_iqd_per_1!=null)candidates.push(Number(side.usd_iqd_per_1)*100);
+      });
+    }
+    for(var i=0;i<candidates.length;i++){
+      var value=Number(candidates[i]);
+      if(Number.isFinite(value)&&value>0)return value;
+    }
+    return NaN;
+  }
+
   function resolveCalculatorRate(){
     var city=null;
     for(var i=0;i<appState.cities.length;i++){
@@ -179,8 +201,18 @@
       }
     }
 
-    var cityRate=city?rateFor(city):null;
-    if(Number.isFinite(Number(cityRate))&&Number(cityRate)>0)return Number(cityRate);
+    var cityRate=calculatorRateFromCity(city);
+    if(Number.isFinite(cityRate)&&cityRate>0)return cityRate;
+
+    var shared=window.__dolaryRatesData;
+    if(shared&&Array.isArray(shared.cities)){
+      for(var j=0;j<shared.cities.length;j++){
+        if(shared.cities[j]&&shared.cities[j].slug===appState.selectedSlug){
+          var sharedRate=calculatorRateFromCity(shared.cities[j]);
+          if(Number.isFinite(sharedRate)&&sharedRate>0)return sharedRate;
+        }
+      }
+    }
 
     var stateRate=Number(appState.ratePer100);
     if(Number.isFinite(stateRate)&&stateRate>0)return stateRate;
