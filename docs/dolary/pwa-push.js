@@ -6,8 +6,9 @@
     window.navigator.standalone === true;
   var apple = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  var standaloneRequired = apple;
-  if (standaloneRequired && !standalone) return;
+  // إشعارات دولاري مخصصة للتطبيق المثبت PWA فقط، وليس لصفحة الموقع العادية.
+  var standaloneRequired = true;
+  if (!standalone) return;
 
   var config = window.DOLARY_PUSH_CONFIG || {};
   var apiBase = String(config.apiBaseUrl || "").trim().replace(/\/$/, "");
@@ -137,7 +138,9 @@
     await api("/api/subscribe", {
       subscription: current,
       rule: rule || null,
-      preference: localPreference()
+      preference: localPreference(),
+      clientType: "pwa",
+      displayMode: "standalone"
     });
     try { localStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(current)); } catch (_) {}
 
@@ -233,7 +236,9 @@
         await api("/api/subscribe", {
           subscription: current,
           rule: localRule(),
-          preference: localPreference()
+          preference: localPreference(),
+          clientType: "pwa",
+          displayMode: "standalone"
         });
         try { localStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(current)); } catch (_) {}
         permissionText("إشعارات دولاري مفعّلة على هذا الجهاز.");
