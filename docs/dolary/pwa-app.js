@@ -181,6 +181,7 @@
     }
 
     var rate=city?Number(rateFor(city)):Number(appState.ratePer100);
+    if(!Number.isFinite(rate)||rate<=0) rate=Number(appState.ratePer100);
     if(!Number.isFinite(rate)||rate<=0){
       result.textContent='—';
       breakdown.textContent='بانتظار سعر المحافظة.';
