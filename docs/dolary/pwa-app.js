@@ -144,147 +144,102 @@
   async function sharePwaDailyCard(){var canvas=document.getElementById("pwaDailyShareCanvas"),rate=Number(appState.ratePer100);if(!canvas||!Number.isFinite(rate)||rate<=0){window.alert("السعر غير متاح حالياً، حاول تحديث الصفحة");return;}canvas.toBlob(async function(blob){if(!blob){window.alert("تعذر تجهيز صورة البطاقة");return;}var file=new File([blob],"dolary-daily-card.jpg",{type:"image/jpeg"}),city=appState.cities.find(function(c){return c.slug===appState.selectedSlug}),name=city?cityName(city):"العراق",caption="الدولار اليوم في "+name+": "+fmt(rate)+" د.ع لكل 100 دولار. تابع دولاري: "+location.origin+location.pathname;try{if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]}))await navigator.share({files:[file],title:"بطاقة دولاري اليومية",text:caption});else{var url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="dolary-daily-card.jpg";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},30000);}}catch(e){if(!e||e.name!=="AbortError")window.alert("تعذرت المشاركة، حاول مرة ثانية");}},"image/jpeg",.94);}
   function renderHome(){var select=document.getElementById('pwaProvinceSelect'),name=document.getElementById('pwaProvinceName'),rate=document.getElementById('pwaRateValue'),updated=document.getElementById('pwaUpdatedText'),list=document.getElementById('pwaHomeRates');if(!select||!list)return;select.replaceChildren();appState.cities.forEach(function(c){var o=document.createElement('option');o.value=c.slug;o.textContent=cityName(c);if(c.slug===appState.selectedSlug)o.selected=true;select.appendChild(o);});var selected=appState.cities.find(function(c){return c.slug===appState.selectedSlug;})||appState.cities[0];name.textContent=selected?cityName(selected):'بغداد';rate.innerHTML=Number.isFinite(Number(appState.ratePer100))?fmt(Number(appState.ratePer100))+' <small>د.ع / 100 USD</small>':'— <small>د.ع / 100 USD</small>';var selectedForCard=appState.cities.find(function(c){return c.slug===appState.selectedSlug})||appState.cities[0];renderPwaDailyCard(selectedForCard);updated.textContent=appState.rateError?(appState.updatedAt?'آخر سعر محفوظ محلياً — غير محدث':'تعذر جلب السعر'):appState.updatedAt?('آخر تحديث: '+new Date(appState.updatedAt).toLocaleString('ar-IQ',{dateStyle:'short',timeStyle:'short'})):'بانتظار البيانات';list.replaceChildren();appState.cities.filter(function(c){return rateFor(c)!=null;}).forEach(function(c){var row=document.createElement('div');row.className='pwa-city-row';var copy=document.createElement('div');copy.className='pwa-city-copy';var st=document.createElement('strong');st.textContent=cityName(c);var sm=document.createElement('small');sm.textContent=c.slug===appState.selectedSlug?'المحافظة المحددة':'اضغط النجمة لإضافتها للمفضلة';copy.append(st,sm);var v=document.createElement('strong');v.className='pwa-city-rate';var rr=rateFor(c);v.textContent=rr?fmt(rr)+' د.ع':'—';var star=document.createElement('button');star.type='button';star.className='pwa-star'+(favorites().indexOf(c.slug)>=0?' active':'');star.setAttribute('aria-label',favorites().indexOf(c.slug)>=0?'إزالة من المفضلة':'إضافة للمفضلة');star.innerHTML='<svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3Z"></path></svg>';star.title=favorites().indexOf(c.slug)>=0?'إزالة من المفضلة':'إضافة إلى المفضلة';star.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();toggleFavorite(c.slug);});row.append(copy,v,star);list.appendChild(row);});if(!appState.cities.length){var e=document.createElement('div');e.className='pwa-empty';e.textContent=appState.rateError?'تعذر جلب أسعار المحافظات. اضغط زر التحديث وحاول مرة ثانية.':'جاري تحميل أسعار المحافظات…';list.appendChild(e);}}
   function renderFavorites(){var list=document.getElementById('pwaFavoritesList');if(!list)return;list.replaceChildren();var fav=favorites(),items=appState.cities.filter(function(c){return fav.indexOf(c.slug)>=0;});if(!items.length){var e=document.createElement('div');e.className='pwa-empty';e.textContent='ماكو محافظات بالمفضلة بعد. ارجع للرئيسية واختر النجمة للمحافظة التي تريدها.';list.appendChild(e);return;}items.forEach(function(c){var row=document.createElement('div');row.className='pwa-city-row';var copy=document.createElement('div');copy.className='pwa-city-copy';var st=document.createElement('strong');st.textContent=cityName(c);var sm=document.createElement('small');sm.textContent='محافظة مفضلة';copy.append(st,sm);var v=document.createElement('strong');v.className='pwa-city-rate';var rr=rateFor(c);v.textContent=rr?fmt(rr)+' د.ع':'—';var star=document.createElement('button');star.type='button';star.className='pwa-star active';star.setAttribute('aria-label','إزالة من المفضلة');star.innerHTML='<svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3Z"></path></svg>';star.addEventListener('click',function(){toggleFavorite(c.slug);});row.append(copy,v,star);list.appendChild(row);});}
-  /* PWA CALCULATOR — مستقل فقط عن الإشعارات وباقي منطق دولاري */
+  /* PWA CALCULATOR — نسخة واحدة مستقلة */
   function parseCalcAmount(value){
     var s=String(value==null?'':value).trim();
     if(!s)return NaN;
-
     s=s.replace(/[٠-٩]/g,function(ch){return String(ch.charCodeAt(0)-1632);});
     s=s.replace(/[۰-۹]/g,function(ch){return String(ch.charCodeAt(0)-1776);});
-    s=s.replace(/[\u066C\u060C،]/g,'');
-    s=s.replace(/[\s\u00A0\u202F]/g,'');
-
-    if(s.indexOf('.')===-1&&s.indexOf(',')>=0){
-      var comma=s.lastIndexOf(',');
-      var decimalLength=s.length-comma-1;
-      if(decimalLength>0&&decimalLength<=2){
-        s=s.slice(0,comma).replace(/,/g,'')+'.'+s.slice(comma+1);
-      }else{
-        s=s.replace(/,/g,'');
-      }
-    }else{
-      s=s.replace(/,/g,'');
-    }
-
+    s=s.replace(/[\u066C\u060C،]/g,'').replace(/[\s\u00A0\u202F]/g,'');
+    s=s.replace(/,/g,'');
     var n=Number(s);
     return Number.isFinite(n)&&n>=0?n:NaN;
   }
 
-  function calculatorRateFromCity(city){
+  /* السعر الذي يدخل الحاسبة هو دائماً دينار عراقي مقابل 1 دولار. */
+  function calculatorRatePerDollar(city){
     if(!city||typeof city!=='object')return NaN;
-    /*
-      IMPORTANT:
-      XEIQD's canonical calculator fields are:
-      - usd_iqd_per_100 = dinars for exactly 100 USD
-      - usd_iqd_per_1  = dinars for 1 USD
-      Do not interpret generic "rate"/"sell_rate" fields here because
-      their unit is not guaranteed to be per-100-USD.
-    */
-    /* السعر الأساسي للمحافظة هو usd_iqd_per_100 في سجل المدينة.
-       بعض بيانات sides قد تحمل رقم الدولار الواحد رغم اسم الحقل،
-       لذلك لا نعتمد عليها قبل الحقل الأساسي. */
-    var candidates=[
-      city.usd_iqd_per_100,
-      city.usd_iqd_per_1!=null?Number(city.usd_iqd_per_1)*100:null
-    ];
-    if(Array.isArray(city.sides)){
-      city.sides.forEach(function(side){
-        if(side&&side.usd_iqd_per_100!=null)candidates.push(Number(side.usd_iqd_per_100));
-      });
-    }
-    for(var i=0;i<candidates.length;i++){
-      var value=Number(candidates[i]);
-      if(Number.isFinite(value)&&value>0)return value;
-    }
+    var v=Number(city.usd_iqd_per_1);
+    if(Number.isFinite(v)&&v>0)return v;
+    v=Number(city.usd_iqd_per_100);
+    if(Number.isFinite(v)&&v>0)return v/100;
     return NaN;
   }
-  function calculatorRateFromData(data,slug){
-    if(!data||typeof data!=='object')return NaN;
-    var wanted=slug||appState.selectedSlug;
-    if(Array.isArray(data.cities)){
-      var city=data.cities.find(function(c){return c&&c.slug===wanted;})||data.cities[0];
-      var cityRate=calculatorRateFromCity(city);
-      if(Number.isFinite(cityRate)&&cityRate>0)return cityRate;
-    }
-    var usd=data.usd;
-    var rootCandidates=[usd&&usd.iqd_per_100,usd&&usd.iqd_per_1!=null?Number(usd.iqd_per_1)*100:null,data.usd_iqd_per_100,data.usd_iqd_per_1!=null?Number(data.usd_iqd_per_1)*100:null];
-    for(var i=0;i<rootCandidates.length;i++){var value=Number(rootCandidates[i]);if(Number.isFinite(value)&&value>0)return value;}
-    return NaN;
-  }
-  var calculatorFetchPromise=null,calculatorRunId=0;
-  function fetchCalculatorRate(){
-    if(calculatorFetchPromise)return calculatorFetchPromise;
-    calculatorFetchPromise=fetch('https://dolary.aehmnazar-1234533.workers.dev/api/rates',{cache:'no-store',headers:{Accept:'application/json'},credentials:'omit'}).then(function(r){
-      if(!r.ok)throw new Error('calculator_rates');
-      return r.json();
-    }).then(function(data){
-      var rate=calculatorRateFromData(data,appState.selectedSlug);
-      if(!Number.isFinite(rate)||rate<=0)throw new Error('calculator_rate_missing');
-      try{window.__dolaryCalculatorRatesData=data;}catch(_){}
-      return rate;
-    }).catch(function(){
-      return fetch('https://xeiqd.com/rates.json',{cache:'no-store',headers:{Accept:'application/json'},credentials:'omit'}).then(function(r){
-        if(!r.ok)throw new Error('xeiqd_rates');
-        return r.json();
-      }).then(function(data){
-        var rate=calculatorRateFromData(data,appState.selectedSlug);
-        if(!Number.isFinite(rate)||rate<=0)throw new Error('xeiqd_rate_missing');
-        try{window.__dolaryCalculatorRatesData=data;}catch(_){}
-        return rate;
-      });
-    }).finally(function(){calculatorFetchPromise=null;});
-    return calculatorFetchPromise;
-  }
-  function resolveCalculatorRate(){
+
+  function calculatorCurrentRate(){
     var city=appState.cities.find(function(c){return c&&c.slug===appState.selectedSlug;});
-    var rate=calculatorRateFromCity(city);
+    var rate=calculatorRatePerDollar(city);
     if(Number.isFinite(rate)&&rate>0)return rate;
-    rate=calculatorRateFromData(window.__dolaryCalculatorRatesData,appState.selectedSlug);
-    if(Number.isFinite(rate)&&rate>0)return rate;
-    rate=calculatorRateFromData(window.__dolaryRatesData,appState.selectedSlug);
-    if(Number.isFinite(rate)&&rate>0)return rate;
-    rate=Number(appState.ratePer100);
-    if(Number.isFinite(rate)&&rate>0)return rate;
-    var visibleRate=document.getElementById('pwaRateValue');
-    if(visibleRate){
-      var shown=String(visibleRate.textContent||'').replace(/[٠-٩]/g,function(ch){return String(ch.charCodeAt(0)-1632);}).replace(/[۰-۹]/g,function(ch){return String(ch.charCodeAt(0)-1776);}).replace(/[^0-9.,]/g,'').replace(/,/g,'');
-      rate=Number(shown);
+
+    var data=window.__dolaryRatesData;
+    if(data&&Array.isArray(data.cities)){
+      city=data.cities.find(function(c){return c&&c.slug===appState.selectedSlug;});
+      rate=calculatorRatePerDollar(city);
       if(Number.isFinite(rate)&&rate>0)return rate;
     }
     return NaN;
   }
+
   function setCalculatorEmpty(message){
-    var result=document.getElementById('pwaCalcResult'),breakdown=document.getElementById('pwaCalcBreakdown'),papers=document.getElementById('pwaPaperCount'),remUsd=document.getElementById('pwaRemainderUsd'),remIqd=document.getElementById('pwaRemainderIqd');
-    if(result){result.textContent='—';result.style.display='flex';result.style.visibility='visible';result.style.opacity='1';delete result.dataset.currentValue;}
+    var result=document.getElementById('pwaCalcResult'),
+        breakdown=document.getElementById('pwaCalcBreakdown'),
+        papers=document.getElementById('pwaPaperCount'),
+        remUsd=document.getElementById('pwaRemainderUsd'),
+        remIqd=document.getElementById('pwaRemainderIqd');
+    if(result){result.textContent='—';result.style.display='flex';result.style.visibility='visible';result.style.opacity='1';}
     if(breakdown)breakdown.textContent=message;
     if(papers)papers.textContent='—';
     if(remUsd)remUsd.textContent='— USD';
     if(remIqd)remIqd.textContent='— د.ع';
   }
+
   function runPwaCalculator(){
-    var input=document.getElementById('pwaCalcAmount'),result=document.getElementById('pwaCalcResult'),label=document.getElementById('pwaCalcResultLabel'),unit=document.getElementById('pwaCalcUnit'),breakdown=document.getElementById('pwaCalcBreakdown'),papers=document.getElementById('pwaPaperCount'),remUsd=document.getElementById('pwaRemainderUsd'),remIqd=document.getElementById('pwaRemainderIqd');
+    var input=document.getElementById('pwaCalcAmount'),
+        result=document.getElementById('pwaCalcResult'),
+        label=document.getElementById('pwaCalcResultLabel'),
+        unit=document.getElementById('pwaCalcUnit'),
+        breakdown=document.getElementById('pwaCalcBreakdown'),
+        papers=document.getElementById('pwaPaperCount'),
+        remUsd=document.getElementById('pwaRemainderUsd'),
+        remIqd=document.getElementById('pwaRemainderIqd');
     if(!input||!result||!label||!unit||!breakdown||!papers||!remUsd||!remIqd)return;
+
     var amount=parseCalcAmount(input.value);
     if(!Number.isFinite(amount)){setCalculatorEmpty('أدخل المبلغ حتى تظهر النتيجة.');return;}
-    var rate=resolveCalculatorRate();
+
+    var rate=calculatorCurrentRate();
     if(!Number.isFinite(rate)||rate<=0){
-      var runId=++calculatorRunId;
-      setCalculatorEmpty('جاري جلب سعر المحافظة للحاسبة…');
-      fetchCalculatorRate().then(function(freshRate){if(runId!==calculatorRunId)return;appState.ratePer100=freshRate;runPwaCalculator();}).catch(function(){if(runId!==calculatorRunId)return;setCalculatorEmpty('تعذر جلب سعر الحاسبة. اضغط تحديث الأسعار وحاول مرة ثانية.');});
+      setCalculatorEmpty('بانتظار سعر المحافظة…');
       return;
     }
-    var perDollar=rate/100,converted=calcDir==='iqd'?amount/perDollar:amount*perDollar;
-    if(!Number.isFinite(converted)){setCalculatorEmpty('تعذر إكمال العملية، تحقق من المبلغ وحاول مرة ثانية.');return;}
-    var usdFormat=new Intl.NumberFormat('en-US',{minimumFractionDigits:calcDir==='iqd'?2:0,maximumFractionDigits:calcDir==='iqd'?2:0}),iqdFormat=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
-    var inputShown=calcDir==='iqd'?iqdFormat.format(amount):usdFormat.format(amount),outputShown=calcDir==='iqd'?usdFormat.format(converted):iqdFormat.format(converted);
+
+    var converted=calcDir==='iqd'?amount/rate:amount*rate;
+    if(!Number.isFinite(converted)){setCalculatorEmpty('تعذر إكمال العملية.');return;}
+
+    var usdFormat=new Intl.NumberFormat('en-US',{minimumFractionDigits:calcDir==='iqd'?2:0,maximumFractionDigits:calcDir==='iqd'?2:0});
+    var iqdFormat=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
+    var inputShown=calcDir==='iqd'?iqdFormat.format(amount):usdFormat.format(amount);
+    var outputShown=calcDir==='iqd'?usdFormat.format(converted):iqdFormat.format(converted);
+
     unit.textContent=calcDir==='iqd'?'د.ع':'USD';
     label.textContent=calcDir==='iqd'?'القيمة بالدولار الأمريكي':'القيمة بالدينار العراقي';
     result.textContent=calcDir==='iqd'?outputShown+' USD':outputShown+' د.ع';
-    result.dataset.currentValue=String(converted);result.style.display='flex';result.style.visibility='visible';result.style.opacity='1';
-    breakdown.textContent=calcDir==='iqd'?inputShown+' د.ع ÷ '+iqdFormat.format(perDollar)+' د.ع = '+outputShown+' USD':inputShown+' USD × '+iqdFormat.format(perDollar)+' د.ع = '+outputShown+' د.ع';
-    var usdAmount=calcDir==='iqd'?converted:amount,paperTotal=Math.floor((usdAmount+1e-9)/100),remainder=Math.max(0,usdAmount-paperTotal*100);
-    papers.textContent=iqdFormat.format(paperTotal);remUsd.textContent=usdFormat.format(remainder)+' USD';remIqd.textContent=iqdFormat.format(remainder*perDollar)+' د.ع';
+    result.style.display='flex';
+    result.style.visibility='visible';
+    result.style.opacity='1';
+
+    breakdown.textContent=calcDir==='iqd'
+      ?inputShown+' د.ع ÷ '+iqdFormat.format(rate)+' د.ع = '+outputShown+' USD'
+      :inputShown+' USD × '+iqdFormat.format(rate)+' د.ع = '+outputShown+' د.ع';
+
+    var usdAmount=calcDir==='iqd'?converted:amount;
+    var paperTotal=Math.floor((usdAmount+1e-9)/100);
+    var remainder=Math.max(0,usdAmount-paperTotal*100);
+    papers.textContent=iqdFormat.format(paperTotal);
+    remUsd.textContent=usdFormat.format(remainder)+' USD';
+    remIqd.textContent=iqdFormat.format(remainder*rate)+' د.ع';
   }
+
   function calc(){runPwaCalculator();}
   function renderAlertForm(){var sel=document.getElementById('pwaAlertProvince'),target=document.getElementById('pwaAlertTarget'),cond=document.getElementById('pwaAlertCondition'),status=document.getElementById('pwaAlertStatus'),rule=readJson(ALERT_KEY,null);if(!sel)return;sel.replaceChildren();appState.cities.forEach(function(c){var o=document.createElement('option');o.value=c.slug;o.textContent=cityName(c);if(rule&&rule.slug===c.slug)o.selected=true;sel.appendChild(o);});if(rule){target.value=String(rule.target);cond.value=rule.condition;status.textContent='تنبيه مفعّل لمحافظة '+rule.province+'.';}else{target.value='';status.textContent='التنبيه يعمل عند فحص السعر أثناء تشغيل دولاري.';}}
   function permissionStatus(){var el=document.getElementById('pwaPermissionStatus');if(!el)return;el.textContent=('Notification'in window)?(Notification.permission==='granted'?'إشعارات دولاري مفعّلة على هذا الجهاز.':Notification.permission==='denied'?'الإشعارات موقوفة من إعدادات الآيفون.':'اضغط لتفعيل إشعارات دولاري.'):'إشعارات الويب غير مدعومة هنا.';}
