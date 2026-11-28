@@ -178,19 +178,39 @@
     return NaN;
   }
   function calculatorRateFromData(data,slug){
-    if(!data||!Array.isArray(data.cities))return NaN;
+    if(!data||typeof data!=='object')return NaN;
     var wanted=slug||appState.selectedSlug;
-    var city=data.cities.find(function(c){return c&&c.slug===wanted;})||data.cities[0];
-    return calculatorRateFromCity(city);
+    if(Array.isArray(data.cities)){
+      var city=data.cities.find(function(c){return c&&c.slug===wanted;})||data.cities[0];
+      var cityRate=calculatorRateFromCity(city);
+      if(Number.isFinite(cityRate)&&cityRate>0)return cityRate;
+    }
+    var usd=data.usd;
+    var rootCandidates=[usd&&usd.iqd_per_100,usd&&usd.iqd_per_1!=null?Number(usd.iqd_per_1)*100:null,data.usd_iqd_per_100,data.usd_iqd_per_1!=null?Number(data.usd_iqd_per_1)*100:null];
+    for(var i=0;i<rootCandidates.length;i++){var value=Number(rootCandidates[i]);if(Number.isFinite(value)&&value>0)return value;}
+    return NaN;
   }
   var calculatorFetchPromise=null,calculatorRunId=0;
   function fetchCalculatorRate(){
     if(calculatorFetchPromise)return calculatorFetchPromise;
-    calculatorFetchPromise=fetch('https://dolary.aehmnazar-1234533.workers.dev/api/rates',{cache:'no-store',headers:{Accept:'application/json'},credentials:'omit'}).then(function(r){if(!r.ok)throw new Error('calculator_rates');return r.json();}).then(function(data){
+    calculatorFetchPromise=fetch('https://dolary.aehmnazar-1234533.workers.dev/api/rates',{cache:'no-store',headers:{Accept:'application/json'},credentials:'omit'}).then(function(r){
+      if(!r.ok)throw new Error('calculator_rates');
+      return r.json();
+    }).then(function(data){
       var rate=calculatorRateFromData(data,appState.selectedSlug);
       if(!Number.isFinite(rate)||rate<=0)throw new Error('calculator_rate_missing');
       try{window.__dolaryCalculatorRatesData=data;}catch(_){}
       return rate;
+    }).catch(function(){
+      return fetch('https://xeiqd.com/rates.json',{cache:'no-store',headers:{Accept:'application/json'},credentials:'omit'}).then(function(r){
+        if(!r.ok)throw new Error('xeiqd_rates');
+        return r.json();
+      }).then(function(data){
+        var rate=calculatorRateFromData(data,appState.selectedSlug);
+        if(!Number.isFinite(rate)||rate<=0)throw new Error('xeiqd_rate_missing');
+        try{window.__dolaryCalculatorRatesData=data;}catch(_){}
+        return rate;
+      });
     }).finally(function(){calculatorFetchPromise=null;});
     return calculatorFetchPromise;
   }
@@ -205,7 +225,11 @@
     rate=Number(appState.ratePer100);
     if(Number.isFinite(rate)&&rate>0)return rate;
     var visibleRate=document.getElementById('pwaRateValue');
-    if(visibleRate){rate=parseCalcAmount(visibleRate.textContent);if(Number.isFinite(rate)&&rate>0)return rate;}
+    if(visibleRate){
+      var shown=String(visibleRate.textContent||'').replace(/[٠-٩]/g,function(ch){return String(ch.charCodeAt(0)-1632);}).replace(/[۰-۹]/g,function(ch){return String(ch.charCodeAt(0)-1776);}).replace(/[^0-9.,]/g,'').replace(/,/g,'');
+      rate=Number(shown);
+      if(Number.isFinite(rate)&&rate>0)return rate;
+    }
     return NaN;
   }
   function setCalculatorEmpty(message){
