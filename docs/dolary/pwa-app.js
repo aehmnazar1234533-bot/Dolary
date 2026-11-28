@@ -148,6 +148,9 @@
      لا يوجد محرك حساب منفصل للحاسبة القديمة. */
   function calc(){
     var input=document.getElementById('pwaCalcAmount');
+    // Robust iOS/PWA calculator: always read the live field value and current rate.
+    // Never depend on a stale DOM value or on the calculator screen being active.
+
     var resultEl=document.getElementById('pwaCalcResult');
     var labelEl=document.getElementById('pwaCalcResultLabel');
     var unitEl=document.getElementById('pwaCalcUnit');
@@ -230,10 +233,17 @@
   document.getElementById('pwaProvinceSelect').addEventListener('change',function(){appState.selectedSlug=this.value;try{localStorage.setItem('dolary.pwaSelectedProvince.v1',this.value);}catch(_){}var c=appState.cities.find(function(x){return x.slug===appState.selectedSlug;});if(c){appState.ratePer100=rateFor(c);appState.updatedAt=c.updated_at||appState.updatedAt;}renderHome();renderFavorites();calc();renderAlertForm();});
   var pwaCalcInput=document.getElementById('pwaCalcAmount');
   if(pwaCalcInput){
-    ['input','change'].forEach(function(eventName){
-      pwaCalcInput.addEventListener(eventName,calc);
+    ['input','change','keyup','blur'].forEach(function(eventName){
+      pwaCalcInput.addEventListener(eventName,calc,{passive:true});
     });
+    // iOS can delay the first input event after switching screens.
+    pwaCalcInput.addEventListener('focus',function(){setTimeout(calc,0);});
   }
+  // Recalculate whenever the calculator becomes visible.
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest&&e.target.closest('[data-pwa-screen="pwaCalculatorScreen"]');
+    if(nav) setTimeout(calc,0);
+  },{passive:true});
   document.querySelectorAll('#pwaCalcDirection button').forEach(function(b){b.addEventListener('click',function(){calcDir=b.getAttribute('data-dir')==='iqd'?'iqd':'usd';document.querySelectorAll('#pwaCalcDirection button').forEach(function(x){x.classList.toggle('active',x===b);});calc();});});
   document.getElementById('pwaPermissionBtn').addEventListener('click',async function(){if(!('Notification'in window)){permissionStatus();return;}try{await Notification.requestPermission();}catch(_){}permissionStatus();});
   document.getElementById('pwaSaveAlert').addEventListener('click',async function(){var slug=document.getElementById('pwaAlertProvince').value,target=Number(document.getElementById('pwaAlertTarget').value),condition=document.getElementById('pwaAlertCondition').value,city=appState.cities.find(function(c){return c.slug===slug;}),status=document.getElementById('pwaAlertStatus');if(!city||!Number.isFinite(target)||target<=0){status.textContent='اكتب سعراً مستهدفاً صحيحاً أولاً.';return;}if('Notification'in window&&Notification.permission!=='granted'){try{await Notification.requestPermission();}catch(_){}}var rule={slug:slug,province:cityName(city),condition:condition,target:target};try{localStorage.setItem(ALERT_KEY,JSON.stringify(rule));status.textContent='تم تفعيل التنبيه لمحافظة '+rule.province+'.';}catch(_){status.textContent='تعذر حفظ التنبيه على هذا الجهاز.';}});
