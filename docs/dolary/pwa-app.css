@@ -72,3 +72,5 @@ html.pwa-mode #pwaApp{display:block!important}
 .pwa-auto-push-btn:disabled{opacity:.62;cursor:wait}
 .pwa-auto-push-note{margin-top:9px;color:#7f8da5;font-size:9.5px;line-height:1.7}
 @keyframes pwaAutoPushIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+/* iPhone PWA: hide the legacy website calculator. The PWA uses #pwaCalculatorScreen only. */
+html.pwa-mode #convert{display:none!important}
