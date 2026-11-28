@@ -610,7 +610,7 @@ async function api(request, env) {
   }
 
   if (url.pathname === "/admin" && request.method === "GET") {
-    return new Response(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071b49"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="/admin-manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="/admin-icon.svg"><link rel="apple-touch-icon" href="/admin-icon.svg"><title>دولاري | الإشعار العام</title><style>
+    return new Response(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071b49"><meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="/admin-manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="/admin-icon.svg"><link rel="apple-touch-icon" href="/admin-icon.svg"><title>دولاري | الإشعار العام</title><style>
       *{box-sizing:border-box}body{margin:0;background:#0b0b0f;color:#f7f7fb;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:grid;place-items:center;padding:20px}
       .card{width:min(560px,100%);background:#17171d;border:1px solid #2b2b35;border-radius:24px;padding:24px;box-shadow:0 20px 60px #0008}.brand{font-size:26px;font-weight:800;margin-bottom:6px}.sub{color:#a7a7b2;margin-bottom:22px}
       label{display:block;font-weight:700;margin:14px 0 7px}input,textarea{width:100%;border:1px solid #343440;background:#101016;color:#fff;border-radius:14px;padding:13px;font:inherit;outline:none}textarea{min-height:130px;resize:vertical}
@@ -620,7 +620,7 @@ async function api(request, env) {
     <form id="broadcastForm" method="POST" action="/api/broadcast-form"><input id="broadcastId" name="broadcastId" type="hidden" value=""><label>كلمة مرور الإدارة</label><input id="p" name="password" type="password" autocomplete="current-password" placeholder="كلمة مرور الإدارة" required>
     <label>عنوان الإشعار</label><input id="t" name="title" maxlength="120" placeholder="مثلاً: تنبيه مهم" required>
     <label>نص الإشعار</label><textarea id="b" name="body" maxlength="1000" placeholder="اكتب الرسالة التي تريد إرسالها للمستخدمين..." required></textarea>
-    <div class="stats"><div class="stat"><span>أجهزة PWA المسجلة</span><b id="webCount">—</b></div><div class="stat"><span>أجهزة Android المسجلة</span><b id="androidCount">—</b></div><div class="stat"><span>آخر إرسال ناجح</span><b id="lastSent">—</b></div><div class="stat"><span>آخر فشل</span><b id="lastFailed">—</b></div></div><div class="row"><button id="send" type="submit">إرسال الإشعار للجميع</button><button id="test" type="button" class="test">إرسال تجريبي</button></div><div id="s" class="status">جاهز للإرسال.</div><div id="history" class="history">جاري قراءة حالة الأجهزة...</div>
+    <div class="stats"><div class="stat"><span>أجهزة PWA المسجلة</span><b id="webCount">—</b></div><div class="stat"><span>أجهزة Android المسجلة</span><b id="androidCount">—</b></div><div class="stat"><span>آخر إرسال ناجح</span><b id="lastSent">—</b></div><div class="stat"><span>آخر فشل</span><b id="lastFailed">—</b></div></div><div class="row"><button id="send" type="submit">إرسال الإشعار للجميع</button><button id="test" type="button" class="test">إرسال تجريبي</button></div><button id="refreshStats" type="button" class="test" style="margin-top:10px">تحديث إحصائيات الأجهزة</button><div id="s" class="status">جاهز للإرسال.</div><div id="history" class="history">نسخة لوحة الإشعارات: 28-11-2026 — اكتب كلمة المرور لقراءة حالة الأجهزة.</div>
     <div class="hint">المفتاح لا يُحفظ في الصفحة. الإرسال يتم عبر Worker آمن باستخدام Secret.</div>
     </main><script>
       (() => {
@@ -628,7 +628,7 @@ async function api(request, env) {
         const s=document.getElementById("s"),send=document.getElementById("send");
         if(!p||!t||!b||!s||!send)return;
         try { p.value=sessionStorage.getItem("dolary_admin_password")||""; } catch (_) { p.value=""; }
-        const test=document.getElementById("test"),webCount=document.getElementById("webCount"),androidCount=document.getElementById("androidCount"),lastSent=document.getElementById("lastSent"),lastFailed=document.getElementById("lastFailed"),history=document.getElementById("history");
+        const test=document.getElementById("test"),refreshStats=document.getElementById("refreshStats"),webCount=document.getElementById("webCount"),androidCount=document.getElementById("androidCount"),lastSent=document.getElementById("lastSent"),lastFailed=document.getElementById("lastFailed"),history=document.getElementById("history");
         let statsTimer=null, statsBusy=false;
         async function stats(){
           const password=p.value.trim();
@@ -674,7 +674,7 @@ async function api(request, env) {
           clearTimeout(statsTimer);
           statsTimer=setTimeout(stats,500);
         }
-        p.addEventListener("change",stats);
+        refreshStats&&refreshStats.addEventListener("click",stats); p.addEventListener("change",stats);
         p.addEventListener("blur",stats);
         p.addEventListener("input",scheduleStats);
         p.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();stats();}});
