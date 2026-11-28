@@ -115,7 +115,7 @@
   function sig(item){return item?String(item.at||'')+'|'+String(item.province||'')+'|'+String(item.rate||'')+'|'+String(item.message||''):'';}
   function detectNewNotifications(){var h=history(),top=sig(h[0]);if(firstHistoryCheck){firstHistoryCheck=false;var saved=null;try{saved=localStorage.getItem(KNOWN_KEY);}catch(_){}lastHistorySig=saved||top;if(!saved&&top)try{localStorage.setItem(KNOWN_KEY,top);}catch(_){}}else if(top&&top!==lastHistorySig){var count=0;for(var i=0;i<h.length;i++){if(sig(h[i])===lastHistorySig)break;count++;}setUnread(unread()+Math.max(1,count));lastHistorySig=top;try{localStorage.setItem(KNOWN_KEY,top);}catch(_){}renderNotifications();}setBadge();}
   function renderNotifications(){var list=document.getElementById('pwaNotificationList'),h=history();if(!list)return;list.replaceChildren();if(!h.length){var e=document.createElement('div');e.className='pwa-empty';e.textContent='لا توجد تنبيهات بعد.';list.appendChild(e);return;}h.slice(0,20).forEach(function(item){var row=document.createElement('article');row.className='pwa-notification-item';var t=document.createElement('strong');var rate=Number(item.rate);if(item.province&&Number.isFinite(rate)){t.textContent=item.province+' — '+fmt(rate)+' د.ع لكل 100 دولار';}else{t.textContent=item.title||'دولاري';}var body=document.createElement('span');body.textContent=item.message||item.body||'لديك تنبيه جديد من دولاري.';var d=document.createElement('small');var dt=new Date(item.at);d.textContent=Number.isNaN(dt.getTime())?'وقت غير متاح':dt.toLocaleString('ar-IQ',{dateStyle:'short',timeStyle:'short'});row.append(t,body,d);list.appendChild(row);});}
-  function showScreen(id){document.querySelectorAll('.pwa-screen').forEach(function(s){s.classList.toggle('active',s.id===id);});document.querySelectorAll('.pwa-nav-item').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-pwa-screen')===id);});window.scrollTo(0,0);if(id==='pwaPrivacyScreen'){document.getElementById('pwaPrivacyBack').focus();}if(id==='pwaNotificationsScreen'){setUnread(0);var h=history(),top=sig(h[0]);if(top){lastHistorySig=top;try{localStorage.setItem(KNOWN_KEY,top);}catch(_){} }try{if(navigator.clearAppBadge)navigator.clearAppBadge();}catch(_){}try{if(navigator.serviceWorker&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'DOLARY_MARK_ALL_READ'});}catch(_){}renderNotifications();}if(id==='pwaSettingsScreen')renderAlertForm();}
+  function showScreen(id){document.querySelectorAll('.pwa-screen').forEach(function(s){s.classList.toggle('active',s.id===id);});document.querySelectorAll('.pwa-nav-item').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-pwa-screen')===id);});window.scrollTo(0,0);if(id==='pwaPrivacyScreen'){document.getElementById('pwaPrivacyBack').focus();}if(id==='pwaNotificationsScreen'){setUnread(0);var h=history(),top=sig(h[0]);if(top){lastHistorySig=top;try{localStorage.setItem(KNOWN_KEY,top);}catch(_){} }try{if(navigator.clearAppBadge)navigator.clearAppBadge();}catch(_){}try{if(navigator.serviceWorker&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'DOLARY_MARK_ALL_READ'});}catch(_){}renderNotifications();}if(id==='pwaSettingsScreen')renderAlertForm();if(id==='pwaCalculatorScreen'){calc();}}
   function favorites(){var f=readJson(FAV_KEY,[]);return Array.isArray(f)?f:[];}
   function toggleFavorite(slug){var f=favorites(),i=f.indexOf(slug);if(i>=0)f.splice(i,1);else f.unshift(slug);try{localStorage.setItem(FAV_KEY,JSON.stringify(f));}catch(_){}renderHome();renderFavorites();}
   var pwaDailyCardLogo=new Image();
@@ -148,18 +148,68 @@
   function parseCalcAmount(value){
     var s=String(value==null?'':value).trim();
     if(!s)return NaN;
+
     s=s.replace(/[٠-٩]/g,function(ch){return String(ch.charCodeAt(0)-1632);});
     s=s.replace(/[۰-۹]/g,function(ch){return String(ch.charCodeAt(0)-1776);});
-    s=s.replace(/[٬،]/g,'').replace(/\\s+/g,'');
+    s=s.replace(/[\u066C\u060C،]/g,'');
+    s=s.replace(/[\s\u00A0\u202F]/g,'');
+
     if(s.indexOf('.')===-1&&s.indexOf(',')>=0){
-      var parts=s.split(',');
-      if(parts.length===2&&parts[1].length<=2)s=parts[0]+'.'+parts[1];
-      else s=s.replace(/,/g,'');
+      var comma=s.lastIndexOf(',');
+      var decimalLength=s.length-comma-1;
+      if(decimalLength>0&&decimalLength<=2){
+        s=s.slice(0,comma).replace(/,/g,'')+'.'+s.slice(comma+1);
+      }else{
+        s=s.replace(/,/g,'');
+      }
     }else{
       s=s.replace(/,/g,'');
     }
+
     var n=Number(s);
-    return Number.isFinite(n)?n:NaN;
+    return Number.isFinite(n)&&n>=0?n:NaN;
+  }
+
+  function resolveCalculatorRate(){
+    var city=null;
+    for(var i=0;i<appState.cities.length;i++){
+      if(appState.cities[i]&&appState.cities[i].slug===appState.selectedSlug){
+        city=appState.cities[i];
+        break;
+      }
+    }
+
+    var cityRate=city?rateFor(city):null;
+    if(Number.isFinite(Number(cityRate))&&Number(cityRate)>0)return Number(cityRate);
+
+    var stateRate=Number(appState.ratePer100);
+    if(Number.isFinite(stateRate)&&stateRate>0)return stateRate;
+
+    var visibleRate=document.getElementById('pwaRateValue');
+    if(visibleRate){
+      var parsedRate=parseCalcAmount(visibleRate.textContent);
+      if(Number.isFinite(parsedRate)&&parsedRate>0)return parsedRate;
+    }
+    return NaN;
+  }
+
+  function setCalculatorEmpty(message){
+    var result=document.getElementById('pwaCalcResult');
+    var breakdown=document.getElementById('pwaCalcBreakdown');
+    var papers=document.getElementById('pwaPaperCount');
+    var remUsd=document.getElementById('pwaRemainderUsd');
+    var remIqd=document.getElementById('pwaRemainderIqd');
+    if(result){
+      result.textContent='—';
+      result.style.display='flex';
+      result.style.visibility='visible';
+      result.style.opacity='1';
+      delete result.dataset.currentValue;
+    }
+    if(breakdown)breakdown.textContent=message;
+    if(papers)papers.textContent='—';
+    if(remUsd)remUsd.textContent='— USD';
+    if(remIqd)remIqd.textContent='— د.ع';
   }
 
   function runPwaCalculator(){
@@ -175,40 +225,28 @@
     if(!input||!result||!label||!unit||!breakdown||!papers||!remUsd||!remIqd)return;
 
     var amount=parseCalcAmount(input.value);
-    var city=null;
-    for(var i=0;i<appState.cities.length;i++){
-      if(appState.cities[i]&&appState.cities[i].slug===appState.selectedSlug){city=appState.cities[i];break;}
-    }
-
-    var rate=city?Number(rateFor(city)):Number(appState.ratePer100);
-    if(!Number.isFinite(rate)||rate<=0) rate=Number(appState.ratePer100);
-    if(!Number.isFinite(rate)||rate<=0){
-      result.textContent='—';
-      breakdown.textContent='بانتظار سعر المحافظة.';
-      papers.textContent='—';
-      remUsd.textContent='— USD';
-      remIqd.textContent='— د.ع';
+    if(!Number.isFinite(amount)){
+      setCalculatorEmpty('أدخل المبلغ حتى تظهر النتيجة.');
       return;
     }
 
-    if(!Number.isFinite(amount)||amount<0){
-      result.textContent='—';
-      breakdown.textContent='أدخل المبلغ حتى تظهر النتيجة.';
-      papers.textContent='—';
-      remUsd.textContent='— USD';
-      remIqd.textContent='— د.ع';
+    var rate=resolveCalculatorRate();
+    if(!Number.isFinite(rate)||rate<=0){
+      setCalculatorEmpty('جاري تحميل سعر المحافظة… اضغط تحديث الأسعار إذا استمر الانتظار.');
       return;
     }
 
     var perDollar=rate/100;
     var converted=calcDir==='iqd'?amount/perDollar:amount*perDollar;
-
     if(!Number.isFinite(converted)){
-      result.textContent='—';
+      setCalculatorEmpty('تعذر إكمال العملية، تحقق من المبلغ وحاول مرة ثانية.');
       return;
     }
 
-    var usdFormat=new Intl.NumberFormat('en-US',{minimumFractionDigits:calcDir==='iqd'?2:0,maximumFractionDigits:calcDir==='iqd'?2:0});
+    var usdFormat=new Intl.NumberFormat('en-US',{
+      minimumFractionDigits:calcDir==='iqd'?2:0,
+      maximumFractionDigits:calcDir==='iqd'?2:0
+    });
     var iqdFormat=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
     var inputShown=calcDir==='iqd'?iqdFormat.format(amount):usdFormat.format(amount);
     var outputShown=calcDir==='iqd'?usdFormat.format(converted):iqdFormat.format(converted);
@@ -217,7 +255,7 @@
     label.textContent=calcDir==='iqd'?'القيمة بالدولار الأمريكي':'القيمة بالدينار العراقي';
     result.textContent=calcDir==='iqd'?outputShown+' USD':outputShown+' د.ع';
     result.dataset.currentValue=String(converted);
-    result.style.display='block';
+    result.style.display='flex';
     result.style.visibility='visible';
     result.style.opacity='1';
 
@@ -230,7 +268,6 @@
     var usdAmount=calcDir==='iqd'?converted:amount;
     var paperTotal=Math.floor((usdAmount+1e-9)/100);
     var remainder=Math.max(0,usdAmount-(paperTotal*100));
-
     papers.textContent=iqdFormat.format(paperTotal);
     remUsd.textContent=usdFormat.format(remainder)+' USD';
     remIqd.textContent=iqdFormat.format(remainder*perDollar)+' د.ع';
@@ -260,7 +297,13 @@
   });
   document.getElementById('pwaShareDailyCard').addEventListener('click',sharePwaDailyCard);
   document.getElementById('pwaProvinceSelect').addEventListener('change',function(){appState.selectedSlug=this.value;try{localStorage.setItem('dolary.pwaSelectedProvince.v1',this.value);}catch(_){}var c=appState.cities.find(function(x){return x.slug===appState.selectedSlug;});if(c){appState.ratePer100=rateFor(c);appState.updatedAt=c.updated_at||appState.updatedAt;}renderHome();renderFavorites();calc();renderAlertForm();});
-  document.getElementById('pwaCalcAmount').addEventListener('input',calc);
+  var pwaCalcInput=document.getElementById('pwaCalcAmount');
+  if(pwaCalcInput){
+    pwaCalcInput.addEventListener('input',calc);
+    pwaCalcInput.addEventListener('change',calc);
+    pwaCalcInput.addEventListener('keyup',calc);
+    pwaCalcInput.addEventListener('compositionend',calc);
+  }
   document.querySelectorAll('#pwaCalcDirection button').forEach(function(b){b.addEventListener('click',function(){calcDir=b.getAttribute('data-dir')==='iqd'?'iqd':'usd';document.querySelectorAll('#pwaCalcDirection button').forEach(function(x){x.classList.toggle('active',x===b);});calc();});});
   document.getElementById('pwaPermissionBtn').addEventListener('click',async function(){if(!('Notification'in window)){permissionStatus();return;}try{await Notification.requestPermission();}catch(_){}permissionStatus();});
   document.getElementById('pwaSaveAlert').addEventListener('click',async function(){var slug=document.getElementById('pwaAlertProvince').value,target=Number(document.getElementById('pwaAlertTarget').value),condition=document.getElementById('pwaAlertCondition').value,city=appState.cities.find(function(c){return c.slug===slug;}),status=document.getElementById('pwaAlertStatus');if(!city||!Number.isFinite(target)||target<=0){status.textContent='اكتب سعراً مستهدفاً صحيحاً أولاً.';return;}if('Notification'in window&&Notification.permission!=='granted'){try{await Notification.requestPermission();}catch(_){}}var rule={slug:slug,province:cityName(city),condition:condition,target:target};try{localStorage.setItem(ALERT_KEY,JSON.stringify(rule));status.textContent='تم تفعيل التنبيه لمحافظة '+rule.province+'.';}catch(_){status.textContent='تعذر حفظ التنبيه على هذا الجهاز.';}});
