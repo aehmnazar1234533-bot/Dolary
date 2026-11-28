@@ -94,21 +94,24 @@
   async function getOrCreateSubscription() {
     if (!apiBase) throw new Error("خدمة الإشعارات الخلفية لم تُربط بالخادم بعد.");
     if (!("Notification" in window)) throw new Error("إشعارات النظام غير مدعومة على هذا الجهاز.");
+    if (!("PushManager" in window)) throw new Error("إشعارات Web Push غير مدعومة على هذا الجهاز.");
+
     if (Notification.permission !== "granted") {
       var permission = await Notification.requestPermission();
       if (permission !== "granted") throw new Error("لم يتم السماح بإشعارات دولاري من إعدادات الجهاز.");
     }
 
-    var reg = await registration();
-    var conf = await api("/api/config", null, "GET");
-    if (conf.pushReady !== true) throw new Error("إعدادات خدمة الإشعارات على الخادم لم تكتمل بعد.");
-    if (!conf.publicKey) throw new Error("مفتاح الإشعارات العام غير مضبوط على الخادم.");
+    // مهم لـ iOS/Safari: لا نعتمد على fetch إلى الخادم قبل إنشاء الاشتراك.
+    // المفتاح العام موجود مسبقاً في إعدادات PWA، لذلك يبقى subscribe() مباشرة ضمن مسار الزر.
+    var publicKey = String(config.vapidPublicKey || "").trim();
+    if (!publicKey) throw new Error("مفتاح الإشعارات العام غير مضبوط داخل التطبيق.");
 
+    var reg = await registration();
     var sub = await reg.pushManager.getSubscription();
     var storedVapid = null;
     try { storedVapid = localStorage.getItem(VAPID_KEY_STORAGE) || null; } catch (_) { storedVapid = null; }
 
-    if (sub && storedVapid !== conf.publicKey) {
+    if (sub && storedVapid && storedVapid !== publicKey) {
       try { await api("/api/unsubscribe", { subscription: sub.toJSON() }); } catch (_) {}
       try { await sub.unsubscribe(); } catch (_) {}
       sub = null;
@@ -117,11 +120,11 @@
     if (!sub) {
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: b64ToBytes(conf.publicKey)
+        applicationServerKey: b64ToBytes(publicKey)
       });
     }
 
-    try { localStorage.setItem(VAPID_KEY_STORAGE, conf.publicKey); } catch (_) {}
+    try { localStorage.setItem(VAPID_KEY_STORAGE, publicKey); } catch (_) {}
     return { reg: reg, subscription: sub };
   }
 
