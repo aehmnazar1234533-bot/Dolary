@@ -184,8 +184,9 @@
   }
   function calc(){
     var amountInput=document.getElementById('pwaCalcAmount'),
-        amountText=amountInput.value.trim(),
-        amount=parseCalcNumber(amountText),
+        amountText=amountInput?String(amountInput.value||'').trim():'',
+        nativeAmount=amountInput&&Number.isFinite(amountInput.valueAsNumber)?amountInput.valueAsNumber:NaN,
+        amount=Number.isFinite(nativeAmount)?nativeAmount:parseCalcNumber(amountText),
         rate=Number(appState.ratePer100),
         perDollar=rate/100,
         out=document.getElementById('pwaCalcResult'),
