@@ -745,9 +745,12 @@ async function api(request, env) {
     let parsed = {};
     try { parsed = JSON.parse(data); } catch (_) {}
     const msg = result.ok && parsed.ok
-      ? "تم الإرسال بنجاح. Android: "+parsed.androidSent+" | iPhone/Web Push: "+parsed.webSent
+      ? "تم الإرسال بنجاح"
       : "فشل الإرسال: "+(parsed.error || result.status);
-    return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>دولاري</title><body style="font-family:system-ui;background:#0b0b0f;color:white;display:grid;place-items:center;min-height:100vh"><div style="background:#17171d;padding:28px;border-radius:20px;text-align:center"><h2>'+msg+'</h2><p><a href="/admin" style="color:white">العودة للوحة الإشعار</a></p></div></body>', {status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}});
+    const detail = result.ok && parsed.ok
+      ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0;text-align:right"><div style="background:#22232b;padding:14px;border-radius:14px"><small>Android</small><br><b style="font-size:24px">'+(parsed.androidSent ?? 0)+'</b></div><div style="background:#22232b;padding:14px;border-radius:14px"><small>iPhone / Web Push</small><br><b style="font-size:24px">'+(parsed.webSent ?? 0)+'</b></div><div style="background:#22232b;padding:14px;border-radius:14px"><small>الفاشلة</small><br><b style="font-size:24px">'+(parsed.failed ?? 0)+'</b></div><div style="background:#22232b;padding:14px;border-radius:14px"><small>المحذوفة</small><br><b style="font-size:24px">'+((parsed.androidRemoved ?? 0)+(parsed.webRemoved ?? 0))+'</b></div></div>'
+      : "";
+    return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>دولاري</title><body dir="rtl" style="font-family:system-ui;background:#0b0b0f;color:white;display:grid;place-items:center;min-height:100vh;margin:0;padding:20px"><div style="background:#17171d;padding:28px;border-radius:20px;text-align:center;max-width:520px;width:100%"><h2>'+msg+'</h2>'+detail+'<p><a href="/admin" style="color:white">العودة للوحة الإشعار</a></p></div></body>', {status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}});
   }
 
   if (url.pathname === "/api/broadcast" && request.method === "POST") {
