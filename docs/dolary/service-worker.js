@@ -1,14 +1,14 @@
 'use strict';
-const CACHE_NAME = "dolary-pwa-v79";
+const CACHE_NAME = "dolary-pwa-v80";
 const APP_SHELL = './';
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cache.add(new Request(APP_SHELL, { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./manifest.webmanifest?v=23', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./pwa-app.css?v=10', { cache: 'reload' })).catch(() => {});
-    await cache.add(new Request('./pwa-app.js?v=37', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./manifest.webmanifest?v=22', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-app.css?v=11', { cache: 'reload' })).catch(() => {});
+    await cache.add(new Request('./pwa-app.js?v=38', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-hotfix.js?v=2', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push-config.js?v=3', { cache: 'reload' })).catch(() => {});
     await cache.add(new Request('./pwa-push.js?v=11', { cache: 'reload' })).catch(() => {});
