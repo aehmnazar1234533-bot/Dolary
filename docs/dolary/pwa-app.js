@@ -187,7 +187,14 @@
         amountText=amountInput?String(amountInput.value||'').trim():'',
         amount=amountInput&&Number.isFinite(amountInput.valueAsNumber)?amountInput.valueAsNumber:parseCalcNumber(amountText),
         selectedCity=appState.cities.find(function(c){return c.slug===appState.selectedSlug;}),
-        rate=selectedCity?Number(rateFor(selectedCity)):Number(appState.ratePer100),
+        rate=selectedCity?Number(rateFor(selectedCity)):Number(appState.ratePer100);
+    if(!Number.isFinite(rate)||rate<=0){
+      var rateEl=document.getElementById('pwaRateValue'),
+          rateText=rateEl?String(rateEl.textContent||''):'',
+          rateMatch=rateText.replace(/[٠-٩]/g,function(ch){return String(ch.charCodeAt(0)-1632);}).replace(/[۰-۹]/g,function(ch){return String(ch.charCodeAt(0)-1776);}).replace(/[٬،]/g,'').match(/\d+(?:\.\d+)?/);
+      rate=rateMatch?Number(rateMatch[0]):NaN;
+    }
+    
         perDollar=rate/100,
         out=document.getElementById('pwaCalcResult'),
         label=document.getElementById('pwaCalcResultLabel'),
