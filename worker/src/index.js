@@ -512,6 +512,10 @@ async function api(request, env) {
     if (!subscription) {
       return json({ ok: false, error: "invalid_subscription" }, 400, origin, env);
     }
+    // Web Push مسموح فقط للتطبيق المثبت PWA، وليس لصفحة الموقع العادية.
+    if (body.clientType !== "pwa" || body.displayMode !== "standalone") {
+      return json({ ok: false, error: "pwa_only" }, 403, origin, env);
+    }
     const rule = cleanRule(body.rule);
     if (rule === undefined) {
       return json({ ok: false, error: "invalid_price_rule" }, 400, origin, env);
