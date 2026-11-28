@@ -78,7 +78,24 @@
     var ci=document.getElementById('pwaCalcAmount'),cr=document.getElementById('pwaCalcResult'),cb=document.getElementById('pwaCalcBreakdown'),cu=document.getElementById('pwaCalcUnit'),cl=document.getElementById('pwaCalcResultLabel'),pc=document.getElementById('pwaPaperCount'),ru=document.getElementById('pwaRemainderUsd'),ri=document.getElementById('pwaRemainderIqd'),dir='usd',rate=NaN,busy=false;
     if(!ci||!cr)return;
     function num(v){var s=String(v==null?'':v).replace(/[٠-٩]/g,function(x){return String(x.charCodeAt(0)-1632);}).replace(/[۰-۹]/g,function(x){return String(x.charCodeAt(0)-1776);}).replace(/[\\s\\u066C\\u060C،]/g,'').replace(/,/g,'');var n=Number(s);return Number.isFinite(n)?n:NaN;}
-    function pick(d){if(!d||typeof d!=='object')return NaN;var slug=(document.getElementById('pwaProvinceSelect')||{}).value||'baghdad',a=Array.isArray(d.cities)?d.cities.find(function(x){return x&&x.slug===slug;}):null,vals=[a&&a.usd_iqd_per_100,a&&a.usd_iqd_per_1!=null?Number(a.usd_iqd_per_1)*100:null,d.usd_iqd_per_100,d.usd_iqd_per_1!=null?Number(d.usd_iqd_per_1)*100:null,d.usd&&d.usd.iqd_per_100,d.usd&&d.usd.iqd_per_1!=null?Number(d.usd.iqd_per_1)*100:null];for(var i=0;i<vals.length;i++){var n=Number(vals[i]);if(Number.isFinite(n)&&n>0)return n;}return NaN;}
+    function pick(d){
+      if(!d||typeof d!=='object')return NaN;
+      var slug=(document.getElementById('pwaProvinceSelect')||{}).value||'baghdad';
+      var a=Array.isArray(d.cities)?d.cities.find(function(x){return x&&x.slug===slug;}):null;
+      var vals=[
+        a&&a.usd_iqd_per_100,
+        a&&a.usd_iqd_per_1!=null?Number(a.usd_iqd_per_1)*100:null,
+        d.usd_iqd_per_100,
+        d.usd_iqd_per_1!=null?Number(d.usd_iqd_per_1)*100:null,
+        d.usd&&d.usd.iqd_per_100,
+        d.usd&&d.usd.iqd_per_1!=null?Number(d.usd.iqd_per_1)*100:null
+      ];
+      for(var i=0;i<vals.length;i++){
+        var n=Number(vals[i]);
+        if(Number.isFinite(n)&&n>0)return n;
+      }
+      return NaN;
+    }
     function render(){var amount=num(ci.value);if(!Number.isFinite(amount)||amount<0||!Number.isFinite(rate)||rate<=0){cr.textContent='—';return;}var per=rate/100,out=dir==='iqd'?amount/per:amount*per,f0=new Intl.NumberFormat('en-US',{maximumFractionDigits:0}),f2=new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});cu.textContent=dir==='iqd'?'د.ع':'USD';cl.textContent=dir==='iqd'?'القيمة بالدولار الأمريكي':'القيمة بالدينار العراقي';cr.textContent=dir==='iqd'?f2.format(out)+' USD':f0.format(out)+' د.ع';cr.style.display='block';cr.style.visibility='visible';cr.style.opacity='1';if(cb)cb.textContent=dir==='iqd'?f0.format(amount)+' د.ع ÷ '+f0.format(per)+' د.ع = '+f2.format(out)+' USD':f0.format(amount)+' USD × '+f0.format(per)+' د.ع = '+f0.format(out)+' د.ع';var usd=dir==='iqd'?out:amount,p=Math.floor(usd/100),rem=usd-p*100;if(pc)pc.textContent=f0.format(p);if(ru)ru.textContent=f2.format(rem)+' USD';if(ri)ri.textContent=f0.format(rem*per)+' د.ع';}
     function load(){if(busy){return;}busy=true;rate=pick(window.__dolaryRatesData)||pick(window.__dolaryCalculatorRatesData);if(Number.isFinite(rate)&&rate>0){busy=false;render();return;}fetch('https://xeiqd.com/rates.json',{cache:'no-store',mode:'cors'}).then(function(r){if(!r.ok)throw Error('rates');return r.json();}).then(function(d){rate=pick(d);if(!Number.isFinite(rate)||rate<=0)throw Error('rate');render();}).catch(function(){var shown=num((document.getElementById('pwaRateValue')||{}).textContent);if(Number.isFinite(shown)&&shown>0)rate=shown;render();}).finally(function(){busy=false;});}
     ci.addEventListener('input',render);ci.addEventListener('change',render);ci.addEventListener('keyup',render);ci.addEventListener('blur',render);
@@ -186,9 +203,27 @@
 
   function calculatorRateFromCity(city){
     if(!city||typeof city!=='object')return NaN;
-    var candidates=[city.usd_iqd_per_100,city.usd_iqd_per_1!=null?Number(city.usd_iqd_per_1)*100:null,city.rate,city.sell_rate,city.market_rate];
-    if(Array.isArray(city.sides))city.sides.forEach(function(side){if(!side)return;candidates.push(side.usd_iqd_per_100);if(side.usd_iqd_per_1!=null)candidates.push(Number(side.usd_iqd_per_1)*100);candidates.push(side.rate,side.sell_rate,side.market_rate);});
-    for(var i=0;i<candidates.length;i++){var value=Number(candidates[i]);if(Number.isFinite(value)&&value>0)return value;}
+    /*
+      IMPORTANT:
+      XEIQD's canonical calculator fields are:
+      - usd_iqd_per_100 = dinars for exactly 100 USD
+      - usd_iqd_per_1  = dinars for 1 USD
+      Do not interpret generic "rate"/"sell_rate" fields here because
+      their unit is not guaranteed to be per-100-USD.
+    */
+    var candidates=[
+      city.usd_iqd_per_100,
+      city.usd_iqd_per_1!=null?Number(city.usd_iqd_per_1)*100:null
+    ];
+    if(Array.isArray(city.sides))city.sides.forEach(function(side){
+      if(!side)return;
+      candidates.push(side.usd_iqd_per_100);
+      if(side.usd_iqd_per_1!=null)candidates.push(Number(side.usd_iqd_per_1)*100);
+    });
+    for(var i=0;i<candidates.length;i++){
+      var value=Number(candidates[i]);
+      if(Number.isFinite(value)&&value>0)return value;
+    }
     return NaN;
   }
   function calculatorRateFromData(data,slug){
