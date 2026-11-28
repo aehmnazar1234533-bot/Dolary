@@ -198,6 +198,17 @@
     var selectedCity=appState.cities.find(function(city){return city&&city.slug===appState.selectedSlug;})||appState.cities[0]||null;
     var liveRate=rateFor(selectedCity);
     var ratePer100=Number.isFinite(Number(liveRate))&&Number(liveRate)>0?Number(liveRate):Number(appState.ratePer100);
+    // Final calculator-only fallbacks: use the already-loaded website/PWA rate before declaring no rate.
+    if(!(Number.isFinite(ratePer100)&&ratePer100>0)){
+      var globalRate=Number(window.ratePer100);
+      if(Number.isFinite(globalRate)&&globalRate>0)ratePer100=globalRate;
+    }
+    if(!(Number.isFinite(ratePer100)&&ratePer100>0)){
+      var rateNode=document.getElementById('pwaRateValue');
+      var displayed=rateNode?String(rateNode.textContent||'').replace(/[^0-9.]/g,''):'';
+      var displayedRate=Number(displayed);
+      if(Number.isFinite(displayedRate)&&displayedRate>0)ratePer100=displayedRate;
+    }
     if(Number.isFinite(ratePer100)&&ratePer100>0)appState.ratePer100=ratePer100;
     var direction=calcDir==='iqd'?'iqd':'usd';
 
