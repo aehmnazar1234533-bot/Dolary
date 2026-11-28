@@ -195,7 +195,10 @@
     if(!input)return;
 
     var amount=Number(input.value);
-    var ratePer100=Number(appState.ratePer100);
+    var selectedCity=appState.cities.find(function(city){return city&&city.slug===appState.selectedSlug;})||appState.cities[0]||null;
+    var liveRate=rateFor(selectedCity);
+    var ratePer100=Number.isFinite(Number(liveRate))&&Number(liveRate)>0?Number(liveRate):Number(appState.ratePer100);
+    if(Number.isFinite(ratePer100)&&ratePer100>0)appState.ratePer100=ratePer100;
     var direction=calcDir==='iqd'?'iqd':'usd';
 
     if(labelEl)labelEl.textContent=direction==='usd'?'القيمة التقريبية بالدينار العراقي':'القيمة التقريبية بالدولار الأمريكي';
