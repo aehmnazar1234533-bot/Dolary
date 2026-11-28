@@ -749,6 +749,7 @@ async function api(request, env) {
       : "فشل الإرسال: "+(parsed.error || result.status);
     const detail = result.ok && parsed.ok
       ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0;text-align:right"><div style="background:#22232b;padding:14px;border-radius:14px"><small>Android</small><br><b style="font-size:24px">'+(parsed.androidSent ?? 0)+'</b></div><div style="background:#22232b;padding:14px;border-radius:14px"><small>iPhone / Web Push</small><br><b style="font-size:24px">'+(parsed.webSent ?? 0)+'</b></div><div style="background:#22232b;padding:14px;border-radius:14px"><small>الفاشلة</small><br><b style="font-size:24px">'+(parsed.failed ?? 0)+'</b></div><div style="background:#22232b;padding:14px;border-radius:14px"><small>المحذوفة</small><br><b style="font-size:24px">'+((parsed.androidRemoved ?? 0)+(parsed.webRemoved ?? 0))+'</b></div></div>'
+        +(parsed.failureDetails?.length ? '<div style="margin-top:16px;text-align:right;background:#111217;padding:14px;border-radius:14px"><b>تفاصيل الفشل</b><pre style="white-space:pre-wrap;font-size:12px;direction:ltr;text-align:left;max-height:260px;overflow:auto">'+parsed.failureDetails.map(x=>String(x.kind)+' | HTTP '+String(x.status ?? '-')+' | '+String(x.detail || '')).join('\\n')+'</pre></div>' : '')
       : "";
     return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>دولاري</title><body dir="rtl" style="font-family:system-ui;background:#0b0b0f;color:white;display:grid;place-items:center;min-height:100vh;margin:0;padding:20px"><div style="background:#17171d;padding:28px;border-radius:20px;text-align:center;max-width:520px;width:100%"><h2>'+msg+'</h2>'+detail+'<p><a href="/admin" style="color:white">العودة للوحة الإشعار</a></p></div></body>', {status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}});
   }
@@ -792,6 +793,14 @@ async function api(request, env) {
     const webListed = await env.PUSH_STORE.list({ prefix: SUB_PREFIX, limit: MAX_LIST_SIZE });
     const androidListed = await env.PUSH_STORE.list({ prefix: ANDROID_PREFIX, limit: MAX_ANDROID_LIST_SIZE });
     let webSent = 0, webRemoved = 0, androidSent = 0, androidRemoved = 0, failed = 0;
+    const failureDetails = [];
+    async function recordFailure(kind, key, result, error = null) {
+      let detail = error ? String(error?.message || error || "unknown_error").slice(0, 300) : "";
+      if (!error) {
+        try { detail = (await result.text()).slice(0, 300); } catch (_) { detail = "no_response_body"; }
+      }
+      failureDetails.push({ kind, key, status: result?.status ?? null, detail });
+    }
 
     for (const item of webListed.keys) {
       const key = item.name;
@@ -813,8 +822,12 @@ async function api(request, env) {
           webSent++;
         } else {
           failed++;
+          await recordFailure("web", key, result);
         }
-      } catch (_) { failed++; }
+      } catch (error) {
+        failed++;
+        await recordFailure("web", key, null, error);
+      }
     }
 
     if (env.FCM_SERVICE_ACCOUNT_JSON && androidListed.keys.length) {
@@ -842,15 +855,23 @@ async function api(request, env) {
                 }));
                 return { sent: true };
               }
-              return { failed: true };
-            } catch (_) {
-              return { failed: true };
+              return { failed: true, status: null, detail: "unknown_failure" };
+            } catch (error) {
+              return { failed: true, status: null, detail: String(error?.message || error || "unknown_error").slice(0, 300) };
             }
           }));
           for (const result of results) {
             if (result.sent) androidSent++;
             else if (result.removed) androidRemoved++;
-            else if (result.failed) failed++;
+            else if (result.failed) {
+              failed++;
+              failureDetails.push({
+                kind: "android",
+                key: batch[results.indexOf(result)]?.name || "android",
+                status: result.status ?? null,
+                detail: result.detail || "failed"
+              });
+            }
           }
         }
       } catch (_) {
@@ -863,13 +884,15 @@ async function api(request, env) {
     broadcastRecord.androidSent = androidSent;
     broadcastRecord.webRemoved = webRemoved;
     broadcastRecord.failed = failed;
+    broadcastRecord.failureDetails = failureDetails.slice(0, 20);
     await env.PUSH_STORE.put(broadcastKey, JSON.stringify(broadcastRecord));
     return json({
       ok: true, webSent, androidSent, webRemoved, androidRemoved, failed,
       totalTargets: webListed.keys.length + androidListed.keys.length,
       attempted: webSent + androidSent + webRemoved + androidRemoved + failed,
       androidPushReady: Boolean(env.FCM_SERVICE_ACCOUNT_JSON),
-      broadcastId: notification.broadcastId
+      broadcastId: notification.broadcastId,
+      failureDetails: failureDetails.slice(0, 20)
     }, 200, origin, env);
   }
 
