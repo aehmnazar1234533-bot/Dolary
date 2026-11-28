@@ -629,22 +629,55 @@ async function api(request, env) {
         if(!p||!t||!b||!s||!send)return;
         try { p.value=sessionStorage.getItem("dolary_admin_password")||""; } catch (_) { p.value=""; }
         const test=document.getElementById("test"),webCount=document.getElementById("webCount"),androidCount=document.getElementById("androidCount"),lastSent=document.getElementById("lastSent"),lastFailed=document.getElementById("lastFailed"),history=document.getElementById("history");
+        let statsTimer=null, statsBusy=false;
         async function stats(){
-          if(!p.value.trim()) return;
+          const password=p.value.trim();
+          if(!password){
+            history.textContent="اكتب كلمة مرور الإدارة حتى تظهر إحصائيات الأجهزة.";
+            return;
+          }
+          if(statsBusy)return;
+          statsBusy=true;
+          history.textContent="جاري تحديث إحصائيات الأجهزة...";
           try{
-            const statsBody=new URLSearchParams({password:p.value.trim()});
-            const r=await fetch("/api/admin/stats",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:statsBody.toString(),cache:"no-store"});
+            const r=await fetch("/api/admin/stats",{
+              method:"POST",
+              headers:{"Content-Type":"application/json","Accept":"application/json"},
+              body:JSON.stringify({password}),
+              cache:"no-store"
+            });
             const d=await r.json().catch(()=>({}));
-            if(!r.ok||!d.ok){history.textContent=r.status===401?"كلمة المرور غير صحيحة.":"تعذر قراءة الإحصائيات.";return}
-            webCount.textContent=d.webSubscriptions;
-            androidCount.textContent=d.androidSubscriptions;
+            if(r.status===401||d.error==="admin_not_authorized"){
+              history.textContent="كلمة مرور الإدارة غير صحيحة.";
+              webCount.textContent="—"; androidCount.textContent="—"; lastSent.textContent="—"; lastFailed.textContent="—";
+              return;
+            }
+            if(!r.ok||!d.ok){
+              history.textContent="تعذر قراءة الإحصائيات: "+(d.error||r.status);
+              return;
+            }
+            webCount.textContent=String(d.webSubscriptions ?? 0);
+            androidCount.textContent=String(d.androidSubscriptions ?? 0);
             const x=d.lastBroadcast;
-            lastSent.textContent=x ? ((x.webSent||0)+(x.androidSent||0)) : "—";
-            lastFailed.textContent=x ? (x.failed||0) : "—";
-            history.textContent=x ? "آخر إرسال: "+new Date(x.createdAt).toLocaleString("ar-IQ")+"\nالناجحة: "+((x.webSent||0)+(x.androidSent||0))+" | الفاشلة: "+(x.failed||0)+" | المحذوفة: "+((x.webRemoved||0)+(x.androidRemoved||0)) : "لا توجد عمليات إرسال بعد.";
-          }catch(_){history.textContent="تعذر الاتصال بخدمة الإحصائيات."}
+            lastSent.textContent=x ? String((x.webSent||0)+(x.androidSent||0)) : "—";
+            lastFailed.textContent=x ? String(x.failed||0) : "—";
+            history.textContent=x
+              ? "آخر إرسال: "+new Date(x.completedAt||x.createdAt).toLocaleString("ar-IQ")+"\nالناجحة: "+((x.webSent||0)+(x.androidSent||0))+" | الفاشلة: "+(x.failed||0)+" | المحذوفة: "+((x.webRemoved||0)+(x.androidRemoved||0))
+              : "لا توجد عمليات إرسال بعد.";
+          }catch(_){
+            history.textContent="تعذر الاتصال بخدمة الإحصائيات.";
+          }finally{
+            statsBusy=false;
+          }
         }
-        p.addEventListener("change",stats); p.addEventListener("blur",stats); p.addEventListener("input",stats);
+        function scheduleStats(){
+          clearTimeout(statsTimer);
+          statsTimer=setTimeout(stats,500);
+        }
+        p.addEventListener("change",stats);
+        p.addEventListener("blur",stats);
+        p.addEventListener("input",scheduleStats);
+        p.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();stats();}});
         stats();
         setInterval(stats,30000);
         test.addEventListener("click",async()=>{
