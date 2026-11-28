@@ -184,73 +184,80 @@
   }
   function calc(){
     var amountInput=document.getElementById('pwaCalcAmount'),
-        amountText=amountInput?String(amountInput.value||'').trim():'',
-        amount=amountInput&&Number.isFinite(amountInput.valueAsNumber)?amountInput.valueAsNumber:parseCalcNumber(amountText),
-        selectedCity=appState.cities.find(function(c){return c.slug===appState.selectedSlug;}),
-        rate=selectedCity?Number(rateFor(selectedCity)):Number(appState.ratePer100);
-    if(!Number.isFinite(rate)||rate<=0){
-      var rateEl=document.getElementById('pwaRateValue'),
-          rateText=rateEl?String(rateEl.textContent||''):'',
-          rateMatch=rateText.replace(/[٠-٩]/g,function(ch){return String(ch.charCodeAt(0)-1632);}).replace(/[۰-۹]/g,function(ch){return String(ch.charCodeAt(0)-1776);}).replace(/[٬،]/g,'').match(/\d+(?:\.\d+)?/);
-      rate=rateMatch?Number(rateMatch[0]):NaN;
-    }
-    
-        perDollar=rate/100,
-        out=document.getElementById('pwaCalcResult'),
+        result=document.getElementById('pwaCalcResult'),
         label=document.getElementById('pwaCalcResultLabel'),
-        unit=document.getElementById('pwaCalcUnit'),
         breakdown=document.getElementById('pwaCalcBreakdown'),
+        inputUnit=document.getElementById('pwaCalcUnit'),
         paperCount=document.getElementById('pwaPaperCount'),
         remainderUsd=document.getElementById('pwaRemainderUsd'),
-        remainderIqd=document.getElementById('pwaRemainderIqd');
+        remainderIqd=document.getElementById('pwaRemainderIqd'),
+        amount=amountInput?parseCalcNumber(amountInput.value):NaN,
+        city=appState.cities.find(function(x){return x.slug===appState.selectedSlug;})||null,
+        rate=city?Number(rateFor(city)):Number(appState.ratePer100);
 
-    label.textContent=calcDir==='usd'?'القيمة التقريبية بالدينار العراقي':'القيمة التقريبية بالدولار الأمريكي';
-    unit.textContent=calcDir==='usd'?'USD $':'IQD د.ع';
+    if(!Number.isFinite(rate)||rate<=0){
+      var rateEl=document.getElementById('pwaRateValue');
+      var rateText=rateEl?String(rateEl.textContent||''):'';
+      var normalized=rateText.replace(/[٠-٩]/g,function(ch){return String(ch.charCodeAt(0)-1632);})
+        .replace(/[۰-۹]/g,function(ch){return String(ch.charCodeAt(0)-1776);})
+        .replace(/[٬،]/g,'').replace(/,/g,'');
+      var match=normalized.match(/\\d+(?:\\.\\d+)?/);
+      rate=match?Number(match[0]):NaN;
+    }
 
-    if(amountText===''||!Number.isFinite(amount)||amount<0||!Number.isFinite(rate)||rate<=0){
-      out.textContent='—';
-      out.dataset.currentValue='';
-      breakdown.textContent=Number.isFinite(rate)&&rate>0?'أدخل مبلغاً صحيحاً حتى تظهر العملية والنتيجة.':'بانتظار سعر الصرف حتى يظهر الحساب.';
+    var perDollar=rate/100;
+    if(inputUnit) inputUnit.textContent=calcDir==='usd'?'USD':'د.ع';
+    if(label) label.textContent=calcDir==='usd'?'القيمة التقريبية بالدينار العراقي':'القيمة التقريبية بالدولار الأمريكي';
+
+    if(!result||!breakdown||!paperCount||!remainderUsd||!remainderIqd)return;
+
+    if(!Number.isFinite(amount)||amount<0||!Number.isFinite(rate)||rate<=0){
+      result.textContent=Number.isFinite(rate)&&rate>0?'—':'السعر غير متاح';
+      result.dataset.currentValue='';
+      breakdown.textContent=Number.isFinite(rate)&&rate>0?'أدخل المبلغ حتى تظهر العملية بشكل واضح.':'بانتظار سعر المحافظة حتى يظهر الحساب.';
       paperCount.textContent='—';
       remainderUsd.textContent='— USD';
       remainderIqd.textContent='— د.ع';
       return;
     }
 
-    var result=calcDir==='usd'?(amount*rate)/100:amount/(rate/100);
-    if(calcDir==='iqd')result=Math.round((result+Number.EPSILON)*100)/100;
-
-    if(!Number.isFinite(result)){
-      out.textContent='—';
+    // نفس منطق حاسبة تطبيق Android: سعر المحافظة هو سعر 100 دولار.
+    var value=calcDir==='usd'?amount*perDollar:amount/perDollar;
+    if(!Number.isFinite(value)){
+      result.textContent='—';
       return;
     }
 
-    var shownAmount=fmtCalc(amount,calcDir==='usd'?2:0),
-        shownRate=fmtCalc(rate,0),
-        resultDigits=calcDir==='iqd'?2:0,
-        shownResult=fmtCalc(result,resultDigits);
+    var nIQD=new Intl.NumberFormat('en-US',{maximumFractionDigits:0}),
+        nUSD=new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),
+        shownAmount=calcDir==='usd'?nUSD.format(amount):nIQD.format(amount),
+        shownResult=calcDir==='usd'?nIQD.format(value):nUSD.format(value),
+        shownPerDollar=nIQD.format(perDollar),
+        shownRate=nIQD.format(rate);
 
-    // الحاسبة تعرض النتيجة مباشرة بدون أنميشن حتى لا تختفي النتيجة على بعض أجهزة iPhone/PWA.
-    out.style.display='block';
-    out.style.visibility='visible';
-    out.style.opacity='1';
-    out.style.direction='ltr';
-    out.style.unicodeBidi='plaintext';
-    out.style.fontVariantNumeric='tabular-nums';
-    out.textContent=calcDir==='usd'?shownResult+' د.ع':'USD '+shownResult;
-    out.dataset.currentValue=String(result);
+    result.style.display='block';
+    result.style.visibility='visible';
+    result.style.opacity='1';
+    result.style.direction='ltr';
+    result.style.unicodeBidi='plaintext';
+    result.style.fontVariantNumeric='tabular-nums';
+    result.textContent=calcDir==='usd'?shownResult+' د.ع':shownResult+' USD';
+    result.dataset.currentValue=String(value);
 
-    breakdown.innerHTML=calcDir==='usd'
-      ? '<b>'+shownAmount+' USD</b> × <b>'+shownRate+' د.ع / 100 USD</b> = <b>'+shownResult+'</b> <span class="unit">د.ع</span>'
-      : '<b>'+shownAmount+' د.ع</b> ÷ <b>'+fmtCalc(perDollar,2)+' د.ع / USD</b> = <b>'+shownResult+'</b> <span class="unit">USD</span>';
+    if(calcDir==='usd'){
+      breakdown.innerHTML='<b>'+shownAmount+' USD</b> × <b>'+shownPerDollar+' د.ع لكل 1 USD</b> = <b>'+shownResult+'</b> <span class="unit">د.ع</span>';
+    }else{
+      breakdown.innerHTML='<b>'+shownAmount+' د.ع</b> ÷ <b>'+shownPerDollar+' د.ع لكل 1 USD</b> = <b>'+shownResult+'</b> <span class="unit">USD</span>';
+    }
 
-    var usd=calcDir==='usd'?amount:result,
+    var usd=calcDir==='usd'?amount:value,
         papers=Math.floor((usd+1e-9)/100),
-        rem=Math.max(0,usd-papers*100);
+        rem=Math.max(0,usd-papers*100),
+        remIqd=rem*perDollar;
 
-    paperCount.textContent=fmtCalc(papers,0);
-    remainderUsd.textContent=fmtCalc(rem,2)+' USD';
-    remainderIqd.textContent=fmtCalc(rem*perDollar,0)+' د.ع';
+    paperCount.textContent=nIQD.format(papers);
+    remainderUsd.textContent=nUSD.format(rem)+' USD';
+    remainderIqd.textContent=nIQD.format(remIqd)+' د.ع';
   }
   function renderAlertForm(){var sel=document.getElementById('pwaAlertProvince'),target=document.getElementById('pwaAlertTarget'),cond=document.getElementById('pwaAlertCondition'),status=document.getElementById('pwaAlertStatus'),rule=readJson(ALERT_KEY,null);if(!sel)return;sel.replaceChildren();appState.cities.forEach(function(c){var o=document.createElement('option');o.value=c.slug;o.textContent=cityName(c);if(rule&&rule.slug===c.slug)o.selected=true;sel.appendChild(o);});if(rule){target.value=String(rule.target);cond.value=rule.condition;status.textContent='تنبيه مفعّل لمحافظة '+rule.province+'.';}else{target.value='';status.textContent='التنبيه يعمل عند فحص السعر أثناء تشغيل دولاري.';}}
   function permissionStatus(){var el=document.getElementById('pwaPermissionStatus');if(!el)return;el.textContent=('Notification'in window)?(Notification.permission==='granted'?'إشعارات دولاري مفعّلة على هذا الجهاز.':Notification.permission==='denied'?'الإشعارات موقوفة من إعدادات الآيفون.':'اضغط لتفعيل إشعارات دولاري.'):'إشعارات الويب غير مدعومة هنا.';}
