@@ -210,7 +210,7 @@
       return;
     }
 
-    var result=calcDir==='usd'?amount*perDollar:amount/perDollar;
+    var result=calcDir==='usd'?(amount*rate)/100:amount/(rate/100);
     if(calcDir==='iqd')result=Math.round((result+Number.EPSILON)*100)/100;
 
     if(!Number.isFinite(result)){
