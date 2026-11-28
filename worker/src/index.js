@@ -446,7 +446,7 @@ async function api(request, env) {
     const items = [];
     for (const item of broadcasts.keys) { const record = await env.PUSH_STORE.get(item.name, "json"); if (record) items.push(record); }
     items.sort((a,b) => String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
-    return json({ ok: true, webSubscriptions: webListed.keys.length, androidSubscriptions: androidListed.keys.length, totalSubscriptions: webListed.keys.length + androidListed.keys.length, lastBroadcast: items[0] || null, recentBroadcasts: items.slice(0, 10) }, 200, origin, env);
+    return json({ ok: true, diagnostics: { adminPasswordConfigured: Boolean(env.ADMIN_PASSWORD), pushStoreConfigured: Boolean(env.PUSH_STORE), vapidConfigured: Boolean(env.VAPID_PRIVATE_KEY && env.VAPID_PUBLIC_KEY && env.VAPID_SUBJECT) }, webSubscriptions: webListed.keys.length, androidSubscriptions: androidListed.keys.length, totalSubscriptions: webListed.keys.length + androidListed.keys.length, lastBroadcast: items[0] || null, recentBroadcasts: items.slice(0, 10) }, 200, origin, env);
   }
   if (url.pathname === "/api/config" && request.method === "GET") {
     return json({
