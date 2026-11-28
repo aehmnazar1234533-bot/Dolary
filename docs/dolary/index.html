@@ -831,6 +831,8 @@ document.getElementById("shareDailyCard").addEventListener("click",()=>{
    alertProvinceEl.replaceChildren();availableCities.forEach(city=>{const option=document.createElement('option');option.value=city.slug;option.textContent=cityName(city);alertProvinceEl.append(option);});
    const savedAlert=readAlert();if(savedAlert&&availableCities.some(city=>city.slug===savedAlert.slug))alertProvinceEl.value=savedAlert.slug;
    window.__ratesUpdatedAt=data.updated_at||null;
+   // Share the already-loaded XEIQD payload with the PWA calculator. This avoids a second rate source/state and prevents the calculator from staying on —.
+   window.__dolaryRatesData=data;
    if(!availableCities.some(city=>city.slug===selectedSlug)){
     selectedSlug=availableCities.some(city=>city.slug==='baghdad')?'baghdad':availableCities[0].slug;
    }
